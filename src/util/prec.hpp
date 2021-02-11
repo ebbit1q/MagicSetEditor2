@@ -61,6 +61,14 @@ typedef wxOutputStream OutputStream;
 
 // ----------------------------------------------------------------------------- : Compatability fixes
 
+#if wxVERSION_NUMBER < 3100
+// wx <= 3.1 doesn't include a hash implementation for wxString
+template <> struct std::hash<wxString> {
+  size_t operator()(const wxString& k) const {
+    return hash<wstring>()(k.ToStdWstring());
+  }
+};
+#endif
 #if wxVERSION_NUMBER < 2805
   #define wxBORDER_THEME wxSUNKEN_BORDER
 #endif
