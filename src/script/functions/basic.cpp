@@ -513,9 +513,9 @@ SCRIPT_FUNCTION(remove_tags) {
 /** 0 based index, -1 if not found */
 int position_in_vector(const ScriptValueP& of, const ScriptValueP& in, const ScriptValueP& order_by, const ScriptValueP& filter) {
   ScriptType of_t = of->type(), in_t = in->type();
-  if (of_t == SCRIPT_STRING || in_t == SCRIPT_STRING) {
+  if (of_t == SCRIPT_STRING && in_t == SCRIPT_STRING) {
     // string finding
-    return (int)of->toString().find(in->toString()); // (int)npos == -1
+    return (int)in->toString().find(of->toString()); // (int)npos == -1
   } else if (order_by || filter) {
     ScriptObject<Set*>*  s = dynamic_cast<ScriptObject<Set*>* >(in.get());
     ScriptObject<CardP>* c = dynamic_cast<ScriptObject<CardP>*>(of.get());
