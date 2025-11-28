@@ -40,6 +40,9 @@ IMPLEMENT_REFLECTION(ChoiceField) {
 
 void ChoiceField::after_reading(Version ver) {
   Field::after_reading(ver);
+  if (choices->choices.size() < 1) {
+    choices->choices.push_back(make_intrusive<Choice>(name));
+  }
   choices->initIds();
 }
 // ----------------------------------------------------------------------------- : ChoiceField::Choice

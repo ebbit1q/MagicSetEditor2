@@ -67,6 +67,10 @@ IMPLEMENT_REFLECTION(Game) {
 }
 
 void Game::validate(Version v) {
+  // check that we have at least one card field
+  if (card_fields.size() < 1) {
+    throw Error(_ERROR_1_("no card fields", name()));
+  }
   Packaged::validate(v);
   // automatic statistics dimensions
   {

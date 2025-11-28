@@ -78,7 +78,7 @@ void NewSetWindow::onGameSelect(wxCommandEvent&) {
   GameP game = game_list->getSelection<Game>(false);
   //handle_pending_errors(); // errors are ignored until set window is shown
   settings.default_game = game->name();
-  stylesheet_list->showData<StyleSheet>(game->name() + _("-*"));
+  stylesheet_list->showData<StyleSheet>(game->name() + _("*"));
   stylesheet_list->select(settings.gameSettingsFor(*game).default_stylesheet);
   UpdateWindowUI(wxUPDATE_UI_RECURSE);
   // resize (yuck)
