@@ -754,7 +754,7 @@ SCRIPT_FUNCTION(get_card_stylesheet) {
   ScriptObject<CardP>* c = dynamic_cast<ScriptObject<CardP>*>(input.get());
   ScriptObject<Set*>* s = dynamic_cast<ScriptObject<Set*>*>(set.get());
   if (s && c) {
-    return to_script(&s->getValue()->stylesheetFor(c->getValue()));
+    return to_script(s->getValue()->stylesheetForP(c->getValue()));
   }
   throw ScriptError(_("invalid set or card argument"));
 }
@@ -777,8 +777,8 @@ SCRIPT_FUNCTION(get_card_from_link) {
                card->linked_relation_2 == trimmed_input ? card->linked_card_2 :
                card->linked_relation_3 == trimmed_input ? card->linked_card_3 :
                card->linked_relation_4 == trimmed_input ? card->linked_card_4 :
-               wxEmptyString;
-  if (uid == wxEmptyString) return script_nil;
+               _("");
+  if (uid.empty()) return script_nil;
   FOR_EACH(other_card, set->cards) {
     if (other_card->uid == uid) SCRIPT_RETURN(other_card);
   }
