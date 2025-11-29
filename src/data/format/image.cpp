@@ -143,6 +143,7 @@ Image export_image(const SetP& set, const CardP& card, const double zoom, const 
   IndexMap<FieldP, ValueP>& card_data = card->data;
   boost::json::object& cardv = mse_to_json(card, set.get());
   boost::json::object& cardv_data = cardv["data"].as_object();
+  if (!settings.stylesheetSettingsFor(set->stylesheetFor(card)).card_notes_export()) cardv["notes"] = "";
   for(IndexMap<FieldP, ValueP>::iterator it = card_data.begin() ; it != card_data.end() ; ++it) {
     ImageValue* value = dynamic_cast<ImageValue*>(it->get());
     if (value && !value->filename.empty()) {
@@ -172,6 +173,7 @@ Image export_image(const SetP& set, const vector<CardP>& cards, bool scale_to_lo
     IndexMap<FieldP, ValueP>& card_data = card->data;
     boost::json::object& cardv = mse_to_json(card, set.get());
     boost::json::object& cardv_data = cardv["data"].as_object();
+    if (!settings.stylesheetSettingsFor(set->stylesheetFor(card)).card_notes_export()) cardv["notes"] = "";
     for(IndexMap<FieldP, ValueP>::iterator it = card_data.begin() ; it != card_data.end() ; ++it) {
       ImageValue* value = dynamic_cast<ImageValue*>(it->get());
       if (value && !value->filename.empty()) {

@@ -93,6 +93,9 @@ void PackageList::showData(const String& pattern) {
     Bitmap bmp;
     if (stream && image_load_file(img, *stream)) {
       bmp = Bitmap(img);
+      if (bmp.GetWidth() > 150 || bmp.GetHeight() > 150) {
+        queue_message(MESSAGE_WARNING, _ERROR_1_("icon too large", p->relativeFilename()));
+      }
     }
     // add to list
     packages.push_back(PackageData(p, bmp));
