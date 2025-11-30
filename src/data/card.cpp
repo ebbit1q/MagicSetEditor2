@@ -21,7 +21,7 @@
 // ----------------------------------------------------------------------------- : Card
 
 Card::Card()
-    // for files made before we saved these, set the time to 'yesterday', generate a uid
+// for files made before we saved these, set the time to 'yesterday', generate a uid
   : time_created (wxDateTime::Now().Subtract(wxDateSpan::Day()).ResetTime())
   , time_modified(wxDateTime::Now().Subtract(wxDateSpan::Day()).ResetTime())
   , uid(generate_uid())
@@ -80,7 +80,7 @@ void Card::link(const Set& set, const vector<CardP>& linked_cards, const String&
     if (
       this_linked_uid.empty() ||                                // Not a reference
       all_existing_uids.find(this_linked_uid) == all_existing_uids.end() // Reference to nonexistent card
-    ) free_link_count++;
+      ) free_link_count++;
   }
   if (free_link_count < linked_cards.size()) {
     queue_message(MESSAGE_WARNING, _ERROR_("not enough free links"));
@@ -265,7 +265,7 @@ void Card::updateLink(String old_uid, String new_uid) {
   }
 }
 
-vector<pair<CardP, String>> Card::getLinkedCards(const Set& set) {
+vector<pair<CardP, String>> Card::getLinkedCards(const vector<CardP>& cards) {
   unordered_map<String, String> links{
     { linked_card_1, linked_relation_1 },
     { linked_card_2, linked_relation_2 },
@@ -273,12 +273,30 @@ vector<pair<CardP, String>> Card::getLinkedCards(const Set& set) {
     { linked_card_4, linked_relation_4 }
   };
   vector<pair<CardP, String>> linked_cards;
-  FOR_EACH(other_card, set.cards) {
+  FOR_EACH(other_card, cards) {
     if (links.find(other_card->uid) != links.end()) {
       linked_cards.push_back(make_pair(other_card, links.at(other_card->uid)));
     }
   }
   return linked_cards;
+}
+vector<pair<CardP, String>> Card::getLinkedCards(const Set& set) {
+  return getLinkedCards(set.cards);
+}
+
+CardP Card::getOtherFace(const vector<CardP>& cards) {
+  unordered_set<String> faces;
+  if (linked_relation_1 == _("Front Face") || linked_relation_1 == _("Back Face")) faces.emplace(linked_card_1);
+  if (linked_relation_2 == _("Front Face") || linked_relation_2 == _("Back Face")) faces.emplace(linked_card_2);
+  if (linked_relation_3 == _("Front Face") || linked_relation_3 == _("Back Face")) faces.emplace(linked_card_3);
+  if (linked_relation_4 == _("Front Face") || linked_relation_4 == _("Back Face")) faces.emplace(linked_card_4);
+  FOR_EACH(other_card, cards) {
+    if (faces.find(other_card->uid) != faces.end()) return other_card;
+  }
+  return nullptr;
+}
+CardP Card::getOtherFace(const Set& set) {
+  return getOtherFace(set.cards);
 }
 
 IndexMap<FieldP, ValueP>& Card::extraDataFor(const StyleSheet& stylesheet) {

@@ -25,6 +25,7 @@ CardLinkWindow::CardLinkWindow(Window* parent, const SetP& set, const CardP& sel
   linked_relation = new wxTextCtrl(this, wxID_ANY, _(""));
   relation_type = new wxChoice(this, ID_CARD_LINK_TYPE, wxDefaultPosition, wxDefaultSize, 0, nullptr);
   relation_type->Clear();
+  relation_type->Append("Front Face // Back Face");
   FOR_EACH(link, set->game->card_links) {
     relation_type->Append(link);
   }
@@ -38,18 +39,18 @@ CardLinkWindow::CardLinkWindow(Window* parent, const SetP& set, const CardP& sel
   // init sizers
   if (sizer) {
     wxSizer* s = new wxBoxSizer(wxVERTICAL);
-      s->Add(new wxStaticText(this, -1, _LABEL_("linked cards relation")), 0, wxALL, 8);
-      s->Add(relation_type, 0, wxEXPAND | (wxALL & ~wxTOP), 8);
-      s->Add(new wxStaticText(this, -1, _("  ") + _LABEL_("selected card")), 0, wxALL, 4);
-      s->Add(selected_relation, 0, wxEXPAND | (wxALL & ~wxTOP), 8);
-      s->Add(new wxStaticText(this, -1, _("  ") + _LABEL_("linked cards")), 0, wxALL, 4);
-      s->Add(linked_relation, 0, wxEXPAND | (wxALL & ~wxTOP), 8);
-      s->Add(new wxStaticText(this, wxID_ANY, _LABEL_("select linked cards")), 0, wxALL & ~wxBOTTOM, 8);
-      s->Add(list, 1, wxEXPAND | wxALL, 8);
-      wxSizer* s2 = new wxBoxSizer(wxHORIZONTAL);
-        s2->Add(sel_none, 0, wxEXPAND | wxRIGHT, 8);
-        s2->Add(CreateButtonSizer(wxOK | wxCANCEL), 1, wxEXPAND, 8);
-      s->Add(s2, 0, wxEXPAND | (wxALL & ~wxTOP), 8);
+    s->Add(new wxStaticText(this, -1, _LABEL_("linked cards relation")), 0, wxALL, 8);
+    s->Add(relation_type, 0, wxEXPAND | (wxALL & ~wxTOP), 8);
+    s->Add(new wxStaticText(this, -1, _("  ") + _LABEL_("selected card")), 0, wxALL, 4);
+    s->Add(selected_relation, 0, wxEXPAND | (wxALL & ~wxTOP), 8);
+    s->Add(new wxStaticText(this, -1, _("  ") + _LABEL_("linked cards")), 0, wxALL, 4);
+    s->Add(linked_relation, 0, wxEXPAND | (wxALL & ~wxTOP), 8);
+    s->Add(new wxStaticText(this, wxID_ANY, _LABEL_("select linked cards")), 0, wxALL & ~wxBOTTOM, 8);
+    s->Add(list, 1, wxEXPAND | wxALL, 8);
+    wxSizer* s2 = new wxBoxSizer(wxHORIZONTAL);
+    s2->Add(sel_none, 0, wxEXPAND | wxRIGHT, 8);
+    s2->Add(CreateButtonSizer(wxOK | wxCANCEL), 1, wxEXPAND, 8);
+    s->Add(s2, 0, wxEXPAND | (wxALL & ~wxTOP), 8);
     s->SetSizeHints(this);
     SetSizer(s);
     SetSize(600,500);
@@ -105,7 +106,7 @@ void CardLinkWindow::onOk(wxCommandEvent&) {
 }
 
 BEGIN_EVENT_TABLE(CardLinkWindow, wxDialog)
-  EVT_BUTTON       (ID_SELECT_NONE, CardLinkWindow::onSelectNone)
-  EVT_BUTTON       (wxID_OK, CardLinkWindow::onOk)
-  EVT_CHOICE       (ID_CARD_LINK_TYPE, CardLinkWindow::onRelationTypeChange)
+EVT_BUTTON       (ID_SELECT_NONE, CardLinkWindow::onSelectNone)
+EVT_BUTTON       (wxID_OK, CardLinkWindow::onOk)
+EVT_CHOICE       (ID_CARD_LINK_TYPE, CardLinkWindow::onRelationTypeChange)
 END_EVENT_TABLE  ()

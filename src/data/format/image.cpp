@@ -143,12 +143,13 @@ Image export_image(const SetP& set, const CardP& card, const double zoom, const 
   IndexMap<FieldP, ValueP>& card_data = card->data;
   boost::json::object& cardv = mse_to_json(card, set.get());
   boost::json::object& cardv_data = cardv["data"].as_object();
-  if (!settings.stylesheetSettingsFor(set->stylesheetFor(card)).card_notes_export()) cardv["notes"] = "";
+  StyleSheetP stylesheet = set->stylesheetForP(card);
+  if (!settings.stylesheetSettingsFor(*stylesheet).card_notes_export()) cardv["notes"] = "";
   for(IndexMap<FieldP, ValueP>::iterator it = card_data.begin() ; it != card_data.end() ; ++it) {
     ImageValue* value = dynamic_cast<ImageValue*>(it->get());
     if (value && !value->filename.empty()) {
       FieldP field = (*it)->fieldP;
-      StyleP style = set->stylesheetFor(card).card_style.at(field->index);
+      StyleP style = stylesheet->card_style.at(field->index);
       if (style) {
         style->update(set->getContext(card));
         std::string rect = style->getExternalRectString(zoom, 0).ToStdString();
@@ -173,12 +174,12 @@ Image export_image(const SetP& set, const vector<CardP>& cards, bool scale_to_lo
     IndexMap<FieldP, ValueP>& card_data = card->data;
     boost::json::object& cardv = mse_to_json(card, set.get());
     boost::json::object& cardv_data = cardv["data"].as_object();
-    if (!settings.stylesheetSettingsFor(set->stylesheetFor(card)).card_notes_export()) cardv["notes"] = "";
+    StyleSheetP stylesheet = set->stylesheetForP(card);
+    if (!settings.stylesheetSettingsFor(*stylesheet).card_notes_export()) cardv["notes"] = "";
     for(IndexMap<FieldP, ValueP>::iterator it = card_data.begin() ; it != card_data.end() ; ++it) {
       ImageValue* value = dynamic_cast<ImageValue*>(it->get());
       if (value && !value->filename.empty()) {
         FieldP field = (*it)->fieldP;
-        StyleSheetP stylesheet = set->stylesheetForP(card);
         StyleP style = stylesheet->card_style.at(field->index);
         if (style) {
           style->update(set->getContext(card));
@@ -197,11 +198,11 @@ Image export_image(const SetP& set, const vector<CardP>& cards, bool scale_to_lo
 void export_image(const SetP& set, const CardP& card, const String& filename) {
   Image img = export_image(set, card);
   img.SaveFile(filename); // can't use Bitmap::saveFile, it wants to know the file type
-                          // but image.saveFile determines it automagicly
+  // but image.saveFile determines it automagicly
 }
 
 void export_image(const SetP& set, const vector<CardP>& cards,
-                   const String& path, const String& filename_template, FilenameConflicts conflicts)
+  const String& path, const String& filename_template, FilenameConflicts conflicts)
 {
   wxBusyCursor busy;
   // Script

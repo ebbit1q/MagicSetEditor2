@@ -44,10 +44,8 @@ public:
   RealSize threshold_size;
 
   struct CardLayout {
-    CardLayout(const CardP& card, const RealSize& size_mm, const RealSize& size_px, Radians rot)
-    : card(card), size_mm(size_mm), size_px(size_px), rot(rot) {
-      px_per_mm = RealSize(size_px.width / size_mm.width, size_px.height / size_mm.height);
-    }
+    CardLayout(const CardP& card, const RealSize& size_mm, const RealSize& size_px, const Radians& rotation)
+    : card(card), size_mm(size_mm), size_px(size_px), rot(rotation), other_face(-1) {}
 
     bool operator<(const CardLayout& that) const {
       return size_mm.width > that.size_mm.width; // put the widest cards first
@@ -56,15 +54,16 @@ public:
     CardP card;
     RealSize size_mm;
     RealSize size_px;
-    RealSize px_per_mm;
     Radians rot;
     RealSize pos;
+    int other_face;
   };
 
   void init(const RealSize& page_size);
 
   RealSize page_size;                      ///< Size of a page in millimetres
   vector<CardLayout> card_layouts;         ///< Locations of the cards on the pages
+  vector<CardLayout> sorted_layouts;       ///< Same as card_layouts, but sorted from widest to narrowest
   vector<vector<CardLayout>> page_layouts; ///< The CardLayout grouped by page
   vector<RealSize> page_margins;           ///< The empty space on the sides of the pages
 
@@ -74,6 +73,7 @@ public:
 private:
   // calculate the width and height of each card in millimeters
   void measure_cards();
+  CardLayout measure_card(const CardP& card);
   // calculate where the cards go on the pages
   void layout_cards();
   // if two cards are almost aligned, align them
