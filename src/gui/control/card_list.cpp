@@ -7,6 +7,7 @@
 // ----------------------------------------------------------------------------- : Includes
 
 #include <util/prec.hpp>
+#include <util/uid.hpp>
 #include <gui/control/card_list.hpp>
 #include <gui/control/card_list_column_select.hpp>
 #include <gui/set/window.hpp> // for sorting all cardlists in a window
@@ -163,7 +164,7 @@ bool CardListBase::doCopy() {
   if (cards_to_copy.empty()) return false;
   // put on clipboard
   if (!wxTheClipboard->Open()) return false;
-  bool ok = wxTheClipboard->SetData(new CardsOnClipboard(set, cards_to_copy)); // ignore result
+  bool ok = wxTheClipboard->SetData(new CardsOnClipboard(set, _(""), cards_to_copy)); // ignore result
   wxTheClipboard->Close();
   return ok;
 }
@@ -189,7 +190,7 @@ bool CardListBase::doCopyCardAndLinkedCards() {
       }
     }
   }
-  bool ok = wxTheClipboard->SetData(new CardsOnClipboard(set, cards_to_copy)); // ignore result
+  bool ok = wxTheClipboard->SetData(new CardsOnClipboard(set, _(""), cards_to_copy)); // ignore result
   wxTheClipboard->Close();
   return ok;
 }
@@ -199,7 +200,7 @@ bool CardListBase::doPaste() {
   if (!wxTheClipboard->Open()) return false;
   bool ok = wxTheClipboard->GetData(*drop_target->data_object);
   wxTheClipboard->Close();
-  if (ok) return parseData();
+  if (ok) return parseData(false);
   return false;
 }
 
@@ -328,14 +329,15 @@ bool CardListBase::parseText(String& text, vector<CardP>& out) {
   return j < out.size();
 }
 
-bool CardListBase::parseData() {
+bool CardListBase::parseData(bool ignore_cards_from_own_card_list) {
   wxBusyCursor wait;
   wxDataFormat format = drop_target->data_object->GetReceivedFormat();
   wxDataObject *data = drop_target->data_object->GetObject(format);
   vector<CardP> new_cards;
 
   if (CardsDataObject* card_data = dynamic_cast<CardsDataObject*>(data)) {
-    card_data->getCards(set, new_cards);
+    String id = ignore_cards_from_own_card_list ? drop_target->ignored_id : _("");
+    card_data->getCards(set, id, new_cards);
   }
   else switch (format.GetType())
   {
@@ -596,7 +598,9 @@ void CardListBase::onChar(wxKeyEvent& ev) {
 void CardListBase::onBeginDrag(wxListEvent&) {
   vector<CardP> cards;
   getSelection(cards);
-  CardsOnClipboard* card_data = new CardsOnClipboard(set, cards);
+  String transaction_id = generate_uid();
+  CardsOnClipboard* card_data = new CardsOnClipboard(set, transaction_id, cards);
+  drop_target->ignored_id = transaction_id;
   wxDropSource drag_source(this);
   drag_source.SetData(*card_data);
   drag_source.DoDragDrop(wxDrag_CopyOnly);
@@ -645,7 +649,7 @@ void CardListBase::onItemActivate(wxListEvent& ev) {
 // ----------------------------------------------------------------------------- : CardListDropTarget
 
 CardListDropTarget::CardListDropTarget(CardListBase* card_list)
-  : card_list(card_list)
+  : card_list(card_list), ignored_id(_(""))
 {
   data_object = new wxDataObjectComposite();
   data_object->Add(new CardsDataObject(), true);
@@ -659,7 +663,7 @@ CardListDropTarget::~CardListDropTarget() {}
 
 wxDragResult CardListDropTarget::OnData(wxCoord x, wxCoord y, wxDragResult defaultDragResult) {
   if (!GetData()) return wxDragNone;
-  if (!card_list->parseData()) return wxDragError;
+  if (!card_list->parseData(true)) return wxDragError;
   return wxDragCopy;
 }
 

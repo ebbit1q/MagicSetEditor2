@@ -86,7 +86,7 @@ public:
   bool doAddJSON();
 
   // Look for cards inside some given data
-  bool parseData();
+  bool parseData(bool ignore_cards_from_own_card_list);
   bool parseUrl  (String& url,              vector<CardP>& out);
   bool parseFiles(wxArrayString& filenames, vector<CardP>& out);
   bool parseText (String& text,             vector<CardP>& out);
@@ -178,6 +178,8 @@ public:
   wxDragResult OnData(wxCoord x, wxCoord y, wxDragResult defaultDragResult) override;
 
   wxDataObjectComposite* data_object; ///< the object that acquires the data from the Clipboard or a Drag'n'Drop
+
+  String                 ignored_id;  ///< the id of the transaction we need to ignore (the one coming from our own card_list)
 private:
   CardListBase*          card_list;   ///< the card list we are the drop target of
 };

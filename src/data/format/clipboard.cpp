@@ -45,6 +45,7 @@ void deserialize_from_clipboard(T& object, Package& package, const String& data)
 struct WrappedCards {
   Game*         expected_game;
   String        game_name;
+  String        id;
   vector<CardP> cards;
   
   DECLARE_REFLECTION();
@@ -52,6 +53,7 @@ struct WrappedCards {
 
 IMPLEMENT_REFLECTION(WrappedCards) {
   REFLECT(game_name);
+  REFLECT(id);
   if (game_name == expected_game->name()) {
     WITH_DYNAMIC_ARG(game_for_reading, expected_game);
     REFLECT(cards);
@@ -61,7 +63,7 @@ IMPLEMENT_REFLECTION(WrappedCards) {
 
 wxDataFormat CardsDataObject::format = _("application/x-mse-cards");
 
-CardsDataObject::CardsDataObject(const SetP& set, const vector<CardP>& cards) {
+CardsDataObject::CardsDataObject(const SetP& set, const String id, const vector<CardP>& cards) {
   // set the stylesheet, so when deserializing we know whos style options we are reading
   vector<bool> has_styling;
   for (size_t i = 0 ; i < cards.size() ; ++i) {
@@ -70,7 +72,7 @@ CardsDataObject::CardsDataObject(const SetP& set, const vector<CardP>& cards) {
       cards[i]->stylesheet = set->stylesheet;
     }
   }
-  WrappedCards data = { set->game.get(), set->game->name(), cards };
+  WrappedCards data = { set->game.get(), set->game->name(), id, cards };
   SetText(serialize_for_clipboard(*set, data));
   // restore cards
   for (size_t i = 0 ; i < cards.size() ; ++i) {
@@ -85,10 +87,11 @@ CardsDataObject::CardsDataObject() {
   SetFormat(format);
 }
 
-bool CardsDataObject::getCards(const SetP& set, vector<CardP>& out) {
+bool CardsDataObject::getCards(const SetP& set, const String id, vector<CardP>& out) {
   WrappedCards data = { set->game.get(), set->game->name() };
   deserialize_from_clipboard(data, *set, GetText());
   if (data.cards.empty()) return false;
+  if (!id.empty() && data.id == id) return false;
   if (data.game_name == set->game->name()) {
     // Cards are from the same game
     out = data.cards;
@@ -140,7 +143,7 @@ KeywordP KeywordDataObject::getKeyword(const SetP& set) {
 
 // ----------------------------------------------------------------------------- : Card on clipboard
 
-CardsOnClipboard::CardsOnClipboard(const SetP& set, const vector<CardP>& cards) {
+CardsOnClipboard::CardsOnClipboard(const SetP& set, const String id, const vector<CardP>& cards) {
   // Conversion to image file
   if (cards.size() < 6) {
     Image img;
@@ -157,5 +160,5 @@ CardsOnClipboard::CardsOnClipboard(const SetP& set, const vector<CardP>& cards) 
     Add(data);
   }
   // Conversion to serialized card format
-  Add(new CardsDataObject(set, cards), true);
+  Add(new CardsDataObject(set, id, cards), true);
 }
