@@ -52,6 +52,7 @@ IMPLEMENT_REFLECTION(Field) {
   REFLECT_LOCALIZED(caption);
   REFLECT_LOCALIZED(description); // FIXME: This field is both unused and uninitialized.
   REFLECT_N("icon", icon_filename);
+  REFLECT_N("dark_icon", dark_icon_filename);
   REFLECT(editable);
   REFLECT(save_value);
   REFLECT(show_statistics);

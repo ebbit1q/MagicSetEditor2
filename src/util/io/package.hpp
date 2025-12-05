@@ -305,15 +305,16 @@ public:
   Packaged();
   virtual ~Packaged() {}
 
-  Version version;      ///< Version number of this package
-  Version compatible_version;  ///< Earliest version number this package is compatible with
-  String installer_group;    ///< Group to place this package in in the installer
-  String short_name;      ///< Short name of this package
-  String full_name;      ///< Name of this package, for menus etc.
-  String folder_name;      ///< Name of the folder this package is loaded from.
-  String icon_filename;    ///< Filename of icon to use in package lists
-  vector<PackageDependencyP> dependencies;  ///< Dependencies of this package
-  int    position_hint;    ///< A hint for the package list
+  Version version;                         ///< Version number of this package
+  Version compatible_version;              ///< Earliest version number this package is compatible with
+  String installer_group;                  ///< Group to place this package in in the installer
+  String short_name;                       ///< Short name of this package
+  String full_name;                        ///< Name of this package, for menus etc.
+  String folder_name;                      ///< Name of the folder this package is loaded from.
+  String icon_filename;                    ///< Filename of icon to use in package lists
+  String dark_icon_filename;               ///< Filename of icon to use in package lists, when a variant for dark mode is needed
+  vector<PackageDependencyP> dependencies; ///< Dependencies of this package
+  int    position_hint;                    ///< A hint for the package list
 
   /// Get an input stream for the package icon, if there is any
   unique_ptr<wxInputStream> openIconFile();

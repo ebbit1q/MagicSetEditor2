@@ -60,16 +60,17 @@ public:
   PackageDescription();
   PackageDescription(const Packaged& package);
   
-  String name;        ///< Filename of the package
-  Version version;      ///< Version number of this package
-  String short_name;      ///< Short name of this package
-  String full_name;      ///< Name of this package, for menus etc.
-  String icon_url;      ///< Filename or URL of icon to use in package lists
-  Image  icon;        ///< Icon for the package
-  String installer_group;    ///< Where to put this package in the installer
-  int    position_hint;    ///< A hint for the package list
-  String description;      ///< Changelog/description
-  vector<PackageDependencyP> dependencies;  ///< Dependencies of this package
+  String name;                             ///< Filename of the package
+  Version version;                         ///< Version number of this package
+  String short_name;                       ///< Short name of this package
+  String full_name;                        ///< Name of this package, for menus etc.
+  String icon_url;                         ///< Filename or URL of icon to use in package lists
+  String dark_icon_url;                    ///< Filename or URL of icon to use in package lists
+  Image  icon;                             ///< Icon for the package
+  String installer_group;                  ///< Where to put this package in the installer
+  int    position_hint;                    ///< A hint for the package list
+  String description;                      ///< Changelog/description
+  vector<PackageDependencyP> dependencies; ///< Dependencies of this package
   
   /// Merge two descriptions a package. This package takes precedence
   /** Usually one of the descriptions will refer to the locally installed one, the other to the new one */

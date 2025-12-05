@@ -572,6 +572,7 @@ IMPLEMENT_REFLECTION(Packaged) {
   REFLECT(full_name);
   REFLECT(folder_name);
   REFLECT_N("icon", icon_filename);
+  REFLECT_N("dark_icon", dark_icon_filename);
   REFLECT_NO_SCRIPT(position_hint);
   REFLECT(installer_group);
   REFLECT(version);
@@ -585,8 +586,17 @@ Packaged::Packaged()
 {}
 
 unique_ptr<wxInputStream> Packaged::openIconFile() {
-  if (!icon_filename.empty()) {
-    return openIn(icon_filename);
+  String filename = icon_filename;
+  if (!dark_icon_filename.empty()) {
+    if (settings.darkMode()) {
+      wxFileName fn (dark_icon_filename);
+      String extension = fn.GetExt();
+      filename = dark_icon_filename.Replace(extension, _("")) + "_dark" + extension;
+    }
+    else filename = dark_icon_filename;
+  }
+  if (!filename.empty()) {
+    return openIn(filename);
   } else {
     return unique_ptr<wxInputStream>();
   }

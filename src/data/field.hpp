@@ -48,6 +48,7 @@ public:
   LocalizedString caption;                   ///< Caption for NativeLookEditor
   LocalizedString description;               ///< Description, used in status bar
   String          icon_filename;             ///< Filename for an icon (for list of fields)
+  String          dark_icon_filename;        ///< Filename for an icon (for list of fields) when a variant for dark mode is necessary
   bool            editable;                  ///< Can values of this field be edited?
   bool            save_value;                ///< Should values of this field be written to files? Can be false for script generated fields.
   bool            show_statistics;           ///< Should this field appear as a group by choice in the statistics panel?
