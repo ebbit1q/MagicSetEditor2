@@ -541,6 +541,7 @@ label:
 	bulk modify predicate example:		Esempio (creature minuscole di M:tG):
 	bulk modify field:					Quale valore deve essere modificato:
 	bulk modify mod description:		Quale deve essere il nuovo valore:
+	web request address:				Recupero dati dal seguente URL:
 
 	# open dialogs
 	all files:							Tutti i file
@@ -565,6 +566,10 @@ label:
 	# preferences dialog
 	language:							Lingua
 	windows:							Set aperti
+	dark mode:							Modalità scura
+	dark mode system:					Utilizza impostazioni di sistema
+	dark mode no:						Modalità chiara
+	dark mode yes:						Modalità scura
 	app language:						Lingua dell'interfaccia (App Language)
 	card display:						Visualizza Carta
 	storage:							Magazzinaggio
@@ -740,6 +745,9 @@ button:
 	rotation export:
 		Utilizza l'impostazione di rotazione del
 		visualizzatore durante l'esportazione
+	notes export:
+		Esporta note della carta all'interno
+		dei metadati dell'immagine
 	spellcheck enabled:					Mostra gli errori di ortografia sulle carte
 	check now:							Controlla ora (&N)
 	always:								Sempre
@@ -807,6 +815,7 @@ title:
 	select stylesheet:					Seleziona stile
 	link cards:							Collega Delle Carte Alla Carta Selezionata
 	bulk modify:						Modifica di carte in blocco
+	web request:						Richiesta Web in corso
 
 	#preferences
 	preferences:						Preferenze
@@ -925,6 +934,7 @@ error:
 		Il pacchetto '%s' utilizza file dal pacchetto '%s', a non ha una dipendenza.
 		Per risolvere questo problema, aggiungere:
 		  depends on: %s %s
+	icon too large:						Il file immagine dell'icona per il pacchetto '%s' è troppo grande. Dovrebbe essere di massimo 105x105 pixel.
 
 	# image import
 	import not found:					File non trovato: '%s'
@@ -942,7 +952,6 @@ error:
 	cant set symbol value:				È possibile impostare il valore del simbolo solo con un nome file relativo dall'interno del pacchetto, nel campo denominato '%s'
 	add card csv file not found:		Impossibile trovare o caricare il file CSV o TSV
 	add card csv file malformed:		File CSV o TSV non valido, la riga '%s' non ha lo stesso numero di voci della prima riga
-	add card json failed to parse:		Impossibile analizzare il file JSON
 	add card json path not valid:		Il percorso all'interno del file JSON non è valido
 	add card json empty array:			L'elenco carte nel file JSON è vuoto
 	add card json file not found:		Impossibile trovare o caricare il file JSON
@@ -976,6 +985,7 @@ error:
 	# image stuff
 	coordinates for blending overlap:	Coordinate per sovrapposizione
 	images used for blending must have the same size:	Le immagini sovrapposte devono avere le stesse misure
+	no card fields:						Il gioco '%s' non ha campi carta. Definisci almeno un campo carta.
 
 	# error from files
 	no game specified:					Nessun gioco specificato per il %s
@@ -1014,6 +1024,10 @@ error:
 	bulk modify predicate is not bool:	Il criterio non restituisce un valore booleano
 	bulk modify mod is not string:		La modifica non restituisce un valore string
 	bulk modify no cards:				Nessuna carta da modificare
+	web request failed:					Richiesta Web non riuscita
+	web request cant create:			Impossibile creare l'oggetto della richiesta Web
+	web request corrupted:				Download riuscito, ma i dati sono danneggiati
+	web request unsupported format:		Download riuscito, ma i dati sono in un formato non supportato
 
 	# stats panel
 	dimension not found:				Non c'è dimensione di statistiche '%s'

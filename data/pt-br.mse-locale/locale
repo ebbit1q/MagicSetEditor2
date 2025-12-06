@@ -542,6 +542,7 @@ label:
 	bulk modify predicate example:		Exemplo (criaturas minúsculas de M:tG):
 	bulk modify field:					Qual valor deve ser modificado:
 	bulk modify mod description:		Qual deve ser o novo valor:
+	web request address:				Obtendo dados da seguinte URL:
 
 	# open dialogs
 	all files:							Todos os arquivos
@@ -566,6 +567,10 @@ label:
 	# preferences dialog
 	language:							Linguagem
 	windows:							Abrir Edição
+	dark mode:							Modo Escuro
+	dark mode system:					Usar configuração do sistema
+	dark mode no:						Modo Claro
+	dark mode yes:						Modo Escuro
 	app language:						Linguagem da sua interface (App Language)
 	card display:						Visualização do Card
 	storage:							Armazenar
@@ -741,6 +746,9 @@ button:
 	rotation export:
 		Usar a configuração de rotação
 		do Visualizador ao exportar
+	notes export:
+		Exportar notas do Card dentro
+		dos metadados da imagem
 	spellcheck enabled:					Mostra erro&s de ortografia nos Cards
 	check now:							Proucurar Agor&a
 	always:								Futuramente
@@ -808,6 +816,7 @@ title:
 	select stylesheet:					Selecionar o Estilo Moderno
 	link cards:							Vincular Cards ao Card selecionado
 	bulk modify:						Modificação de Cards em massa
+	web request:						Emitindo solicitação da Web
 
 	#preferences
 	preferences:						Preferências
@@ -926,6 +935,7 @@ error:
 			O pacote '%s' usa arquivos do pacote'%s', mas não está na lista dependência.
 		Para resolver isto, adicione:
 		  depende de: %s %s
+	icon too large:						O arquivo de imagem do ícone para o pacote '%s' é muito grande. Ele deve ter no máximo 105x105 pixels.
 
 	# image import
 	import not found:					Arquivo não encontrado: '%s'
@@ -943,7 +953,6 @@ error:
 	cant set symbol value:				É possível definir o valor do símbolo apenas com um nome de arquivo relativo de dentro do pacote, no campo chamado '%s'
 	add card csv file not found:		Não foi possível encontrar ou carregar o arquivo CSV ou TSV
 	add card csv file malformed:		Arquivo CSV ou TSV com formato incorreto, a linha '%s' não possui o mesmo número de entradas que a primeira linha
-	add card json failed to parse:		Falha ao analisar o arquivo JSON
 	add card json path not valid:		Caminho dentro do arquivo JSON inválido
 	add card json empty array:			Lista de Cards no arquivo JSON vazia
 	add card json file not found:		Não foi possível encontrar ou carregar o arquivo JSON
@@ -977,6 +986,7 @@ error:
 	# image stuff
 	coordinates for blending overlap:	Cordenadas para mistura sobreposição
 	images used for blending must have the same size:	Imagens utilizados para a mistura deve ter o mesmo tamanho
+	no card fields:						O jogo '%s' não possui campos de Card. Defina pelo menos um campo de Card.
 
 	# error from files
 	no game specified:					Não há jogo especificado para o %s
@@ -1016,6 +1026,10 @@ error:
 	bulk modify predicate is not bool:	O critério não é avaliado como um booleano
 	bulk modify mod is not string:		A modificação não é avaliada como uma string
 	bulk modify no cards:				Nenhum Card para modificar
+	web request failed:					Falha na solicitação da Web
+	web request cant create:			Não foi possível criar o objeto de solicitação da Web
+	web request corrupted:				Download concluído com sucesso, mas os dados estão corrompidos
+	web request unsupported format:		Download concluído com sucesso, mas os dados estão em um formato não compatível
 
 	# stats panel
 	dimension not found:				Não há estatísticas de dimensões '%s'
