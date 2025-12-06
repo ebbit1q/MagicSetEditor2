@@ -101,7 +101,9 @@ $built_in_functions = array(
 	// cards
 	'new_card'		=>'',
 	'has_link'		=>'',
-	'get_card_from_link'		=>'',
+	'get_front_face'		=>'',
+	'get_back_face'		=>'',
+	'get_cards_from_link'		=>'',
 	'get_card_from_uid'		=>'',
 	'get_card_styling'		=>'',
 	'get_card_stylesheet'		=>'',

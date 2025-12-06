@@ -768,19 +768,147 @@ SCRIPT_FUNCTION(get_card_from_uid) {
   return script_nil;
 }
 
-SCRIPT_FUNCTION(get_card_from_link) {
+SCRIPT_FUNCTION(get_cards_from_link) {
   SCRIPT_PARAM_C(Set*, set);
   SCRIPT_PARAM_C(CardP, card);
   SCRIPT_PARAM_C(String, input);
+  ScriptCustomCollectionP ret(new ScriptCustomCollection());
   String trimmed_input = input.Trim().Trim(false);
-  String uid = card->linked_relation_1 == trimmed_input ? card->linked_card_1 :
-               card->linked_relation_2 == trimmed_input ? card->linked_card_2 :
-               card->linked_relation_3 == trimmed_input ? card->linked_card_3 :
-               card->linked_relation_4 == trimmed_input ? card->linked_card_4 :
-               _("");
-  if (uid.empty()) return script_nil;
-  FOR_EACH(other_card, set->cards) {
-    if (other_card->uid == uid) SCRIPT_RETURN(other_card);
+  if (card->linked_relation_1 == trimmed_input) {
+    String uid = card->linked_card_1;
+    bool found = false;
+    FOR_EACH(other_card, set->cards) {
+      if (other_card->uid == uid) {
+        ret->value.push_back(to_script(other_card));
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      card->linked_relation_1 = _("");
+      card->linked_card_1 = _("");
+    }
+  }
+  if (card->linked_relation_2 == trimmed_input) {
+    String uid = card->linked_card_2;
+    bool found = false;
+    FOR_EACH(other_card, set->cards) {
+      if (other_card->uid == uid) {
+        ret->value.push_back(to_script(other_card));
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      card->linked_relation_2 = _("");
+      card->linked_card_2 = _("");
+    }
+  }
+  if (card->linked_relation_3 == trimmed_input) {
+    String uid = card->linked_card_3;
+    bool found = false;
+    FOR_EACH(other_card, set->cards) {
+      if (other_card->uid == uid) {
+        ret->value.push_back(to_script(other_card));
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      card->linked_relation_3 = _("");
+      card->linked_card_3 = _("");
+    }
+  }
+  if (card->linked_relation_4 == trimmed_input) {
+    String uid = card->linked_card_4;
+    bool found = false;
+    FOR_EACH(other_card, set->cards) {
+      if (other_card->uid == uid) {
+        ret->value.push_back(to_script(other_card));
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      card->linked_relation_4 = _("");
+      card->linked_card_4 = _("");
+    }
+  }
+  return ret;
+}
+
+SCRIPT_FUNCTION(get_front_face) {
+  SCRIPT_PARAM_C(Set*, set);
+  SCRIPT_PARAM_C(CardP, input);
+  if (input->linked_relation_1 == _("Front Face")) {
+    String uid = input->linked_card_1;
+    FOR_EACH(other_card, set->cards) {
+      if (other_card->uid == uid) SCRIPT_RETURN(other_card);
+    }
+    input->linked_relation_1 = _("");
+    input->linked_card_1 = _("");
+  }
+  if (input->linked_relation_2 == _("Front Face")) {
+    String uid = input->linked_card_2;
+    FOR_EACH(other_card, set->cards) {
+      if (other_card->uid == uid) SCRIPT_RETURN(other_card);
+    }
+    input->linked_relation_2 = _("");
+    input->linked_card_2 = _("");
+  }
+  if (input->linked_relation_3 == _("Front Face")) {
+    String uid = input->linked_card_3;
+    FOR_EACH(other_card, set->cards) {
+      if (other_card->uid == uid) SCRIPT_RETURN(other_card);
+    }
+    input->linked_relation_3 = _("");
+    input->linked_card_3 = _("");
+  }
+  if (input->linked_relation_4 == _("Front Face")) {
+    String uid = input->linked_card_4;
+    FOR_EACH(other_card, set->cards) {
+      if (other_card->uid == uid) SCRIPT_RETURN(other_card);
+    }
+    input->linked_relation_4 = _("");
+    input->linked_card_4 = _("");
+  }
+  return script_nil;
+}
+
+SCRIPT_FUNCTION(get_back_face) {
+  SCRIPT_PARAM_C(Set*, set);
+  SCRIPT_PARAM_C(CardP, input);
+  if (input->linked_relation_1 == _("Back Face")) {
+    String uid = input->linked_card_1;
+    FOR_EACH(other_card, set->cards) {
+      if (other_card->uid == uid) SCRIPT_RETURN(other_card);
+    }
+    input->linked_relation_1 = _("");
+    input->linked_card_1 = _("");
+  }
+  if (input->linked_relation_2 == _("Back Face")) {
+    String uid = input->linked_card_2;
+    FOR_EACH(other_card, set->cards) {
+      if (other_card->uid == uid) SCRIPT_RETURN(other_card);
+    }
+    input->linked_relation_2 = _("");
+    input->linked_card_2 = _("");
+  }
+  if (input->linked_relation_3 == _("Back Face")) {
+    String uid = input->linked_card_3;
+    FOR_EACH(other_card, set->cards) {
+      if (other_card->uid == uid) SCRIPT_RETURN(other_card);
+    }
+    input->linked_relation_3 = _("");
+    input->linked_card_3 = _("");
+  }
+  if (input->linked_relation_4 == _("Back Face")) {
+    String uid = input->linked_card_4;
+    FOR_EACH(other_card, set->cards) {
+      if (other_card->uid == uid) SCRIPT_RETURN(other_card);
+    }
+    input->linked_relation_4 = _("");
+    input->linked_card_4 = _("");
   }
   return script_nil;
 }
@@ -941,7 +1069,9 @@ void init_script_basic_functions(Context& ctx) {
   ctx.setVariable(_("random_select"),        script_random_select);
   ctx.setVariable(_("random_select_many"),   script_random_select_many);
   ctx.setVariable(_("get_card_from_uid"),    script_get_card_from_uid);
-  ctx.setVariable(_("get_card_from_link"),   script_get_card_from_link);
+  ctx.setVariable(_("get_cards_from_link"),  script_get_cards_from_link);
+  ctx.setVariable(_("get_back_face"),        script_get_back_face);
+  ctx.setVariable(_("get_front_face"),       script_get_front_face);
   ctx.setVariable(_("has_link"),             script_has_link);
   // keyword
   ctx.setVariable(_("expand_keywords"),      script_expand_keywords);
