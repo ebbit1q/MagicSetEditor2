@@ -199,7 +199,7 @@ void export_image(const SetP& set, const CardP& card, const String& filename) {
   const StyleSheet& stylesheet = set->stylesheetFor(card);
   StyleSheetSettings& stylesheet_settings = settings.stylesheetSettingsFor(stylesheet);
   double zoom = settings.exportZoomSettingsFor(stylesheet);
-  Radians angle = stylesheet_settings.card_normal_export() ? 0.0 : stylesheet_settings.card_angle() / 360.0 * 2.0 * M_PI;
+  Radians angle = stylesheet_settings.card_normal_export() ? 0.0 : deg_to_rad(stylesheet_settings.card_angle());
   Image img = export_image(set, card, zoom, angle);
   img.SaveFile(filename);
 }
