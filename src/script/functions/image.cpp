@@ -35,19 +35,20 @@ SCRIPT_FUNCTION(to_card_image) {
   SCRIPT_PARAM(CardP, input);
   SCRIPT_PARAM_DEFAULT(double, zoom, 100.0);
   SCRIPT_PARAM_DEFAULT(Degrees, angle, 0.0);
+  SCRIPT_PARAM_DEFAULT(double, bleed, 0.0);
   SCRIPT_PARAM_DEFAULT(bool, use_user_settings, false);
   if (use_user_settings) {
-    // Use the User's Preferences for Export Zoom and Angle settings.
-    const StyleSheet& stylesheet = set->stylesheetFor(input);
-    StyleSheetSettings& stylesheet_settings = settings.stylesheetSettingsFor(stylesheet);
-    zoom = settings.exportZoomSettingsFor(stylesheet);
-    angle = stylesheet_settings.card_normal_export() ? 0.0 : deg_to_rad(stylesheet_settings.card_angle());
+    // Use the User's Preferences for Export Zoom, Angle and Bleed settings.
+    Settings::ExportSettings card_settings = settings.exportSettingsFor(set->stylesheetFor(input));
+    zoom =  card_settings.zoom;
+    angle = card_settings.angle_radians;
+    bleed = card_settings.bleed_pixels;
   } else {
-    // Use the provided (or defaulted) Zoom and Angle.
+    // Use the provided (or defaulted) Zoom, Angle and Bleed.
     zoom = zoom / 100.0;
     angle = deg_to_rad(angle);
   }
-  return make_intrusive<ArbitraryImage>(export_image(set, input, zoom, angle));
+  return make_intrusive<ArbitraryImage>(export_image(set, input, true, zoom, angle, bleed));
 }
 
 SCRIPT_FUNCTION(import_image) {

@@ -52,27 +52,25 @@ public:
 private:
   DECLARE_EVENT_TABLE();
   
-  wxCheckBox* high_quality, *borders, *draw_editing, *spellcheck_enabled, *non_normal_export, *notes_export;
+  wxCheckBox* high_quality, *borders, *draw_editing, *spellcheck_enabled;
   
   wxComboBox* zoom;
   int zoom_int;
-  
-  wxChoice* export_zoom;
   
   void onSelectColumns(wxCommandEvent&);
   void onZoomChange(wxCommandEvent&);
   void updateZoom();
 };
 
-class InternalPreferencesPage : public PreferencesPage {
+class TransfersPreferencesPage : public PreferencesPage {
 public:
-  InternalPreferencesPage(Window* parent);
+  TransfersPreferencesPage(Window* parent);
   void store() override;
 
 private:
-  wxCheckBox* internal_image_extension;
+  wxCheckBox* non_normal_export, *bleed_export, *notes_export, *internal_image_extension;
 
-  wxChoice* internal_scale;
+  wxChoice*   export_scale, *import_scale;
 };
 
 // Preferences page for directories of programs
@@ -116,7 +114,7 @@ PreferencesWindow::PreferencesWindow(Window* parent)
   wxNotebook* nb = new wxNotebook(this, ID_NOTEBOOK);
   nb->AddPage(new GlobalPreferencesPage (nb), _TITLE_("global"));
   nb->AddPage(new DisplayPreferencesPage(nb), _TITLE_("display"));
-  nb->AddPage(new InternalPreferencesPage(nb), _TITLE_("internal"));
+  nb->AddPage(new TransfersPreferencesPage(nb), _TITLE_("transfers"));
   nb->AddPage(new DirsPreferencesPage   (nb), _TITLE_("directories"));
   nb->AddPage(new UpdatePreferencesPage (nb), _TITLE_("updates"));
   
@@ -216,34 +214,18 @@ DisplayPreferencesPage::DisplayPreferencesPage(Window* parent)
   borders            = new wxCheckBox(this, wxID_ANY, _BUTTON_("show lines"));
   draw_editing       = new wxCheckBox(this, wxID_ANY, _BUTTON_("show editing hints"));
   spellcheck_enabled = new wxCheckBox(this, wxID_ANY, _BUTTON_("spellcheck enabled"));
-  non_normal_export  = new wxCheckBox(this, wxID_ANY, _BUTTON_("rotation export"));
-  notes_export       = new wxCheckBox(this, wxID_ANY, _BUTTON_("notes export"));
   zoom               = new wxComboBox(this, ID_ZOOM);
-  export_zoom        = new wxChoice  (this, ID_EXPORT_ZOOM);
 
-  //wxButton* columns = new wxButton(this, ID_SELECT_COLUMNS, _BUTTON_("select"));
   // set values
   high_quality->      SetValue( settings.default_stylesheet_settings.card_anti_alias());
   borders->           SetValue( settings.default_stylesheet_settings.card_borders());
   draw_editing->      SetValue( settings.default_stylesheet_settings.card_draw_editing());
   spellcheck_enabled->SetValue( settings.default_stylesheet_settings.card_spellcheck_enabled());
-  non_normal_export-> SetValue(!settings.default_stylesheet_settings.card_normal_export());
-  notes_export->      SetValue( settings.default_stylesheet_settings.card_notes_export());
-    zoom_int = static_cast<int>(settings.default_stylesheet_settings.card_zoom() * 100);
-    zoom->SetValue(String::Format(_("%d%%"),zoom_int));
-    for (int i : Settings::export_zoom_choices) {
-      zoom->Append(String::Format(_("%d%%"), i));
-    }
-
-    export_zoom->Append(_LABEL_("export around 300"));
-    export_zoom->Append(_LABEL_("export force 300"));
-    export_zoom->Append(_LABEL_("export force 150"));
-    for (int i : Settings::export_zoom_choices) {
-      export_zoom->Append(String::Format(_("%d%%"), i));
-    }
-    int default_export_zoom = settings.default_stylesheet_settings.export_zoom_selection();
-    if (default_export_zoom < 0 || default_export_zoom > export_zoom->GetCount() - 1) default_export_zoom = 0;
-    export_zoom->SetSelection(default_export_zoom);
+  zoom_int = static_cast<int>(  settings.default_stylesheet_settings.card_zoom() * 100);
+  zoom->SetValue(String::Format(_("%d%%"),zoom_int));
+  for (int i : Settings::scale_choices) {
+    zoom->Append(String::Format(_("%d%%"), i));
+  }
 
   // init sizer
   wxSizer* s = new wxBoxSizer(wxVERTICAL);
@@ -257,19 +239,8 @@ DisplayPreferencesPage::DisplayPreferencesPage(Window* parent)
         s3->AddSpacer(2);
         s3->Add(zoom);
         s3->Add(new wxStaticText(this, wxID_ANY, _LABEL_("percent of normal")),1, wxALL & ~wxRIGHT, 4);
-      wxSizer* s4 = new wxBoxSizer(wxHORIZONTAL);
-        s4->Add(new wxStaticText(this, wxID_ANY, _LABEL_("export")), 0, wxALL & ~wxLEFT, 4);
-        s4->AddSpacer(2);
-        s4->Add(export_zoom);
-        //s4->Add(new wxStaticText(this, wxID_ANY, _LABEL_("percent of normal")), 1, wxALL & ~wxRIGHT, 4);
-
       s2->Add(s3, 0, wxEXPAND | wxALL, 4);
-      s2->Add(s4, 0, wxEXPAND | wxALL, 4);
-      s2->Add(non_normal_export, 0, wxEXPAND | wxALL, 4);
-      s2->Add(notes_export, 0, wxEXPAND | wxALL, 4);
-
     s->Add(s2, 0, wxEXPAND | wxALL, 8);
-
   s->SetSizeHints(this);
   SetSizer(s);
 }
@@ -279,12 +250,9 @@ void DisplayPreferencesPage::store() {
   settings.default_stylesheet_settings.card_borders            = borders->GetValue();
   settings.default_stylesheet_settings.card_draw_editing       = draw_editing->GetValue();
   settings.default_stylesheet_settings.card_spellcheck_enabled = spellcheck_enabled->GetValue();
-  settings.default_stylesheet_settings.card_normal_export      = !non_normal_export->GetValue();
-  settings.default_stylesheet_settings.card_notes_export       = notes_export->GetValue();
   
   updateZoom();
   settings.default_stylesheet_settings.card_zoom   = zoom_int / 100.0;
-  settings.default_stylesheet_settings.export_zoom_selection = export_zoom->GetSelection();
 }
 
 void DisplayPreferencesPage::onSelectColumns(wxCommandEvent&) {
@@ -292,7 +260,7 @@ void DisplayPreferencesPage::onSelectColumns(wxCommandEvent&) {
 }
 
 void DisplayPreferencesPage::onZoomChange(wxCommandEvent&) {
-    updateZoom();
+  updateZoom();
 }
 
 void DisplayPreferencesPage::updateZoom() {
@@ -312,41 +280,78 @@ END_EVENT_TABLE  ()
 
 // ----------------------------------------------------------------------------- : Preferences page : internal
 
-InternalPreferencesPage::InternalPreferencesPage(Window* parent) : PreferencesPage(parent) {
+TransfersPreferencesPage::TransfersPreferencesPage(Window* parent) : PreferencesPage(parent) {
+  // init controls
+  non_normal_export        = new wxCheckBox(this, wxID_ANY, _BUTTON_("rotation export"));
+  bleed_export             = new wxCheckBox(this, wxID_ANY, _BUTTON_("bleed export"));
+  notes_export             = new wxCheckBox(this, wxID_ANY, _BUTTON_("notes export"));
+  export_scale             = new wxChoice  (this, ID_EXPORT_ZOOM);
+
   internal_image_extension = new wxCheckBox(this, wxID_ANY, _BUTTON_("internal image extension"));
-  internal_scale = new wxChoice(this, ID_INTERNAL_SCALE);
+  import_scale             = new wxChoice  (this, ID_IMPORT_ZOOM);
+
+  // set values
+  non_normal_export-> SetValue(!settings.default_stylesheet_settings.card_normal_export());
+  bleed_export->      SetValue( settings.default_stylesheet_settings.card_bleed_export());
+  notes_export->      SetValue( settings.default_stylesheet_settings.card_notes_export());
+  export_scale->Append(_LABEL_("export around 300"));
+  export_scale->Append(_LABEL_("export force 300"));
+  export_scale->Append(_LABEL_("export force 150"));
+  for (int i : Settings::scale_choices) {
+    export_scale->Append(String::Format(_("%d%%"), i));
+  }
+  int default_export_scale = settings.default_stylesheet_settings.export_scale_selection();
+  if (default_export_scale < 0 || default_export_scale > export_scale->GetCount() - 1) default_export_scale = 0;
+  export_scale->SetSelection(default_export_scale);
 
   internal_image_extension->SetValue(settings.internal_image_extension);
-
-  internal_scale->Append(_LABEL_("use export scale"));
-  internal_scale->Append(_LABEL_("export around 300"));
-  internal_scale->Append(_LABEL_("export force 300"));
-  internal_scale->Append(_LABEL_("export force 150"));
-  for (int i : Settings::export_zoom_choices) {
-    internal_scale->Append(String::Format(_("%d%%"), i));
+  import_scale->Append(_LABEL_("use export scale"));
+  import_scale->Append(_LABEL_("export around 300"));
+  import_scale->Append(_LABEL_("export force 300"));
+  import_scale->Append(_LABEL_("export force 150"));
+  for (int i : Settings::scale_choices) {
+    import_scale->Append(String::Format(_("%d%%"), i));
   }
-  int default_internal_scale = settings.internal_scale_selection;
-  if (default_internal_scale < 0 || default_internal_scale > internal_scale->GetCount() - 1) default_internal_scale = 0;
-  internal_scale->SetSelection(default_internal_scale);
+  int default_import_scale = settings.import_scale_selection;
+  if (default_import_scale < 0 || default_import_scale > import_scale->GetCount() - 1) default_import_scale = 0;
+  import_scale->SetSelection(default_import_scale);
 
+  // init sizers
   wxSizer* s = new wxBoxSizer(wxVERTICAL);
-  wxSizer* s2 = new wxStaticBoxSizer(wxVERTICAL, this, _LABEL_("storage"));
-    wxSizer* s3 = new wxBoxSizer(wxHORIZONTAL);
-      s3->Add(new wxStaticText(this, wxID_ANY, _LABEL_("scale")), 0, wxALL & ~wxLEFT, 4);
-      s3->AddSpacer(2);
-      s3->Add(internal_scale);
-      //s3->Add(new wxStaticText(this, wxID_ANY, _LABEL_("percent of normal")), 1, wxALL & ~wxRIGHT, 4);
-    s2->Add(s3);
-    s2->Add(new wxStaticText(this, wxID_ANY, _LABEL_("internal scale desc")), 0, wxALL & ~wxLEFT, 4);
-    s2->Add(internal_image_extension, 0, wxEXPAND | wxALL, 4);
-  s->Add(s2, 0, wxEXPAND | wxALL, 8);
+    wxSizer* s2 = new wxStaticBoxSizer(wxVERTICAL, this, _LABEL_("export"));
+      s2->Add(new wxStaticText(this, wxID_ANY, _LABEL_("export desc")), 0, wxALL & ~wxLEFT, 4);
+      wxSizer* s3 = new wxBoxSizer(wxHORIZONTAL);
+        s3->Add(new wxStaticText(this, wxID_ANY, _LABEL_("scale")), 0, wxALL & ~wxLEFT, 4);
+        s3->AddSpacer(2);
+        s3->Add(export_scale);
+      s2->Add(s3, 0, wxEXPAND | wxALL, 4);
+      s2->Add(non_normal_export, 0, wxEXPAND | wxALL, 4);
+      s2->Add(bleed_export, 0, wxEXPAND | wxALL, 4);
+      s2->Add(notes_export, 0, wxEXPAND | wxALL, 4);
+    wxSizer* s5 = new wxStaticBoxSizer(wxVERTICAL, this, _LABEL_("import"));
+      s5->Add(new wxStaticText(this, wxID_ANY, _LABEL_("import desc")), 0, wxALL & ~wxLEFT, 4);
+      wxSizer* s6 = new wxBoxSizer(wxHORIZONTAL);
+        s6->Add(new wxStaticText(this, wxID_ANY, _LABEL_("scale")), 0, wxALL & ~wxLEFT, 4);
+        s6->AddSpacer(2);
+        s6->Add(import_scale);
+      s5->Add(s6, 0, wxEXPAND | wxALL & ~wxBottom, 4);
+      s5->Add(new wxStaticText(this, wxID_ANY, _LABEL_("internal scale desc")), 0, wxALL & ~wxTOP, 4);
+      s5->Add(internal_image_extension, 0, wxEXPAND | wxALL, 4);
+    s->Add(s2, 0, wxEXPAND | wxALL, 8);
+    s->Add(s5, 0, wxEXPAND | wxALL, 8);
+  export_scale->SetFocus();
   s->SetSizeHints(this);
   SetSizer(s);
 }
 
-void InternalPreferencesPage::store() {
-  settings.internal_image_extension = internal_image_extension->GetValue();
-  settings.internal_scale_selection = internal_scale->GetSelection();
+void TransfersPreferencesPage::store() {
+  settings.default_stylesheet_settings.card_normal_export     = !non_normal_export->GetValue();
+  settings.default_stylesheet_settings.card_bleed_export      = bleed_export->GetValue();
+  settings.default_stylesheet_settings.card_notes_export      = notes_export->GetValue();
+  settings.default_stylesheet_settings.export_scale_selection = export_scale->GetSelection();
+
+  settings.internal_image_extension                           = internal_image_extension->GetValue();
+  settings.import_scale_selection                             = import_scale->GetSelection();
 }
 
 // ----------------------------------------------------------------------------- : Preferences page : directories

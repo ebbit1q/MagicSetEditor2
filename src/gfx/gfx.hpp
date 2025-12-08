@@ -23,6 +23,7 @@
 /// Resample (resize) an image, uses bilenear filtering
 void resample(const Image& img_in, Image& img_out);
 Image resample(const Image& img_in, int width, int height);
+Image resample(const Image& img_in, double zoom);
 
 /// Resamples an image, first clips the input image to a specified rectangle
 /** The selected rectangle is resampled into the entire output image */

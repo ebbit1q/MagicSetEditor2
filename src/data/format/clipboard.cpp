@@ -151,7 +151,7 @@ CardsOnClipboard::CardsOnClipboard(const SetP& set, const String id, const vecto
       img = export_image(set, cards[0]);
     }
     else {
-      img = export_image(set, cards, true, 0, 1.0, 0.0);
+      img = export_image(set, cards);
     }
     String temp_path = wxFileName::CreateTempFileName(_("mse")) + _(".png");
     img.SaveFile(temp_path, wxBITMAP_TYPE_PNG);

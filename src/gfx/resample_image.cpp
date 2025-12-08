@@ -134,6 +134,9 @@ Image resample(const Image& img_in, int width, int height) {
     return img_out;
   }
 }
+Image resample(const Image& img_in, double zoom) {
+  return resample(img_in, (int)(img_in.GetWidth() * zoom), (int)(img_in.GetHeight() * zoom));
+}
 
 void resample_and_clip(const Image& img_in, Image& img_out, wxRect rect) {
   // mask to alpha

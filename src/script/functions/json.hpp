@@ -363,7 +363,8 @@ inline static ScriptValueP json_to_mse(const String& string, Set* set) {
     boost::json::parse_options options;
     options.allow_invalid_utf8 = true;
     boost::json::value jv = boost::json::parse(string.ToStdString(), ec, {}, options);
-    if(ec) return script_nil; //queue_message(MESSAGE_ERROR, _ERROR_("json cant parse") + _("\n\n") + ec.message());
+    //if(ec) queue_message(MESSAGE_ERROR, _ERROR_("json cant parse") + _("\n\n") + ec.message());
+    if(ec) return script_nil;
     return json_to_mse(jv, set);
   }
   catch (...) {

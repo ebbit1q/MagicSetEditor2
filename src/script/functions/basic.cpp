@@ -759,6 +759,22 @@ SCRIPT_FUNCTION(get_card_stylesheet) {
   throw ScriptError(_("invalid set or card argument"));
 }
 
+SCRIPT_FUNCTION(get_card_export_settings) {
+  SCRIPT_PARAM_C(ScriptValueP, input);
+  SCRIPT_PARAM_C(ScriptValueP, set);
+  ScriptObject<CardP>* c = dynamic_cast<ScriptObject<CardP>*>(input.get());
+  ScriptObject<Set*>* s = dynamic_cast<ScriptObject<Set*>*>(set.get());
+  if (s && c) {
+    Settings::ExportSettings card_settings = settings.exportSettingsFor(s->getValue()->stylesheetFor(c->getValue()));
+    ScriptCustomCollectionP ret(new ScriptCustomCollection());
+    ret->value.push_back(to_script(lround(card_settings.zoom * 100)));
+    ret->value.push_back(to_script(lround(rad_to_deg(card_settings.angle_radians))));
+    ret->value.push_back(to_script(lround(card_settings.bleed_pixels)));
+    return ret;
+  }
+  throw ScriptError(_("invalid set or card argument"));
+}
+
 SCRIPT_FUNCTION(get_card_from_uid) {
   SCRIPT_PARAM_C(Set*, set);
   SCRIPT_PARAM_C(String, input);
@@ -999,82 +1015,83 @@ SCRIPT_FUNCTION(rule) {
 
 void init_script_basic_functions(Context& ctx) {
   // app info
-  ctx.setVariable(_("get_mse_version"),      script_get_mse_version);
-  ctx.setVariable(_("get_mse_locale"),       script_get_mse_locale);
-  ctx.setVariable(_("get_mse_path"),         script_get_mse_path);
-  ctx.setVariable(_("get_mse_dark_mode"),    script_get_mse_dark_mode);
+  ctx.setVariable(_("get_mse_version"),           script_get_mse_version);
+  ctx.setVariable(_("get_mse_locale"),            script_get_mse_locale);
+  ctx.setVariable(_("get_mse_path"),              script_get_mse_path);
+  ctx.setVariable(_("get_mse_dark_mode"),         script_get_mse_dark_mode);
   // debugging
-  ctx.setVariable(_("trace"),                script_trace);
-  ctx.setVariable(_("warning"),              script_warning);
-  ctx.setVariable(_("error"),                script_error);
-  ctx.setVariable(_("exists_in_package"),    script_exists_in_package);
+  ctx.setVariable(_("trace"),                     script_trace);
+  ctx.setVariable(_("warning"),                   script_warning);
+  ctx.setVariable(_("error"),                     script_error);
+  ctx.setVariable(_("exists_in_package"),         script_exists_in_package);
   // conversion
-  ctx.setVariable(_("to_string"),            script_to_string);
-  ctx.setVariable(_("to_int"),               script_to_int);
-  ctx.setVariable(_("to_real"),              script_to_real);
-  ctx.setVariable(_("to_number"),            script_to_number);
-  ctx.setVariable(_("to_boolean"),           script_to_boolean);
-  ctx.setVariable(_("to_color"),             script_to_color);
-  ctx.setVariable(_("to_date"),              script_to_date);
-  ctx.setVariable(_("to_code"),              script_to_code);
-  ctx.setVariable(_("to_json"),              script_to_json);
-  ctx.setVariable(_("from_json"),            script_from_json);
-  ctx.setVariable(_("type_name"),            script_type_name);
-  ctx.setVariable(_("make_map"),             script_make_map);
-  ctx.setVariable(_("get_card_styling"),     script_get_card_styling);
-  ctx.setVariable(_("get_card_stylesheet"),  script_get_card_stylesheet);
+  ctx.setVariable(_("to_string"),                 script_to_string);
+  ctx.setVariable(_("to_int"),                    script_to_int);
+  ctx.setVariable(_("to_real"),                   script_to_real);
+  ctx.setVariable(_("to_number"),                 script_to_number);
+  ctx.setVariable(_("to_boolean"),                script_to_boolean);
+  ctx.setVariable(_("to_color"),                  script_to_color);
+  ctx.setVariable(_("to_date"),                   script_to_date);
+  ctx.setVariable(_("to_code"),                   script_to_code);
+  ctx.setVariable(_("to_json"),                   script_to_json);
+  ctx.setVariable(_("from_json"),                 script_from_json);
+  ctx.setVariable(_("type_name"),                 script_type_name);
+  ctx.setVariable(_("make_map"),                  script_make_map);
+  ctx.setVariable(_("get_card_styling"),          script_get_card_styling);
+  ctx.setVariable(_("get_card_stylesheet"),       script_get_card_stylesheet);
+  ctx.setVariable(_("get_card_export_settings"),  script_get_card_export_settings);
+  ctx.setVariable(_("get_card_from_uid"),         script_get_card_from_uid);
+  ctx.setVariable(_("get_cards_from_link"),       script_get_cards_from_link);
+  ctx.setVariable(_("get_back_face"),             script_get_back_face);
+  ctx.setVariable(_("get_front_face"),            script_get_front_face);
+  ctx.setVariable(_("has_link"),                  script_has_link);
   // math
-  ctx.setVariable(_("abs"),                  script_abs);
-  ctx.setVariable(_("random_real"),          script_random_real);
-  ctx.setVariable(_("random_int"),           script_random_int);
-  ctx.setVariable(_("random_boolean"),       script_random_boolean);
-  ctx.setVariable(_("sin"),                  script_sin);
-  ctx.setVariable(_("cos"),                  script_cos);
-  ctx.setVariable(_("tan"),                  script_tan);
-  ctx.setVariable(_("sin_deg"),              script_sin_deg);
-  ctx.setVariable(_("cos_deg"),              script_cos_deg);
-  ctx.setVariable(_("tan_deg"),              script_tan_deg);
-  ctx.setVariable(_("exp"),                  script_exp);
-  ctx.setVariable(_("log"),                  script_log);
-  ctx.setVariable(_("log10"),                script_log10);
-  ctx.setVariable(_("sqrt"),                 script_sqrt);
-  ctx.setVariable(_("pow"),                  script_pow);
+  ctx.setVariable(_("abs"),                       script_abs);
+  ctx.setVariable(_("random_real"),               script_random_real);
+  ctx.setVariable(_("random_int"),                script_random_int);
+  ctx.setVariable(_("random_boolean"),            script_random_boolean);
+  ctx.setVariable(_("sin"),                       script_sin);
+  ctx.setVariable(_("cos"),                       script_cos);
+  ctx.setVariable(_("tan"),                       script_tan);
+  ctx.setVariable(_("sin_deg"),                   script_sin_deg);
+  ctx.setVariable(_("cos_deg"),                   script_cos_deg);
+  ctx.setVariable(_("tan_deg"),                   script_tan_deg);
+  ctx.setVariable(_("exp"),                       script_exp);
+  ctx.setVariable(_("log"),                       script_log);
+  ctx.setVariable(_("log10"),                     script_log10);
+  ctx.setVariable(_("sqrt"),                      script_sqrt);
+  ctx.setVariable(_("pow"),                       script_pow);
   // string
-  ctx.setVariable(_("to_upper"),             script_to_upper);
-  ctx.setVariable(_("to_lower"),             script_to_lower);
-  ctx.setVariable(_("to_title"),             script_to_title);
-  ctx.setVariable(_("reverse"),              script_reverse);
-  ctx.setVariable(_("trim"),                 script_trim);
-  ctx.setVariable(_("substring"),            script_substring);
-  ctx.setVariable(_("contains"),             script_contains);
-  ctx.setVariable(_("format"),               script_format);
-  ctx.setVariable(_("format_rule"),          make_intrusive<ScriptRule>(script_format));
-  ctx.setVariable(_("curly_quotes"),         script_curly_quotes);
-  ctx.setVariable(_("regex_escape"),         script_regex_escape);
-  ctx.setVariable(_("sort_text"),            script_sort_text);
-  ctx.setVariable(_("sort_rule"),            make_intrusive<ScriptRule>(script_sort_text));
+  ctx.setVariable(_("to_upper"),                  script_to_upper);
+  ctx.setVariable(_("to_lower"),                  script_to_lower);
+  ctx.setVariable(_("to_title"),                  script_to_title);
+  ctx.setVariable(_("reverse"),                   script_reverse);
+  ctx.setVariable(_("trim"),                      script_trim);
+  ctx.setVariable(_("substring"),                 script_substring);
+  ctx.setVariable(_("contains"),                  script_contains);
+  ctx.setVariable(_("format"),                    script_format);
+  ctx.setVariable(_("format_rule"),               make_intrusive<ScriptRule>(script_format));
+  ctx.setVariable(_("curly_quotes"),              script_curly_quotes);
+  ctx.setVariable(_("regex_escape"),              script_regex_escape);
+  ctx.setVariable(_("sort_text"),                 script_sort_text);
+  ctx.setVariable(_("sort_rule"),                 make_intrusive<ScriptRule>(script_sort_text));
   // tagged string
-  ctx.setVariable(_("tag_contents"),         script_tag_contents);
-  ctx.setVariable(_("remove_tag"),           script_remove_tag);
-  ctx.setVariable(_("remove_tags"),          script_remove_tags);
-  ctx.setVariable(_("tag_contents_rule"),    make_intrusive<ScriptRule>(script_tag_contents));
-  ctx.setVariable(_("tag_remove_rule"),      make_intrusive<ScriptRule>(script_remove_tag));
+  ctx.setVariable(_("tag_contents"),              script_tag_contents);
+  ctx.setVariable(_("remove_tag"),                script_remove_tag);
+  ctx.setVariable(_("remove_tags"),               script_remove_tags);
+  ctx.setVariable(_("tag_contents_rule"),         make_intrusive<ScriptRule>(script_tag_contents));
+  ctx.setVariable(_("tag_remove_rule"),           make_intrusive<ScriptRule>(script_remove_tag));
   // collection
-  ctx.setVariable(_("position"),             script_position_of);
-  ctx.setVariable(_("length"),               script_length);
-  ctx.setVariable(_("number_of_items"),      script_number_of_items); // deprecated
-  ctx.setVariable(_("filter_list"),          script_filter_list);
-  ctx.setVariable(_("sort_list"),            script_sort_list);
-  ctx.setVariable(_("random_shuffle"),       script_random_shuffle);
-  ctx.setVariable(_("random_select"),        script_random_select);
-  ctx.setVariable(_("random_select_many"),   script_random_select_many);
-  ctx.setVariable(_("get_card_from_uid"),    script_get_card_from_uid);
-  ctx.setVariable(_("get_cards_from_link"),  script_get_cards_from_link);
-  ctx.setVariable(_("get_back_face"),        script_get_back_face);
-  ctx.setVariable(_("get_front_face"),       script_get_front_face);
-  ctx.setVariable(_("has_link"),             script_has_link);
+  ctx.setVariable(_("position"),                  script_position_of);
+  ctx.setVariable(_("length"),                    script_length);
+  ctx.setVariable(_("number_of_items"),           script_number_of_items); // deprecated
+  ctx.setVariable(_("filter_list"),               script_filter_list);
+  ctx.setVariable(_("sort_list"),                 script_sort_list);
+  ctx.setVariable(_("random_shuffle"),            script_random_shuffle);
+  ctx.setVariable(_("random_select"),             script_random_select);
+  ctx.setVariable(_("random_select_many"),        script_random_select_many);
   // keyword
-  ctx.setVariable(_("expand_keywords"),      script_expand_keywords);
-  ctx.setVariable(_("expand_keywords_rule"), make_intrusive<ScriptRule>(script_expand_keywords));
-  ctx.setVariable(_("keyword_usage"),        script_keyword_usage);
+  ctx.setVariable(_("expand_keywords"),           script_expand_keywords);
+  ctx.setVariable(_("expand_keywords_rule"),      make_intrusive<ScriptRule>(script_expand_keywords));
+  ctx.setVariable(_("keyword_usage"),             script_keyword_usage);
 }

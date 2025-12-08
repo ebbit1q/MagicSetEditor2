@@ -54,42 +54,48 @@ public:
   inline String const& toStringForKey() const { return fn; }
 
   /// Retreive a rect from a filename
-  inline static wxRect getExternalRect(const String& filename) {
+  inline static void getExternalRect(const String& filename, wxRect& rect_out, int& degrees_out) {
     size_t first = filename.find(_("---"));
-    if (first == String::npos) return wxRect();
+    if (first == String::npos) return;
     size_t last = filename.find(_("---"), first+3);
-    if (last == String::npos) return wxRect();
+    if (last == String::npos) return;
     String string = filename.substr(first + 3, last - (first + 3));
-    if (string.empty()) return wxRect();
+    if (string.empty()) return;
 
     size_t divider = string.find(_("-"));
-    if (divider == String::npos) return wxRect();
-    if (divider == 0) return wxRect();
+    if (divider == String::npos) return;
+    if (divider == 0) return;
     int x;
-    if(!string.substr(0, divider).ToInt(&x)) return wxRect();
+    if(!string.substr(0, divider).ToInt(&x)) return;
     string = string.substr(divider + 1);
 
     divider = string.find(_("-"));
-    if (divider == String::npos) return wxRect();
-    if (divider == 0) return wxRect();
+    if (divider == String::npos) return;
+    if (divider == 0) return;
     int y;
-    if(!string.substr(0, divider).ToInt(&y)) return wxRect();
+    if(!string.substr(0, divider).ToInt(&y)) return;
     string = string.substr(divider + 1);
 
     divider = string.find(_("-"));
-    if (divider == String::npos) return wxRect();
-    if (divider == 0) return wxRect();
+    if (divider == String::npos) return;
+    if (divider == 0) return;
     int width;
-    if(!string.substr(0, divider).ToInt(&width)) return wxRect();
+    if(!string.substr(0, divider).ToInt(&width)) return;
     string = string.substr(divider + 1);
 
+    divider = string.find(_("-"));
+    if (divider == String::npos) return;
+    if (divider == 0) return;
     int height;
-    if(!string.ToInt(&height)) return wxRect();
+    if(!string.substr(0, divider).ToInt(&height)) return;
+    string = string.substr(divider + 1);
 
-    return wxRect(x, y, width, height);
+    if(!string.ToInt(&degrees_out)) return;
+
+    rect_out = wxRect(x, y, width, height);
   }
-  inline wxRect getExternalRect() {
-    return getExternalRect(fn);
+  inline void getExternalRect(wxRect& rect_out, int& degrees_out) {
+    getExternalRect(fn, rect_out, degrees_out);
   }
 
 private:

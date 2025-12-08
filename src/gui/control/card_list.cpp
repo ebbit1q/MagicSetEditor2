@@ -303,9 +303,12 @@ bool CardListBase::parseImage(Image& image, vector<CardP>& out) {
       for (IndexMap<FieldP, ValueP>::iterator it = card->data.begin(); it != card->data.end(); it++) {
         ImageValue* value = dynamic_cast<ImageValue*>(it->get());
         if (value && !value->filename.empty()) {
-          wxRect rect = value->filename.getExternalRect();
+          wxRect rect = wxRect(0,0,0,0);
+          int degrees = 0;
+          value->filename.getExternalRect(rect, degrees);
           if (rect.width > 0 && rect.height > 0) {
             Image& img = image.GetSubImage(rect);
+            img = rotate_image(img, deg_to_rad(360-degrees));
             LocalFileName filename = set->newFileName((*it)->fieldP->name, settings.internal_image_extension ? _(".png") : _("")); // a new unique name in the package
             img.SaveFile(set->nameOut(filename), wxBITMAP_TYPE_PNG);
             value->filename = filename;
@@ -319,8 +322,8 @@ bool CardListBase::parseImage(Image& image, vector<CardP>& out) {
 
 bool CardListBase::parseText(String& text, vector<CardP>& out) {
   size_t j = out.size();
-  if (size_t pos = text.find("<mse-data-start>") != wxString::npos) {
-    text = text.substr(pos + 15, text.find("<mse-data-end>") - pos - 15);
+  if (size_t pos = text.find("<mse-card-data>") != wxString::npos) {
+    text = text.substr(pos + 14, text.find("</mse-card-data>") - pos - 14);
   }
   try {
     ScriptValueP& sv = json_to_mse(text, set.get());

@@ -428,22 +428,38 @@ SCRIPT_FUNCTION(write_image_file) {
     SCRIPT_RETURN(file); // already written an image with this name
   }
   // get image
+  Image img;
+  SCRIPT_PARAM(Set*, set);
   SCRIPT_PARAM_C(ScriptValueP, input);
-  SCRIPT_OPTIONAL_PARAM_(int, width);
-  SCRIPT_OPTIONAL_PARAM_(int, height);
-  ScriptObject<CardP>* card = dynamic_cast<ScriptObject<CardP>*>(input.get()); // is it a card?
-  Image image;
-  GeneratedImage::Options options(width, height, ei.export_template.get(), ei.set.get());
+  ScriptObject<CardP>* card = dynamic_cast<ScriptObject<CardP>*>(input.get()); // is the input a card or image?
   if (card) {
-    image = conform_image(export_image(ei.set, card->getValue()), options);
+    SCRIPT_PARAM_DEFAULT(double, zoom, 100.0);
+    SCRIPT_PARAM_DEFAULT(Degrees, angle, 0.0);
+    SCRIPT_PARAM_DEFAULT(double, bleed, 0.0);
+    SCRIPT_PARAM_DEFAULT(bool, use_user_settings, false);
+    if (use_user_settings) {
+      // Use the User's Preferences for Export Zoom, Angle and Bleed settings.
+      Settings::ExportSettings card_settings = settings.exportSettingsFor(set->stylesheetFor(card->getValue()));
+      zoom =  card_settings.zoom;
+      angle = card_settings.angle_radians;
+      bleed = card_settings.bleed_pixels;
+    } else {
+      // Use the provided (or defaulted) Zoom, Angle and Bleed.
+      zoom = zoom / 100.0;
+      angle = deg_to_rad(angle);
+    }
+    img = export_image(set, card->getValue(), true, zoom, angle, bleed);
   } else {
-    image = input->toImage()->generateConform(options);
+    SCRIPT_OPTIONAL_PARAM_(int, width)
+    SCRIPT_OPTIONAL_PARAM_(int, height)
+    GeneratedImage::Options options(width, height, ei.export_template.get(), ei.set.get());
+    img = input->toImage()->generateConform(options);
   }
-  if (!image.Ok()) throw Error(_("Unable to generate image for file ") + file);
+  if (!img.Ok()) throw Error(_("Unable to generate image for file ") + file);
   // write
   ensure_dir_valid(out_path);
-  image.SaveFile(out_path);
-  ei.exported_images.insert(make_pair(file, wxSize(image.GetWidth(), image.GetHeight())));
+  img.SaveFile(out_path);
+  ei.exported_images.insert(make_pair(file, wxSize(img.GetWidth(), img.GetHeight())));
   SCRIPT_RETURN(file);
 }
 

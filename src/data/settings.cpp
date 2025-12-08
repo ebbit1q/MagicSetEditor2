@@ -32,8 +32,8 @@ IMPLEMENT_REFLECTION_ENUM(CheckUpdates) {
 }
 
 IMPLEMENT_REFLECTION_ENUM(InstallType) {
-  VALUE_N("default",  INSTALL_DEFAULT); //default
-  VALUE_N("local",  INSTALL_LOCAL);
+  VALUE_N("default", INSTALL_DEFAULT); //default
+  VALUE_N("local",   INSTALL_LOCAL);
   VALUE_N("global",  INSTALL_GLOBAL);
 }
 
@@ -47,13 +47,13 @@ bool is_install_local(InstallType type) {
 }
 
 IMPLEMENT_REFLECTION_ENUM(FilenameConflicts) {
-  VALUE_N("keep old",      CONFLICT_KEEP_OLD);
-  VALUE_N("overwrite",    CONFLICT_OVERWRITE);
-  VALUE_N("number",      CONFLICT_NUMBER);
-  VALUE_N("number overwrite",  CONFLICT_NUMBER_OVERWRITE);
+  VALUE_N("keep old",         CONFLICT_KEEP_OLD);
+  VALUE_N("overwrite",        CONFLICT_OVERWRITE);
+  VALUE_N("number",           CONFLICT_NUMBER);
+  VALUE_N("number overwrite", CONFLICT_NUMBER_OVERWRITE);
 }
 
-const vector<int> Settings::export_zoom_choices = { 50,66,75,80,100,120,125,150,175,200 };
+const vector<int> Settings::scale_choices = { 50,66,75,80,100,120,125,150,175,200 };
 
 const int COLUMN_NOT_INITIALIZED = -100000;
 
@@ -71,13 +71,13 @@ IMPLEMENT_REFLECTION_NO_SCRIPT(ColumnSettings) {
 }
 
 GameSettings::GameSettings()
-  : sort_cards_ascending(true)
-  , images_export_filename(_("{card.name}.png"))
-  , images_export_conflicts(CONFLICT_NUMBER_OVERWRITE)
-  , use_auto_replace(true)
-  , pack_seed_random(true)
-  , pack_seed(123456)
-  , initialized(false)
+  : sort_cards_ascending    (true)
+  , images_export_filename  (_("{card.name}.png"))
+  , images_export_conflicts (CONFLICT_NUMBER_OVERWRITE)
+  , use_auto_replace        (true)
+  , pack_seed_random        (true)
+  , pack_seed               (123456)
+  , initialized             (false)
 {}
 
 void GameSettings::initDefaults(const Game& game) {
@@ -128,37 +128,40 @@ IMPLEMENT_REFLECTION_NO_SCRIPT(GameSettings) {
 
 
 StyleSheetSettings::StyleSheetSettings()
-  : card_zoom              (1.0,   true)
-  , export_zoom_selection  (0,     true)
-  , card_angle             (0,     true)
-  , card_anti_alias        (true,  true)
-  , card_borders           (true,  true)
-  , card_draw_editing      (true,  true)
-  , card_normal_export     (true,  true)
-  , card_notes_export      (false, true)
-  , card_spellcheck_enabled(true,  true)
+  : card_zoom               (1.0,   true)
+  , export_scale_selection  (0,     true)
+  , card_angle              (0,     true)
+  , card_anti_alias         (true,  true)
+  , card_borders            (true,  true)
+  , card_draw_editing       (true,  true)
+  , card_normal_export      (true,  true)
+  , card_bleed_export       (false, true)
+  , card_notes_export       (false, true)
+  , card_spellcheck_enabled (true,  true)
 {}
 
 void StyleSheetSettings::useDefault(const StyleSheetSettings& ss) {
   if (card_zoom              .isDefault()) card_zoom              .assignDefault(ss.card_zoom);
-  if (export_zoom_selection  .isDefault()) export_zoom_selection  .assignDefault(ss.export_zoom_selection);
+  if (export_scale_selection .isDefault()) export_scale_selection  .assignDefault(ss.export_scale_selection);
   if (card_angle             .isDefault()) card_angle             .assignDefault(ss.card_angle);
   if (card_anti_alias        .isDefault()) card_anti_alias        .assignDefault(ss.card_anti_alias);
   if (card_borders           .isDefault()) card_borders           .assignDefault(ss.card_borders);
   if (card_draw_editing      .isDefault()) card_draw_editing      .assignDefault(ss.card_draw_editing);
   if (card_normal_export     .isDefault()) card_normal_export     .assignDefault(ss.card_normal_export);
+  if (card_bleed_export      .isDefault()) card_bleed_export      .assignDefault(ss.card_bleed_export);
   if (card_notes_export      .isDefault()) card_notes_export      .assignDefault(ss.card_notes_export);
   if (card_spellcheck_enabled.isDefault()) card_spellcheck_enabled.assignDefault(ss.card_spellcheck_enabled);
 }
 
 IMPLEMENT_REFLECTION_NO_SCRIPT(StyleSheetSettings) {
   REFLECT(card_zoom);
-  REFLECT(export_zoom_selection);
+  REFLECT(export_scale_selection);
   REFLECT(card_angle);
   REFLECT(card_anti_alias);
   REFLECT(card_borders);
   REFLECT(card_draw_editing);
   REFLECT(card_normal_export);
+  REFLECT(card_bleed_export);
   REFLECT(card_notes_export);
   REFLECT(card_spellcheck_enabled);
 }
@@ -184,29 +187,29 @@ IMPLEMENT_REFLECTION_ENUM(DarkModeType) {
 Settings settings;
 
 Settings::Settings()
-  : locale                  (_("en"))
-  , set_window_maximized    (false)
-  , set_window_width        (790)
-  , set_window_height       (300)
-  , card_notes_height       (40)
-  , open_sets_in_new_window (true)
-  , symbol_grid_size        (30)
-  , symbol_grid             (true)
-  , symbol_grid_snap        (false)
-  , print_spacing           (0.33)
-  , print_cutter_lines      (CUTTER_ALL)
-  , dark_mode_type          (DARKMODE_SYSTEM)
-  , internal_scale_selection(0)
-  , internal_image_extension(true)
+  : locale                   (_("en"))
+  , set_window_maximized     (false)
+  , set_window_width         (790)
+  , set_window_height        (300)
+  , card_notes_height        (40)
+  , open_sets_in_new_window  (true)
+  , symbol_grid_size         (30)
+  , symbol_grid              (true)
+  , symbol_grid_snap         (false)
+  , print_spacing            (0.33)
+  , print_cutter_lines       (CUTTER_ALL)
+  , dark_mode_type           (DARKMODE_SYSTEM)
+  , import_scale_selection   (0)
+  , internal_image_extension (true)
   #if USE_OLD_STYLE_UPDATE_CHECKER
-  , updates_url          (_("https://magicseteditor.boards.net/page/downloads"))
+  , updates_url              (_("https://magicseteditor.boards.net/page/downloads"))
   #endif
-  , package_versions_url (_("https://magicseteditor.boards.net/page/downloads"))
-  , installer_list_url   (_("https://magicseteditor.boards.net/page/downloads"))
-  , check_updates        (CHECK_IF_CONNECTED)
-  , check_updates_all    (true)
-  , website_url          (_("https://magicseteditor.boards.net/"))
-  , install_type         (INSTALL_DEFAULT)
+  , package_versions_url     (_("https://magicseteditor.boards.net/page/downloads"))
+  , installer_list_url       (_("https://magicseteditor.boards.net/page/downloads"))
+  , check_updates            (CHECK_IF_CONNECTED)
+  , check_updates_all        (true)
+  , website_url              (_("https://magicseteditor.boards.net/"))
+  , install_type             (INSTALL_DEFAULT)
 {}
 
 void Settings::addRecentFile(const String& filename) {
@@ -231,6 +234,7 @@ GameSettings& Settings::gameSettingsFor(const Game& game) {
   gs->initDefaults(game);
   return *gs;
 }
+
 ColumnSettings& Settings::columnSettingsFor(const Game& game, const Field& field) {
   // Get game info
   GameSettings& gs = gameSettingsFor(game);
@@ -244,6 +248,7 @@ ColumnSettings& Settings::columnSettingsFor(const Game& game, const Field& field
   }
   return cs;
 }
+
 StyleSheetSettings& Settings::stylesheetSettingsFor(const StyleSheet& stylesheet) {
   // Use the canonical form here since the stylesheet name will be used as a stored key.
   // This does introduce the possibility of collision if two stylesheets return the same value canonically, but I think that's just a necessary risk.
@@ -253,26 +258,34 @@ StyleSheetSettings& Settings::stylesheetSettingsFor(const StyleSheet& stylesheet
   return *ss;
 }
 
-double Settings::exportZoomSettingsFor(const StyleSheet& stylesheet) {
+double Settings::exportScaleSettingsFor(const StyleSheet& stylesheet) {
   StyleSheetSettings& ss = stylesheetSettingsFor(stylesheet);
-  int export_zoom = ss.export_zoom_selection();
-  if (export_zoom == 0) return adaptiveZoomSettingsFor(stylesheet, 300.0, 50.0);
-  if (export_zoom == 1) return adaptiveZoomSettingsFor(stylesheet, 300.0, 1.0);
-  if (export_zoom == 2) return adaptiveZoomSettingsFor(stylesheet, 150.0, 1.0);
-  return export_zoom_choices[export_zoom - 3] / 100;
+  int export_scale = ss.export_scale_selection();
+  if (export_scale == 0) return adaptiveScaleSettingsFor(stylesheet, 300.0, 50.0);
+  if (export_scale == 1) return adaptiveScaleSettingsFor(stylesheet, 300.0, 1.0);
+  if (export_scale == 2) return adaptiveScaleSettingsFor(stylesheet, 150.0, 1.0);
+  return scale_choices[export_scale - 3] / 100;
 }
 
-double Settings::internalScaleSettingsFor(const StyleSheet& stylesheet) {
-  if (internal_scale_selection == 0) return exportZoomSettingsFor(stylesheet);
-  if (internal_scale_selection == 1) return adaptiveZoomSettingsFor(stylesheet, 300.0, 50.0);
-  if (internal_scale_selection == 2) return adaptiveZoomSettingsFor(stylesheet, 300.0, 1.0);
-  if (internal_scale_selection == 3) return adaptiveZoomSettingsFor(stylesheet, 150.0, 1.0);
-  return export_zoom_choices[internal_scale_selection - 4] / 100;
+double Settings::importScaleSettingsFor(const StyleSheet& stylesheet) {
+  if (import_scale_selection == 0) return exportScaleSettingsFor(stylesheet);
+  if (import_scale_selection == 1) return adaptiveScaleSettingsFor(stylesheet, 300.0, 50.0);
+  if (import_scale_selection == 2) return adaptiveScaleSettingsFor(stylesheet, 300.0, 1.0);
+  if (import_scale_selection == 3) return adaptiveScaleSettingsFor(stylesheet, 150.0, 1.0);
+  return scale_choices[import_scale_selection - 4] / 100;
 }
 
-double Settings::adaptiveZoomSettingsFor(const StyleSheet& stylesheet, double dpi_target, double dpi_leeway) {
+double Settings::adaptiveScaleSettingsFor(const StyleSheet& stylesheet, double dpi_target, double dpi_leeway) {
   if (abs(stylesheet.card_dpi - dpi_target) <= dpi_leeway) return 1.0;
   return dpi_target / max(10.0, stylesheet.card_dpi);
+}
+
+Settings::ExportSettings Settings::exportSettingsFor(const StyleSheet& stylesheet) {
+  StyleSheetSettings& ss = stylesheetSettingsFor(stylesheet);
+  double zoom = settings.exportScaleSettingsFor(stylesheet);
+  double angle = ss.card_normal_export() ? 0.0 : deg_to_rad(ss.card_angle());
+  double bleed = ss.card_bleed_export() ? (stylesheet.card_dpi / 300.0) * 36.0 * zoom : 0.0; // 36 pixels of bleed on a 300 DPI print
+  return ExportSettings{zoom, angle, bleed};
 }
 
 IndexMap<FieldP,ValueP>& Settings::exportOptionsFor(const ExportTemplate& export_template) {
@@ -324,7 +337,7 @@ IMPLEMENT_REFLECTION_NO_SCRIPT(Settings) {
   REFLECT(print_cutter_lines);
   REFLECT(dark_mode_type);
   REFLECT(apprentice_location);
-  REFLECT(internal_scale_selection);
+  REFLECT(import_scale_selection);
   REFLECT(internal_image_extension);
   #if USE_OLD_STYLE_UPDATE_CHECKER
     REFLECT(updates_url);

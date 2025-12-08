@@ -107,6 +107,7 @@ $built_in_functions = array(
 	'get_card_from_uid'		=>'',
 	'get_card_styling'		=>'',
 	'get_card_stylesheet'		=>'',
+	'get_card_export_settings'		=>'',
 	'add_card_to_set'		=>'',
 	// html export
 	'to_html'		=>'',

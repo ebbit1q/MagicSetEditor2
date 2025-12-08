@@ -98,12 +98,13 @@ public:
   
   // Rendering/display settings
   Defaultable<double>  card_zoom;
-  Defaultable<int>     export_zoom_selection;
+  Defaultable<int>     export_scale_selection;
   Defaultable<Degrees> card_angle;
   Defaultable<bool>    card_anti_alias;
   Defaultable<bool>    card_borders;
   Defaultable<bool>    card_draw_editing;
   Defaultable<bool>    card_normal_export;
+  Defaultable<bool>    card_bleed_export;
   Defaultable<bool>    card_notes_export;
   Defaultable<bool>    card_spellcheck_enabled;
   
@@ -173,18 +174,23 @@ public:
   String default_game;
   
   // --------------------------------------------------- : Game/stylesheet specific
-  
-  /// Get the settings object for a specific game
-  GameSettings&       gameSettingsFor         (const Game& game);
-  /// Get the settings for a column for a specific field in a game
-  ColumnSettings&     columnSettingsFor       (const Game& game, const Field& field);
-  /// Get the settings object for a specific stylesheet
-  StyleSheetSettings& stylesheetSettingsFor   (const StyleSheet& stylesheet);
-  double              exportZoomSettingsFor   (const StyleSheet& stylesheet);
-  double              internalScaleSettingsFor(const StyleSheet& stylesheet);
-  double              adaptiveZoomSettingsFor (const StyleSheet& stylesheet, double target_dpi, double leeway_dpi);
 
-  static const vector<int> export_zoom_choices;
+  struct ExportSettings {
+    double zoom, angle_radians, bleed_pixels;
+  };
+
+  /// Get the settings object for a specific game
+  GameSettings&       gameSettingsFor          (const Game& game);
+  /// Get the settings for a column for a specific field in a game
+  ColumnSettings&     columnSettingsFor        (const Game& game, const Field& field);
+  /// Get the settings object for a specific stylesheet
+  StyleSheetSettings& stylesheetSettingsFor    (const StyleSheet& stylesheet);
+  double              exportScaleSettingsFor   (const StyleSheet& stylesheet);
+  double              importScaleSettingsFor   (const StyleSheet& stylesheet);
+  double              adaptiveScaleSettingsFor (const StyleSheet& stylesheet, double target_dpi, double leeway_dpi);
+  ExportSettings      exportSettingsFor        (const StyleSheet& stylesheet);
+
+  static const vector<int> scale_choices;
 
 private:
   map<String,GameSettingsP>       game_settings;
@@ -221,7 +227,7 @@ public:
   
   // --------------------------------------------------- : Internal settings
 
-  int internal_scale_selection;
+  int import_scale_selection;
   bool internal_image_extension;
 
   // --------------------------------------------------- : Update checking

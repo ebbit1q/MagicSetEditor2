@@ -126,11 +126,29 @@ public:
   inline RealPoint getPos()  const { return RealPoint(left, top); }
   inline RealSize  getSize() const { return RealSize(width, height); }
   inline RealRect  getExternalRect() const { return RealRect(left, top, width, height); }
-  inline String    getExternalRectString(double scale = 1.0, int offset = 0) { ///< update the style before calling this
-    return _("---") + wxString::Format(wxT("%i"), (int)std::ceil(scale * left + offset)) +
-           _("-") +   wxString::Format(wxT("%i"), (int)std::ceil(scale * top)) +
-           _("-") +   wxString::Format(wxT("%i"), (int)std::floor(scale * width)) +
-           _("-") +   wxString::Format(wxT("%i"), (int)std::floor(scale * height)) +
+  inline String    getExternalRectString(double scale, Radians angle, double bleed, int img_width, int img_height, int img_offset) { ///< update the style before calling this
+    double x = left * scale, y = top * scale;
+    double w = width * scale, h = height * scale;
+    RealRect rect(x, y, w, h);
+    int degrees = 0;
+    if (is_rad0(angle)) {
+    } else if (is_rad180(angle)) {
+      rect = RealRect(img_width - x - w, img_height - y - h, w, h);
+      degrees = 180;
+    } else if (is_rad90(angle)) {
+      rect = RealRect(y, img_height - x - w, h, w);
+      degrees = 90;
+    } else if (is_rad270(angle)) {
+      rect = RealRect(img_width - y - h, x, h, w);
+      degrees = 270;
+    } else {
+      return _("");
+    }
+    return _("---") + wxString::Format(wxT("%i"), (int)std::ceil( rect.x + bleed + img_offset)) +
+           _("-") +   wxString::Format(wxT("%i"), (int)std::ceil( rect.y + bleed)) +
+           _("-") +   wxString::Format(wxT("%i"), (int)std::floor(rect.width)) +
+           _("-") +   wxString::Format(wxT("%i"), (int)std::floor(rect.height)) +
+           _("-") +   wxString::Format(wxT("%i"), degrees) +
            _("---");
   }
 
