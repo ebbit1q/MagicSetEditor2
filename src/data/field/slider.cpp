@@ -35,6 +35,8 @@ IMPLEMENT_REFLECTION(SliderField) {
 void SliderField::after_reading(Version ver) {
   Field::after_reading(ver);
 
+  is_slider = true;
+
   int choice_count = choices->choices.size();
 
   if (maximum < minimum) swap(minimum, maximum);
