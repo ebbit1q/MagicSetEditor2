@@ -34,7 +34,7 @@ Image conform_image(const Image& img, const GeneratedImage::Options& options) {
   int iw = image.GetWidth(), ih = image.GetHeight();
   if ((iw == options.width && ih == options.height) || (options.width == 0 && options.height == 0)) {
     // zoom?
-    if (options.zoom != 1.0) {
+    if (!almost_equal(options.zoom, 1.0)) {
       image = resample(image, int(iw * options.zoom), int(ih * options.zoom));
     } else {
       // already the right size
@@ -73,7 +73,7 @@ Image conform_image(const Image& img, const GeneratedImage::Options& options) {
   options.width  = image.GetWidth();
   options.height = image.GetHeight();
   // rotate?
-  if (options.angle != 0) {
+  if (!almost_equal(options.angle, 0)) {
     image = rotate_image(image, options.angle);
   }
   return image;

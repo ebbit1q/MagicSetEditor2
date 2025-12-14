@@ -56,7 +56,7 @@ bool prepare_choice_viewer(RotatedDC& dc, ValueViewer& viewer, ChoiceStyle& styl
       img.generateCached(img_options, &style.mask, &combine, &bitmap, &image, &size);
       // store content properties
       double zoom = dc.getZoom();
-      if (style.content_width != size.width / zoom || style.content_height != size.height / zoom) {
+      if (!almost_equal(style.content_width, size.width / zoom) || !almost_equal(style.content_height, size.height / zoom)) {
         style.content_width  = size.width / zoom;
         style.content_height = size.height / zoom;
         return true;
