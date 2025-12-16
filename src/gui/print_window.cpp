@@ -37,7 +37,7 @@ void PrintJob::measure_cards() {
     if (already_measured_cards.find(card) != already_measured_cards.end()) continue;
     already_measured_cards.emplace(card);
     card_layouts.push_back(measure_card(card));
-    CardP other_face = card->getOtherFace(cards);
+    CardP other_face = card->getLinkedOtherFace(cards);
     if (other_face && already_measured_cards.find(other_face) == already_measured_cards.end()) {
       already_measured_cards.emplace(other_face);
       card_layouts.push_back(measure_card(other_face));

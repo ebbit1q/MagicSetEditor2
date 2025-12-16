@@ -156,8 +156,7 @@ void Card::link(const Set& set, const vector<CardP>& linked_cards, const String&
       ss << all_missed_cards[pos]->identification();
       if (pos < all_missed_cards.size() - 1) ss << ", ";
     };
-    String wxString(ss.str().c_str(), wxConvUTF8);
-    queue_message(MESSAGE_WARNING, wxString);
+    queue_message(MESSAGE_WARNING, wxString(ss.str().c_str()));
   }
 }
 
@@ -284,7 +283,7 @@ vector<pair<CardP, String>> Card::getLinkedCards(const Set& set) {
   return getLinkedCards(set.cards);
 }
 
-CardP Card::getOtherFace(const vector<CardP>& cards) {
+CardP Card::getLinkedOtherFace(const vector<CardP>& cards) {
   unordered_set<String> faces;
   if (linked_relation_1 == _("Front Face") || linked_relation_1 == _("Back Face")) faces.emplace(linked_card_1);
   if (linked_relation_2 == _("Front Face") || linked_relation_2 == _("Back Face")) faces.emplace(linked_card_2);
@@ -295,8 +294,39 @@ CardP Card::getOtherFace(const vector<CardP>& cards) {
   }
   return nullptr;
 }
-CardP Card::getOtherFace(const Set& set) {
-  return getOtherFace(set.cards);
+CardP Card::getLinkedOtherFace(const Set& set) {
+  return getLinkedOtherFace(set.cards);
+}
+
+vector<CardP> Card::getLinkedCardsFromLink(const vector<CardP>& cards, const String& link, bool erase_if_no_card) {
+  vector<CardP> other_cards;
+  THIS_LINKED_PAIRS(this_linked_pairs);
+  FOR_EACH(this_linked_pair, this_linked_pairs) {
+    String& this_linked_uid = this_linked_pair.first.get();
+    String& this_linked_relation = this_linked_pair.second.get();
+    if (this_linked_relation == link) {
+      CardP other_card = getCardFromUid(cards, this_linked_uid);
+      if (other_card) other_cards.push_back(other_card);
+      else if (erase_if_no_card) {
+        this_linked_relation = _("");
+        this_linked_uid = _("");
+      }
+    }
+  }
+  return other_cards;
+}
+vector<CardP> Card::getLinkedCardsFromLink(const Set& set, const String& link, bool erase_if_no_card) {
+  return getLinkedCardsFromLink(set.cards, link, erase_if_no_card);
+}
+
+CardP Card::getCardFromUid(const vector<CardP>& cards, const String& uid) {
+  FOR_EACH(card, cards) {
+    if (card->uid == uid) return card;
+  }
+  return nullptr;
+}
+CardP Card::getCardFromUid(const Set& set, const String& uid) {
+  return getCardFromUid(set.cards, uid);
 }
 
 IndexMap<FieldP, ValueP>& Card::extraDataFor(const StyleSheet& stylesheet) {

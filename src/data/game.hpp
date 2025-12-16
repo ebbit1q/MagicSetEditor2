@@ -19,6 +19,7 @@ DECLARE_POINTER_TYPE(Style);
 DECLARE_POINTER_TYPE(Game);
 DECLARE_POINTER_TYPE(StatsDimension);
 DECLARE_POINTER_TYPE(StatsCategory);
+DECLARE_POINTER_TYPE(CardLink);
 DECLARE_POINTER_TYPE(PackType);
 DECLARE_POINTER_TYPE(KeywordParam);
 DECLARE_POINTER_TYPE(KeywordMode);
@@ -41,7 +42,7 @@ public:
   vector<FieldP>          set_fields;             ///< Fields for set information
   IndexMap<FieldP,StyleP> default_set_style;      ///< Default style for the set fields, because it is often the same
   vector<FieldP>          card_fields;            ///< Fields on each card
-  vector<String>          card_links;             ///< Possible links between cards
+  vector<CardLinkP>       card_links;             ///< Possible links between cards
   OptionalScript          card_list_color_script; ///< Script that determines the color of items in the card list
   OptionalScript          import_script;          ///< Script applied as the last step of the new_card function
   vector<String>          json_paths;             ///< Paths inside JSON files to find the card array
@@ -52,6 +53,7 @@ public:
   vector<AddCardsScriptP> add_cards_scripts;      ///< Scripts for adding multiple cards to the set
   vector<AutoReplaceP>    auto_replaces;          ///< Things to autoreplace in textboxes
   map<String,String>      card_fields_alt_names;  ///< Other names that fields might go by, for example in CSV files
+  map<String,String>      card_links_alt_names;   ///< Localized names that card links go by
   bool                    has_keywords;           ///< Does this game use keywords?
   OptionalScript          keyword_match_script;   ///< For the keyword editor
   vector<KeywordParamP>   keyword_parameter_types;///< Types of keyword parameters

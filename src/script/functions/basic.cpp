@@ -778,76 +778,35 @@ SCRIPT_FUNCTION(get_card_export_settings) {
 SCRIPT_FUNCTION(get_card_from_uid) {
   SCRIPT_PARAM_C(Set*, set);
   SCRIPT_PARAM_C(String, input);
-  FOR_EACH(other_card, set->cards) {
-    if (other_card->uid == input) SCRIPT_RETURN(other_card);
-  }
-  return script_nil;
+  SCRIPT_RETURN(Card::getCardFromUid(*set, input));
 }
 
 SCRIPT_FUNCTION(get_cards_from_link) {
   SCRIPT_PARAM_C(Set*, set);
-  SCRIPT_PARAM_C(CardP, card);
-  SCRIPT_PARAM_C(String, input);
+  SCRIPT_PARAM_C(ScriptValueP, input);
+  CardP input_card = nullptr;
+  if (ScriptObject<CardP>* ic = dynamic_cast<ScriptObject<CardP>*>(input.get())) {
+    input_card = ic->getValue();
+  }
+  else if (input->type() == SCRIPT_STRING) {
+    input_card = Card::getCardFromUid(*set, input->toString());
+  }
+  if (!input_card) {
+    queue_message(MESSAGE_ERROR, _ERROR_("could not find input"));
+    return script_nil;
+  }
+  SCRIPT_PARAM(String, linked_relation);
   ScriptCustomCollectionP ret(new ScriptCustomCollection());
-  String trimmed_input = input.Trim().Trim(false);
-  if (card->linked_relation_1 == trimmed_input) {
-    String uid = card->linked_card_1;
-    bool found = false;
-    FOR_EACH(other_card, set->cards) {
-      if (other_card->uid == uid) {
-        ret->value.push_back(to_script(other_card));
-        found = true;
-        break;
-      }
-    }
-    if (!found) {
-      card->linked_relation_1 = _("");
-      card->linked_card_1 = _("");
+  vector<CardP> other_cards = input_card->getLinkedCardsFromLink(*set, linked_relation, true);
+  if (other_cards.size() > 0) {
+    FOR_EACH(other_card, other_cards) {
+      ret->value.push_back(to_script(other_card));
     }
   }
-  if (card->linked_relation_2 == trimmed_input) {
-    String uid = card->linked_card_2;
-    bool found = false;
-    FOR_EACH(other_card, set->cards) {
-      if (other_card->uid == uid) {
-        ret->value.push_back(to_script(other_card));
-        found = true;
-        break;
-      }
-    }
-    if (!found) {
-      card->linked_relation_2 = _("");
-      card->linked_card_2 = _("");
-    }
-  }
-  if (card->linked_relation_3 == trimmed_input) {
-    String uid = card->linked_card_3;
-    bool found = false;
-    FOR_EACH(other_card, set->cards) {
-      if (other_card->uid == uid) {
-        ret->value.push_back(to_script(other_card));
-        found = true;
-        break;
-      }
-    }
-    if (!found) {
-      card->linked_relation_3 = _("");
-      card->linked_card_3 = _("");
-    }
-  }
-  if (card->linked_relation_4 == trimmed_input) {
-    String uid = card->linked_card_4;
-    bool found = false;
-    FOR_EACH(other_card, set->cards) {
-      if (other_card->uid == uid) {
-        ret->value.push_back(to_script(other_card));
-        found = true;
-        break;
-      }
-    }
-    if (!found) {
-      card->linked_relation_4 = _("");
-      card->linked_card_4 = _("");
+  else if (set->game->card_links_alt_names.find(linked_relation) != set->game->card_links_alt_names.end()) {
+    other_cards = input_card->getLinkedCardsFromLink(*set, set->game->card_links_alt_names[linked_relation], true);
+    FOR_EACH(other_card, other_cards) {
+      ret->value.push_back(to_script(other_card));
     }
   }
   return ret;
@@ -855,91 +814,129 @@ SCRIPT_FUNCTION(get_cards_from_link) {
 
 SCRIPT_FUNCTION(get_front_face) {
   SCRIPT_PARAM_C(Set*, set);
-  SCRIPT_PARAM_C(CardP, input);
-  if (input->linked_relation_1 == _("Front Face")) {
-    String uid = input->linked_card_1;
-    FOR_EACH(other_card, set->cards) {
-      if (other_card->uid == uid) SCRIPT_RETURN(other_card);
-    }
-    input->linked_relation_1 = _("");
-    input->linked_card_1 = _("");
+  SCRIPT_PARAM_C(ScriptValueP, input);
+  CardP input_card = nullptr;
+  if (ScriptObject<CardP>* ic = dynamic_cast<ScriptObject<CardP>*>(input.get())) {
+    input_card = ic->getValue();
   }
-  if (input->linked_relation_2 == _("Front Face")) {
-    String uid = input->linked_card_2;
-    FOR_EACH(other_card, set->cards) {
-      if (other_card->uid == uid) SCRIPT_RETURN(other_card);
-    }
-    input->linked_relation_2 = _("");
-    input->linked_card_2 = _("");
+  else if (input->type() == SCRIPT_STRING) {
+    input_card = Card::getCardFromUid(*set, input->toString());
   }
-  if (input->linked_relation_3 == _("Front Face")) {
-    String uid = input->linked_card_3;
-    FOR_EACH(other_card, set->cards) {
-      if (other_card->uid == uid) SCRIPT_RETURN(other_card);
-    }
-    input->linked_relation_3 = _("");
-    input->linked_card_3 = _("");
+  if (!input_card) {
+    queue_message(MESSAGE_ERROR, _ERROR_("could not find input"));
+    return script_nil;
   }
-  if (input->linked_relation_4 == _("Front Face")) {
-    String uid = input->linked_card_4;
-    FOR_EACH(other_card, set->cards) {
-      if (other_card->uid == uid) SCRIPT_RETURN(other_card);
-    }
-    input->linked_relation_4 = _("");
-    input->linked_card_4 = _("");
-  }
-  return script_nil;
+  vector<CardP> other_cards = input_card->getLinkedCardsFromLink(*set, "Front Face", true);
+  if (other_cards.size() == 0) return script_nil;
+  if (other_cards.size() > 1) queue_message(MESSAGE_WARNING, _ERROR_1_("multiple front faces", input_card->identification()));
+  SCRIPT_RETURN(other_cards[0]);
 }
 
 SCRIPT_FUNCTION(get_back_face) {
   SCRIPT_PARAM_C(Set*, set);
-  SCRIPT_PARAM_C(CardP, input);
-  if (input->linked_relation_1 == _("Back Face")) {
-    String uid = input->linked_card_1;
-    FOR_EACH(other_card, set->cards) {
-      if (other_card->uid == uid) SCRIPT_RETURN(other_card);
-    }
-    input->linked_relation_1 = _("");
-    input->linked_card_1 = _("");
+  SCRIPT_PARAM_C(ScriptValueP, input);
+  CardP input_card = nullptr;
+  if (ScriptObject<CardP>* ic = dynamic_cast<ScriptObject<CardP>*>(input.get())) {
+    input_card = ic->getValue();
   }
-  if (input->linked_relation_2 == _("Back Face")) {
-    String uid = input->linked_card_2;
-    FOR_EACH(other_card, set->cards) {
-      if (other_card->uid == uid) SCRIPT_RETURN(other_card);
-    }
-    input->linked_relation_2 = _("");
-    input->linked_card_2 = _("");
+  else if (input->type() == SCRIPT_STRING) {
+    input_card = Card::getCardFromUid(*set, input->toString());
   }
-  if (input->linked_relation_3 == _("Back Face")) {
-    String uid = input->linked_card_3;
-    FOR_EACH(other_card, set->cards) {
-      if (other_card->uid == uid) SCRIPT_RETURN(other_card);
-    }
-    input->linked_relation_3 = _("");
-    input->linked_card_3 = _("");
+  if (!input_card) {
+    queue_message(MESSAGE_ERROR, _ERROR_("could not find input"));
+    return script_nil;
   }
-  if (input->linked_relation_4 == _("Back Face")) {
-    String uid = input->linked_card_4;
-    FOR_EACH(other_card, set->cards) {
-      if (other_card->uid == uid) SCRIPT_RETURN(other_card);
-    }
-    input->linked_relation_4 = _("");
-    input->linked_card_4 = _("");
+  vector<CardP> other_cards = input_card->getLinkedCardsFromLink(*set, "Back Face", true);
+  if (other_cards.size() == 0) return script_nil;
+  if (other_cards.size() > 1) queue_message(MESSAGE_WARNING, _ERROR_1_("multiple back faces", input_card->identification()));
+  SCRIPT_RETURN(other_cards[0]);
+}
+
+SCRIPT_FUNCTION(add_link) {
+  SCRIPT_PARAM_C(Set*, set);
+  SCRIPT_PARAM_C(ScriptValueP, input);
+  CardP input_card = nullptr;
+  if (ScriptObject<CardP>* ic = dynamic_cast<ScriptObject<CardP>*>(input.get())) {
+    input_card = ic->getValue();
   }
-  return script_nil;
+  else if (input->type() == SCRIPT_STRING) {
+    input_card = Card::getCardFromUid(*set, input->toString());
+  }
+  if (!input_card) {
+    queue_message(MESSAGE_ERROR, _ERROR_("could not find input"));
+    return script_nil;
+  }
+  SCRIPT_PARAM(ScriptValueP, linked_card);
+  CardP other_card = nullptr;
+  if (ScriptObject<CardP>* c = dynamic_cast<ScriptObject<CardP>*>(linked_card.get())) {
+    other_card = c->getValue();
+  }
+  else if (linked_card->type() == SCRIPT_STRING) {
+    other_card = Card::getCardFromUid(*set, linked_card->toString());
+  }
+  if (!other_card) {
+    queue_message(MESSAGE_WARNING, _ERROR_("could not find linked"));
+    return script_nil;
+  }
+  SCRIPT_PARAM(String, selected_relation);
+  SCRIPT_PARAM(String, linked_relation);
+  input_card->link(*set, other_card, selected_relation, linked_relation);
+  SCRIPT_RETURN(other_card);
+}
+
+SCRIPT_FUNCTION(remove_links) {
+  SCRIPT_PARAM_C(Set*, set);
+  ScriptCustomCollectionP ret(new ScriptCustomCollection());
+  SCRIPT_PARAM_C(ScriptValueP, input);
+  CardP input_card = nullptr;
+  if (ScriptObject<CardP>* ic = dynamic_cast<ScriptObject<CardP>*>(input.get())) {
+    input_card = ic->getValue();
+  }
+  else if (input->type() == SCRIPT_STRING) {
+    input_card = Card::getCardFromUid(*set, input->toString());
+  }
+  if (!input_card) {
+    queue_message(MESSAGE_ERROR, _ERROR_("could not find input"));
+    return ret;
+  }
+  vector<CardP> other_cards;
+  SCRIPT_PARAM_DEFAULT(ScriptValueP, linked_card, script_nil);
+  if (linked_card != script_nil) {
+    CardP other_card = nullptr;
+    if (ScriptObject<CardP>* c = dynamic_cast<ScriptObject<CardP>*>(linked_card.get())) {
+      other_card = c->getValue();
+    }
+    else if (linked_card->type() == SCRIPT_STRING) {
+      other_card = Card::getCardFromUid(*set, linked_card->toString());
+    }
+    if (!other_card) {
+      queue_message(MESSAGE_WARNING, _ERROR_("could not find linked"));
+    }
+    else other_cards.push_back(other_card);
+  }
+  SCRIPT_PARAM_DEFAULT(ScriptValueP, linked_relation, script_nil);
+  if (linked_relation != script_nil) {
+    if (linked_relation->type() == SCRIPT_STRING) {
+      vector<CardP> other_other_cards = input_card->getLinkedCardsFromLink(*set, linked_relation->toString(), true);
+      other_cards.insert(other_cards.end(), other_other_cards.begin(), other_other_cards.end());
+    }
+  }
+  input_card->unlink(other_cards);
+  FOR_EACH(other_card, other_cards) {
+    ret->value.push_back(to_script(other_card));
+  }
+  return ret;
 }
 
 SCRIPT_FUNCTION(has_link) {
-  SCRIPT_PARAM_C(CardP, card);
-  SCRIPT_PARAM_C(String, input);
-  String trimmed_input = input.Trim().Trim(false);
-  if (
-    card->linked_relation_1 == trimmed_input ||
-    card->linked_relation_2 == trimmed_input ||
-    card->linked_relation_3 == trimmed_input ||
-    card->linked_relation_4 == trimmed_input
-  ) SCRIPT_RETURN(true);
-  SCRIPT_RETURN(false);
+  SCRIPT_PARAM_C(CardP, input);
+  SCRIPT_PARAM(String, linked_relation);
+  SCRIPT_RETURN(
+    input->linked_relation_1 == linked_relation ||
+    input->linked_relation_2 == linked_relation ||
+    input->linked_relation_3 == linked_relation ||
+    input->linked_relation_4 == linked_relation
+  );
 }
 
 // ----------------------------------------------------------------------------- : Keywords
@@ -1045,6 +1042,8 @@ void init_script_basic_functions(Context& ctx) {
   ctx.setVariable(_("get_back_face"),             script_get_back_face);
   ctx.setVariable(_("get_front_face"),            script_get_front_face);
   ctx.setVariable(_("has_link"),                  script_has_link);
+  ctx.setVariable(_("add_link"),                  script_add_link);
+  ctx.setVariable(_("remove_links"),              script_remove_links);
   // math
   ctx.setVariable(_("abs"),                       script_abs);
   ctx.setVariable(_("random_real"),               script_random_real);

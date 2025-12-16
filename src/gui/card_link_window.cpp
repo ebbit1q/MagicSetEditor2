@@ -8,6 +8,7 @@
 
 #include <util/prec.hpp>
 #include <data/game.hpp>
+#include <data/card_link.hpp>
 #include <gui/card_link_window.hpp>
 #include <gui/control/select_card_list.hpp>
 #include <util/window_id.hpp>
@@ -25,9 +26,8 @@ CardLinkWindow::CardLinkWindow(Window* parent, const SetP& set, const CardP& sel
   linked_relation = new wxTextCtrl(this, wxID_ANY, _(""));
   relation_type = new wxChoice(this, ID_CARD_LINK_TYPE, wxDefaultPosition, wxDefaultSize, 0, nullptr);
   relation_type->Clear();
-  relation_type->Append("Front Face // Back Face");
   FOR_EACH(link, set->game->card_links) {
-    relation_type->Append(link);
+    relation_type->Append(link->name());
   }
   relation_type->Append(_LABEL_("custom link"));
   relation_type->SetSelection(0);
@@ -69,19 +69,18 @@ void CardLinkWindow::setSelection(const vector<CardP>& cards) {
   list->setSelection(cards);
 }
 void CardLinkWindow::setRelationType() {
-  int sel = relation_type->GetSelection();
-  if (sel == relation_type->GetCount() - 1) { // Custom type
+  int index = relation_type->GetSelection();
+  if (index >= set->game->card_links.size()) { // Custom type
     selected_relation->ChangeValue(_LABEL_("custom link selected"));
     selected_relation->Enable();
     linked_relation->ChangeValue(_LABEL_("custom link linked"));
     linked_relation->Enable();
   }
   else {
-    String relation = relation_type->GetString(sel);
-    int delimiter_pos = relation.find("//");
-    selected_relation->ChangeValue(relation.substr(0, delimiter_pos).Trim().Trim(false));
+    CardLinkP link = set->game->card_links[index];
+    selected_relation->ChangeValue(link->selected.get());
     selected_relation->Enable(false);
-    linked_relation->ChangeValue(delimiter_pos + 2 < relation.Length() ? relation.substr(delimiter_pos + 2).Trim().Trim(false) : _LABEL_("custom link undefined"));
+    linked_relation->ChangeValue(link->linked.get());
     linked_relation->Enable(false);
   }
 }
@@ -100,7 +99,14 @@ void CardLinkWindow::onOk(wxCommandEvent&) {
   // The linked_cards are the ones selected in this dialogue window
   vector<CardP> linked_cards;
   getSelection(linked_cards);
-  set->actions.addAction(make_unique<LinkCardsAction>(*set, selected_card, linked_cards, selected_relation->GetValue(), linked_relation->GetValue()));
+  int index = relation_type->GetSelection();
+  if (index >= set->game->card_links.size()) { // Custom type
+    set->actions.addAction(make_unique<LinkCardsAction>(*set, selected_card, linked_cards, selected_relation->GetValue(), linked_relation->GetValue()));
+  }
+  else {
+    CardLinkP link = set->game->card_links[index];
+    set->actions.addAction(make_unique<LinkCardsAction>(*set, selected_card, linked_cards, link->selected.default_, link->linked.default_));
+  }
   // Done
   EndModal(wxID_OK);
 }

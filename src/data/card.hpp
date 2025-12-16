@@ -91,8 +91,15 @@ public:
 
   vector<pair<CardP, String>> getLinkedCards(const vector<CardP>& cards);
   vector<pair<CardP, String>> getLinkedCards(const Set& set);
-  CardP getOtherFace(const vector<CardP>& cards);
-  CardP getOtherFace(const Set& set);
+
+  vector<CardP> getLinkedCardsFromLink(const vector<CardP>& cards, const String& link, bool erase_if_no_card);
+  vector<CardP> getLinkedCardsFromLink(const Set& set, const String& link, bool erase_if_no_card);
+
+  CardP getLinkedOtherFace(const vector<CardP>& cards);
+  CardP getLinkedOtherFace(const Set& set);
+
+  static CardP getCardFromUid(const vector<CardP>& cards, const String& uid);
+  static CardP getCardFromUid(const Set& set, const String& uid);
 
   /// Find a value in the data by name and type
   template <typename T> T& value(const String& name) {
