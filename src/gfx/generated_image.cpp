@@ -324,8 +324,8 @@ Image BleedEdgedImage::generate(const Options& opt) {
   // create enlarged image
   Image base_img = base_image->generate(opt);
   int w = base_img.GetWidth(), h = base_img.GetHeight();
-  if (w <= 0 || h <= 0) {
-    queue_message(MESSAGE_ERROR, _("Cannot add bleed edge to empty image"));
+  if (w <= 4 || h <= 4) {
+    queue_message(MESSAGE_ERROR, _("Image too small to add bleed edge"));
     return base_img;
   }
   bool is_landscape = w > h;
