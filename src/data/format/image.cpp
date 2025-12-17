@@ -58,116 +58,72 @@ Image export_image(const SetP& set, const CardP& card, const bool write_metadata
   int width = img.GetWidth(), height = img.GetHeight();
 
   /// add print bleed edge
-  if (size.width < 1.0 || size.height < 1.0) {
-    queue_message(MESSAGE_ERROR, _("Cannot add bleed edge to empty image"));
+  if (size.width < bleed + 2 || size.height < bleed + 2) {
+    queue_message(MESSAGE_ERROR, _("Image too small to add bleed edge"));
   }
   else {
     if (!img.HasAlpha()) img.InitAlpha();
     Byte* pixels = img.GetData();
     Byte* alpha = img.GetAlpha();
-    // fill top left corner
-    int pixel;
-    int x_start = 0;
-    int y_start = 0;
-    int ref = bleed + bleed * width;
-    for (int y = 0; y < bleed; ++y) {
-      for (int x = 0; x < bleed; ++x) {
-        pixel = x_start + x + (y_start + y) * width;
-        pixels[3 * pixel + 0] = pixels[3 * ref + 0];
-        pixels[3 * pixel + 1] = pixels[3 * ref + 1];
-        pixels[3 * pixel + 2] = pixels[3 * ref + 2];
-        alpha[pixel] = alpha[ref];
-      }
-    }
-    // fill top right corner
-    x_start = width - bleed;
-    y_start = 0;
-    ref = x_start - 1 + bleed * width;
-    for (int y = 0; y < bleed; ++y) {
-      for (int x = 0; x < bleed; ++x) {
-        pixel = x_start + x + (y_start + y) * width;
-        pixels[3 * pixel + 0] = pixels[3 * ref + 0];
-        pixels[3 * pixel + 1] = pixels[3 * ref + 1];
-        pixels[3 * pixel + 2] = pixels[3 * ref + 2];
-        alpha[pixel] = alpha[ref];
-      }
-    }
-    // fill bottom left corner
-    x_start = 0;
-    y_start = height - bleed;
-    ref = bleed + (y_start - 1) * width;
-    for (int y = 0; y < bleed; ++y) {
-      for (int x = 0; x < bleed; ++x) {
-        pixel = x_start + x + (y_start + y) * width;
-        pixels[3 * pixel + 0] = pixels[3 * ref + 0];
-        pixels[3 * pixel + 1] = pixels[3 * ref + 1];
-        pixels[3 * pixel + 2] = pixels[3 * ref + 2];
-        alpha[pixel] = alpha[ref];
-      }
-    }
-    // fill bottom right corner
-    x_start = width - bleed;
-    y_start = height - bleed;
-    ref = (x_start - 1) + (y_start - 1) * width;
-    for (int y = 0; y < bleed; ++y) {
-      for (int x = 0; x < bleed; ++x) {
-        pixel = x_start + x + (y_start + y) * width;
-        pixels[3 * pixel + 0] = pixels[3 * ref + 0];
-        pixels[3 * pixel + 1] = pixels[3 * ref + 1];
-        pixels[3 * pixel + 2] = pixels[3 * ref + 2];
-        alpha[pixel] = alpha[ref];
-      }
-    }
+    int pixel, mirror, x_start, y_start, x_size, y_size;
     // fill left border
     x_start = 0;
     y_start = bleed;
-    for (int y = 0; y < height - bleed - bleed; ++y) {
-      ref = bleed + (y_start + y) * width;
-      for (int x = 0; x < bleed; ++x) {
-        pixel = x_start + x + (y_start + y) * width;
-        pixels[3 * pixel + 0] = pixels[3 * ref + 0];
-        pixels[3 * pixel + 1] = pixels[3 * ref + 1];
-        pixels[3 * pixel + 2] = pixels[3 * ref + 2];
-        alpha[pixel] = alpha[ref];
-      }
-    }
-    // fill top border
-    x_start = bleed;
-    y_start = 0;
-    for (int y = 0; y < bleed; ++y) {
-      for (int x = 0; x < width - bleed - bleed; ++x) {
-        pixel = x_start + x + (y_start + y) * width;
-        ref = x_start + x + bleed * width;
-        pixels[3 * pixel + 0] = pixels[3 * ref + 0];
-        pixels[3 * pixel + 1] = pixels[3 * ref + 1];
-        pixels[3 * pixel + 2] = pixels[3 * ref + 2];
-        alpha[pixel] = alpha[ref];
+    x_size = bleed;
+    y_size = height - bleed - bleed;
+    for (int y = 0; y < y_size; ++y) {
+      for (int x = 0; x < x_size; ++x) {
+        pixel =    x_start + x + (y_start + y) * width;
+        mirror = 2 * bleed - x + (y_start + y) * width;
+        pixels[3 * pixel + 0] = pixels[3 * mirror + 0];
+        pixels[3 * pixel + 1] = pixels[3 * mirror + 1];
+        pixels[3 * pixel + 2] = pixels[3 * mirror + 2];
+        alpha[pixel] = alpha[mirror];
       }
     }
     // fill right border
     x_start = width - bleed;
     y_start = bleed;
-    for (int y = 0; y < height - bleed - bleed; ++y) {
-      ref = width - bleed - 1 + (y_start + y) * width;
-      for (int x = 0; x < bleed; ++x) {
-        pixel = x_start + x + (y_start + y) * width;
-        pixels[3 * pixel + 0] = pixels[3 * ref + 0];
-        pixels[3 * pixel + 1] = pixels[3 * ref + 1];
-        pixels[3 * pixel + 2] = pixels[3 * ref + 2];
-        alpha[pixel] = alpha[ref];
+    x_size = bleed;
+    y_size = height - bleed - bleed;
+    for (int y = 0; y < y_size; ++y) {
+      for (int x = 0; x < x_size; ++x) {
+        pixel =        x_start + x + (y_start + y) * width;
+        mirror = - 2 + x_start - x + (y_start + y) * width;
+        pixels[3 * pixel + 0] = pixels[3 * mirror + 0];
+        pixels[3 * pixel + 1] = pixels[3 * mirror + 1];
+        pixels[3 * pixel + 2] = pixels[3 * mirror + 2];
+        alpha[pixel] = alpha[mirror];
+      }
+    }
+    // fill top border
+    x_start = 0;
+    y_start = 0;
+    x_size = width;
+    y_size = bleed;
+    for (int y = 0; y < y_size; ++y) {
+      for (int x = 0; x < x_size; ++x) {
+        pixel =  x_start + x + (  y_start + y) * width;
+        mirror = x_start + x + (2 * bleed - y) * width;
+        pixels[3 * pixel + 0] = pixels[3 * mirror + 0];
+        pixels[3 * pixel + 1] = pixels[3 * mirror + 1];
+        pixels[3 * pixel + 2] = pixels[3 * mirror + 2];
+        alpha[pixel] = alpha[mirror];
       }
     }
     // fill bottom border
-    x_start = bleed;
+    x_start = 0;
     y_start = height - bleed;
-    for (int y = 0; y < bleed; ++y) {
-      for (int x = 0; x < width - bleed - bleed; ++x) {
-        pixel = x_start + x + (y_start + y) * width;
-        ref = x_start + x + (height - bleed - 1) * width;
-        pixels[3 * pixel + 0] = pixels[3 * ref + 0];
-        pixels[3 * pixel + 1] = pixels[3 * ref + 1];
-        pixels[3 * pixel + 2] = pixels[3 * ref + 2];
-        alpha[pixel] = alpha[ref];
+    x_size = width;
+    y_size = bleed;
+    for (int y = 0; y < y_size; ++y) {
+      for (int x = 0; x < x_size; ++x) {
+        pixel =  x_start + x + (      y_start + y) * width;
+        mirror = x_start + x + (- 2 + y_start - y) * width;
+        pixels[3 * pixel + 0] = pixels[3 * mirror + 0];
+        pixels[3 * pixel + 1] = pixels[3 * mirror + 1];
+        pixels[3 * pixel + 2] = pixels[3 * mirror + 2];
+        alpha[pixel] = alpha[mirror];
       }
     }
   }
