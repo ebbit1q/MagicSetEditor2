@@ -59,6 +59,7 @@ WebRequestWindow::WebRequestWindow(Window* parent, const String& url, bool sizer
   });
 
   // start request
+  wxMilliSleep(70); // make sure we don't DDoS anyone
   request.Start();
 }
 

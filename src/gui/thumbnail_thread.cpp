@@ -57,7 +57,7 @@ ThumbnailThreadWorker::ThumbnailThreadWorker(ThumbnailThread* parent)
 wxThread::ExitCode ThumbnailThreadWorker::Entry() {
   while (true) {
     do {
-      Sleep(1);
+      wxMilliSleep(1);
     } while (stop);
     // get a request
     {
