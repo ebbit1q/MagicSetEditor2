@@ -315,7 +315,9 @@ ScriptValueP json_to_mse(const boost::json::value& jv, Set* set) {
   }
   else if (jv.is_string()) {
     std::string string = boost::json::value_to<std::string>(jv);
-    return to_script(String(string.c_str()));
+    String wxstring = String(string.c_str(), wxConvUTF8);
+    if (wxstring.empty()) wxstring = String(string.c_str());
+    return to_script(wxstring);
   }
   else if (jv.is_array()) {
     boost::json::array array = jv.get_array();
