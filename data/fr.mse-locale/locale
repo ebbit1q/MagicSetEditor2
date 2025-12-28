@@ -81,6 +81,7 @@ menu:
 	bold:								&Gras	Ctrl+B
 	italic:								&Italique	Ctrl+I
 	underline:							Souligné	Ctrl+U
+	strikethrough:						Barré
 	symbols:							&Symboles	Ctrl+M
 	reminder text:						&Texte de rappel	Ctrl+R
 	insert symbol:						I&nsérer un Symbole
@@ -215,6 +216,7 @@ help:
 	bold:								Mettre le texte sélectionné en gras
 	italic:								Mettre le texte sélectionné en italique
 	underline:							Souligner le texte sélectionné
+	strikethrough:						Barrer le texte sélectionné
 	symbols:							Mettre le texte selectionné en symboles
 	reminder text:						Afficher le texte de rappel pour le Mot-clef sélectionné
 
@@ -444,6 +446,7 @@ tooltip:
 	bold:								Gras
 	italic:								Italique
 	underline:							Souligné
+	strikethrough:						Barré
 	symbols:							Symboles
 	reminder text:						Texte de rappel
 
@@ -944,16 +947,20 @@ error:
 	# image import
 	import not found:					Fichier non trouvé: '%s'
 	can't import image without set:		Vous devez d'abord sauver ou ouvrir un Set avant d'importer le fichier: '%s'
+	can't download image without set:	Vous devez d'abord sauver ou ouvrir un Set avant de télécharger le fichier: '%s'
 	can't create file stream:			Échec de la création du fichier: '%s'
 	can't write image to set:			Échec de la sauvegarde de l'image dans le Set: '%s'
 	can't import image:					Échec de l'import de l'image: '%s'
+	can't download image:				Échec du téléchargement de l'image: '%s'
+	import not image:					Le chemin ne contient pas une image: '%s'
+	download not image:					L'URL ne contient pas une image: '%s'
 
 	# card creation
 	no field with name:					Impossible de trouver le champ de %s nommé '%s'
 	styling data not map:				La valeur donnée pour « %s_data » n'est pas un dictionnaire
 	styling data without stylesheet:	Valeur donnée pour « %s_data » avant la définition d'un Style
 	cant set value:						Impossible de définir la valeur de la carte '%s', son type est incorrect
-	cant set image value:				On ne peut définir la valeur d'une image qu'avec un nom de fichier relatif depuis le package, ou avec la fonction import_image (dans le champ '%s')
+	cant set image value:				On ne peut définir la valeur d'une image qu'avec un nom de fichier relatif depuis le package, ou avec les fonctions import_image/download_image (dans le champ '%s')
 	cant set symbol value:				On ne peut définir la valeur d'un symbol qu'avec un nom de fichier relatif depuis le package (dans le champ '%s')
 	add card csv file not found:		Impossible de trouver ou charger le fichier CSV ou TSV spécifié
 	add card csv file malformed:		Fichier CSV ou TSV malformé, la rangée '%s' n'a pas le même nombre d'entrées que la première rangée

@@ -650,7 +650,7 @@ void CardListBase::onContextMenu(wxContextMenuEvent&) {
     m.AppendSeparator();
     add_menu_item_tr(&m, ID_CARD_ADD, "card_add", "add card");
     add_menu_item_tr(&m, ID_CARD_REMOVE, "card_del", "remove card");
-    add_menu_item_tr(&m, ID_CARD_LINK, "card_link", "link card");
+    add_menu_item_tr(&m, ID_CARD_LINK, settings.darkModePrefix() + "card_link", "link card");
     PopupMenu(&m);
   }
 }

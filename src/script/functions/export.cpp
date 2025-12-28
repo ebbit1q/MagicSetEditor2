@@ -218,6 +218,7 @@ String to_html(const String& str_in, const SymbolFontP& symbol_font, double symb
   Tag bold  (_("<b>"), _("</b>")),
       italic(_("<i>"), _("</i>")),
       underline(_("<u>"), _("</u>")),
+      strikethrough(_("<s>"), _("</s>")),
       symbol(_("<span class=\"symbol\">"), _("</span>"));
   TagStack tags;
   String symbols;
@@ -237,6 +238,10 @@ String to_html(const String& str_in, const SymbolFontP& symbol_font, double symb
         tags.open(ret, underline);
       } else if (is_substr(str, i, _("/u"))) {
         tags.close(ret, underline);
+      } else if (is_substr(str, i, _("strike"))) {
+        tags.open(ret, strikethrough);
+      } else if (is_substr(str, i, _("/strike"))) {
+        tags.close(ret, strikethrough);
       } else if (is_substr(str, i, _("sym"))) {
         tags.open (ret, symbol);
       } else if (is_substr(str, i, _("/sym"))) {
@@ -312,8 +317,9 @@ String to_bbcode(const String& str_in) {
   String str = remove_tag_contents(str_in,_("<sep-soft"));
   String ret;
   Tag bold  (_("[b]"), _("[/b]")),
-        italic(_("[i]"), _("[/i]")),
-        underline(_("[u]"), _("[/u]"));
+      italic(_("[i]"), _("[/i]")),
+      underline(_("[u]"), _("[/u]")),
+      strikethrough(_("[s]"), _("[/s]"));
   TagStack tags;
   String symbols;
   for (size_t i = 0 ; i < str.size() ; ) {
@@ -332,6 +338,10 @@ String to_bbcode(const String& str_in) {
         tags.open(ret, underline);
       } else if (is_substr(str, i, _("/u"))) {
         tags.close(ret, underline);
+      } else if (is_substr(str, i, _("strike"))) {
+        tags.open(ret, strikethrough);
+      } else if (is_substr(str, i, _("/strike"))) {
+        tags.close(ret, strikethrough);
       }
       /*else if (is_substr(str, i, _("sym"))) {
         tags.open (ret, symbol);

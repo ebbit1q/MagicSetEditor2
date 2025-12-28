@@ -98,6 +98,8 @@ menu:
 	italic:								&Kursywa	Ctrl+I
 	#TODO: Localize
 	underline:							&Underline	Ctrl+U
+	#TODO: Localize
+	strikethrough:						Strikethrough
 	symbols:							&Symbole	Ctrl+M
 	reminder text:						&Tekst przypomnienia	Ctrl+R
 	insert symbol:						&Wstaw symbol
@@ -246,6 +248,8 @@ help:
 	italic:								Pochyla zaznaczony tekst
 	#TODO: Localize
 	underline:							Makes the selected text underlined
+	#TODO: Localize
+	strikethrough:						Makes the selected text struck through
 	symbols:							Rysuje zaznaczony tekst z symbolami
 	reminder text:						Pokazuj tekst przypomnienia dla wybranego słowa kluczowego
 
@@ -494,6 +498,8 @@ tooltip:
 	italic:								Kursywa
 	#TODO: Localize
 	underline:							Underline
+	#TODO: Localize
+	strikethrough:						Strikethrough
 	symbols:							Symbole
 	reminder text:						Przypomnienie
 
@@ -1046,9 +1052,17 @@ error:
 	#TODO: Localize Section
 	import not found:					File not found: '%s'
 	can't import image without set:		Must first save or load a set file before importing file: '%s'
+	#TODO: Localize
+	can't download image without set:	Must first save or load a set file before downloading file: '%s'
 	can't create file stream:			Failed to create file stream: '%s'
 	can't write image to set:			Failed to write image to set: '%s'
 	can't import image:					Failed to import image: '%s'
+	#TODO: Localize
+	can't download image:				Failed to download image: '%s'
+	#TODO: Localize
+	import not image:					Filepath does not point to an image: '%s'
+	#TODO: Localize
+	download not image:					URL does not point to an image: '%s'
 
 	# card creation
 	#TODO: Localize Section
@@ -1056,7 +1070,7 @@ error:
 	styling data not map:				Given value for '%s_data' is not a map
 	styling data without stylesheet:	Given value for '%s_data' before a stylesheet was set
 	cant set value:						Can not set card value '%s', it is not of the right type
-	cant set image value:				Can only set image value with a relative filename from within the package, or with the import_image function, in field named '%s'
+	cant set image value:				Can only set image value with a relative filename from within the package, or with the import_image/download_image functions, in field named '%s'
 	cant set symbol value:				Can only set symbol value with a relative filename from within the package, in field named '%s'
 	add card csv file not found:		Could not find or load the CSV or TSV file
 	add card csv file malformed:		CSV or TSV file malformed, row '%s' does not have the same number of entries as the first row
