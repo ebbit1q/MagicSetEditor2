@@ -101,6 +101,7 @@ These functions are built into the program, other [[type:function]]s can be defi
 | [[fun:dimensions_of]]		Get the width and height of an image.
 | [[fun:symbol_variation]]	Render a variation of a [[type:symbol]].
 | [[fun:import_image]]	Load an image from outside the data folder.
+| [[fun:download_image]]	Download an image from a URL.
 | [[fun:built_in_image]]	Return an image built into the program.
 	
 ! Cards				<<<

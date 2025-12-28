@@ -178,15 +178,15 @@ public:
   // --------------------------------------------------- : Managing the inside of the package
 
   /// Check if a file is in the package.
-  bool existsIn(const String& file);
-  inline bool existsIn(const LocalFileName& file) {
-      return existsIn(file.fn);
+  bool contains(const String& file);
+  inline bool contains(const LocalFileName& file) {
+    return contains(file.fn);
   }
 
   /// Open an input stream for a file in the package.
   unique_ptr<wxInputStream> openIn(const String& file);
   inline unique_ptr<wxInputStream> openIn(const LocalFileName& file) {
-      return openIn(file.fn);
+    return openIn(file.fn);
   }
 
   /// Open an output stream for a file in the package.
@@ -331,7 +331,7 @@ public:
   void open(const String& package, bool just_header = false);
   /// Ensure the package is fully loaded.
   void loadFully();
-  void save();
+  void save(bool remove_unused = true);
   void saveAs(const String& package, bool remove_unused = true, bool as_directory = false);
   void saveCopy(const String& package);
 

@@ -297,21 +297,23 @@ void BulkModificationWindow::onOk(wxCommandEvent&) {
     else if (dynamic_cast<ImageValue*>(values.front())) {
       for (int i = 0; i < count; ++i) {
         ImageValue* value = dynamic_cast<ImageValue*>(values[i]);
-        wxFileName fname(static_cast<ExternalImage*>(new_values[i].get())->toString());
-        ImageValue::ValueType new_value = LocalFileName::fromReadString(fname.GetName(), "");
-        shared_ptr<SimpleValueAction<ImageValue, false>> action = make_shared<SimpleValueAction<ImageValue, false>>(value, new_value);
-        action->setCard(cards[i]);
-        actions.push_back(action);
+        if (ExternalImage* img = dynamic_cast<ExternalImage*>(new_values[i].get())) {
+          ImageValue::ValueType new_value = LocalFileName::fromReadString(img->toString(), "");
+          shared_ptr<SimpleValueAction<ImageValue, false>> action = make_shared<SimpleValueAction<ImageValue, false>>(value, new_value);
+          action->setCard(cards[i]);
+          actions.push_back(action);
+        }
       }
     }
     else if (dynamic_cast<SymbolValue*>(values.front())) {
       for (int i = 0; i < count; ++i) {
         SymbolValue* value = dynamic_cast<SymbolValue*>(values[i]);
-        wxFileName fname(static_cast<ExternalImage*>(new_values[i].get())->toString());
-        SymbolValue::ValueType new_value = LocalFileName::fromReadString(fname.GetName(), "");
-        shared_ptr<SimpleValueAction<SymbolValue, false>> action = make_shared<SimpleValueAction<SymbolValue, false>>(value, new_value);
-        action->setCard(cards[i]);
-        actions.push_back(action);
+        if (ExternalImage* img = dynamic_cast<ExternalImage*>(new_values[i].get())) {
+          SymbolValue::ValueType new_value = LocalFileName::fromReadString(img->toString(), "");
+          shared_ptr<SimpleValueAction<SymbolValue, false>> action = make_shared<SimpleValueAction<SymbolValue, false>>(value, new_value);
+          action->setCard(cards[i]);
+          actions.push_back(action);
+        }
       }
     }
     else {

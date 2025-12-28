@@ -10,10 +10,12 @@
 #include <gfx/generated_image.hpp>
 #include <util/io/package.hpp>
 #include <util/error.hpp>
+#include <data/set.hpp>
 #include <data/symbol.hpp>
 #include <data/field/symbol.hpp>
 #include <render/symbol/filter.hpp>
 #include <gui/util.hpp> // load_resource_image
+#include <gui/web_request_window.hpp>
 #include <wx/wfstream.h>
 
 // ----------------------------------------------------------------------------- : GeneratedImage
@@ -673,55 +675,88 @@ bool ImageValueToImage::operator == (const GeneratedImage& that) const {
                && age      == that2->age;
 }
 
-// ----------------------------------------------------------------------------- : ExternalImage
+// ----------------------------------------------------------------------------- : ImportedImage
 
-ExternalImage::ExternalImage(const String& filepath)
-  : filepath(filepath), loaded(false)
+ImportedImage::ImportedImage(Set* set, const String& filepath)
 {
-  filepathSanitized = filepath;
-  filepathSanitized.Replace(":",  "-");
-  filepathSanitized.Replace("\\", "-");
-  filepathSanitized.Replace("/",  "-");
-}
+  loadpath = filepath;
 
-Image ExternalImage::generate(const Options& opt) {
-  // has a pre-existing .mse-set file been loaded?
-  if (opt.local_package->needSaveAs()) throw ScriptError(_ERROR_1_("can't import image without set", filepath));
+  // has the set already been saved at least once?
+  if (set->needSaveAs()) throw ScriptError(_ERROR_1_("can't import image without set", loadpath));
 
   // does the file pointed to by filepath exist?
-  wxFileName fname(filepath, wxPATH_UNIX);
-  if (!fname.FileExists()) throw ScriptError(_ERROR_1_("import not found", filepath));
+  if (!wxFileName(loadpath, wxPATH_UNIX).FileExists()) throw ScriptError(_ERROR_1_("import not found", loadpath));
 
-  // add the file to the package (or overwrite it if pre-existing)
-  if (!loaded || !opt.local_package->existsIn(filepathSanitized)) {
-    auto outStream = opt.local_package->openOut(filepathSanitized);
-    wxFileInputStream inStream(filepath);
-    if (!inStream.IsOk()) throw ScriptError(_ERROR_1_("can't create file stream", filepath));
-    outStream->Write(inStream);
-    if (!outStream->IsOk()) throw ScriptError(_ERROR_1_("can't write image to set", filepath));
-    outStream->Close();
-    loaded = true;
-  }
+  // is the file an image?
+  Image img;
+  img.LoadFile(loadpath);
+  if (!img.IsOk()) throw ScriptError(_ERROR_1_("import not image", loadpath));
 
-  // save the package with the new image
-  opt.local_package->save(false);
+  // add the file to the set (or overwrite it if pre-existing), save set
+  savename = normalize_internal_filename(loadpath);
+  savename.Replace(":",  "-");
+  savename.Replace("/",  "-");
+  auto outStream = set->openOut(savename);
+  img.SaveFile(*outStream, wxBITMAP_TYPE_PNG);
+  if (!outStream->IsOk()) throw ScriptError(_ERROR_1_("can't write image to set", loadpath));
+  outStream->Close();
+  set->save(false);
+}
 
-  // generate Image
-  String fileExt = fname.GetExt();
-  wxBitmapType bitmapType;
-  if      (fileExt == _("png"))                         bitmapType = wxBITMAP_TYPE_PNG;
-  else if (fileExt == _("jpg") || fileExt == _("jpeg")) bitmapType = wxBITMAP_TYPE_JPEG;
-  else                                                  bitmapType = wxBITMAP_TYPE_BMP;
+Image ImportedImage::generate(const Options& opt) {
+  auto imageInputStream = opt.local_package->openIn(savename);
+  Image img(*imageInputStream, wxBITMAP_TYPE_PNG);
 
-  auto imageInputStream = opt.local_package->openIn(filepathSanitized);
-  Image img(*imageInputStream, bitmapType);
-
-  if (!img.IsOk()) throw ScriptError(_ERROR_1_("can't import image", filepath));
+  if (!img.IsOk()) throw ScriptError(_ERROR_1_("can't import image", loadpath));
 
   return img;
 }
 
-bool ExternalImage::operator == (const GeneratedImage& that) const {
-  const ExternalImage* that2 = dynamic_cast<const ExternalImage*>(&that);
-  return that2 && that2->filepath == filepath;
+bool ImportedImage::operator == (const GeneratedImage& that) const {
+  const ImportedImage* that2 = dynamic_cast<const ImportedImage*>(&that);
+  return that2 && that2->loadpath == loadpath;
+}
+
+// ----------------------------------------------------------------------------- : DownloadedImage
+
+DownloadedImage::DownloadedImage(Set* set, const String& url)
+{
+  loadpath = url;
+
+  // has the set already been saved at least once?
+  if (set->needSaveAs()) throw ScriptError(_ERROR_1_("can't download image without set", loadpath));
+
+  // can we download the data?
+  WebRequestWindow wnd(loadpath);
+  if (wnd.ShowModal() != wxID_OK) throw ScriptError(_ERROR_1_("can't download image", loadpath));
+
+  // is the data an image?
+  const String& content_type = wnd.out.GetContentType();
+  if (!content_type.StartsWith(_("image"))) throw ScriptError(_ERROR_1_("download not image", loadpath));
+  Image img(*wnd.out.GetStream());
+  if (!img.IsOk()) throw ScriptError(_ERROR_("web request corrupted"));
+
+  // add the file to the set (or overwrite it if pre-existing), save set
+  savename = normalize_internal_filename(loadpath);
+  savename.Replace(":",  "-");
+  savename.Replace("/",  "-");
+  auto outStream = set->openOut(savename);
+  img.SaveFile(*outStream, wxBITMAP_TYPE_PNG);
+  if (!outStream->IsOk()) throw ScriptError(_ERROR_1_("can't write image to set", loadpath));
+  outStream->Close();
+  set->save(false);
+}
+
+Image DownloadedImage::generate(const Options& opt) {
+  auto imageInputStream = opt.local_package->openIn(savename);
+  Image img(*imageInputStream, wxBITMAP_TYPE_PNG);
+
+  if (!img.IsOk()) throw ScriptError(_ERROR_1_("can't download image", loadpath));
+
+  return img;
+}
+
+bool DownloadedImage::operator == (const GeneratedImage& that) const {
+  const DownloadedImage* that2 = dynamic_cast<const DownloadedImage*>(&that);
+  return that2 && that2->loadpath == loadpath;
 }

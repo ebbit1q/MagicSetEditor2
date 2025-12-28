@@ -250,7 +250,7 @@ bool CardListBase::parseUrl(String& url, vector<CardP>& out) {
   }
   if (!url.StartsWith(_("http"))) return false;
 
-  WebRequestWindow wnd(this, url);
+  WebRequestWindow wnd(url);
   if (wnd.ShowModal() == wxID_OK) {
     const String& content_type = wnd.out.GetContentType();
     if (content_type.StartsWith(_("image"))) {

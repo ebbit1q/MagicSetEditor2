@@ -68,9 +68,8 @@ inline static void set_container(Value* container, ScriptValueP& value, String k
     cvalue->value = value->toColor();
   }
   else if (ImageValue* ivalue = dynamic_cast<ImageValue*>(container)) {
-    if (ExternalImage* image = dynamic_cast<ExternalImage*>(value.get())) {
-      wxFileName fname(image->toString());
-      ivalue->filename = LocalFileName::fromReadString(fname.GetName(), "");
+    if (ExternalImage* img = dynamic_cast<ExternalImage*>(value.get())) {
+      ivalue->filename = LocalFileName::fromReadString(img->toString(), "");
     } else if (value->type() == SCRIPT_STRING) {
       ivalue->filename = LocalFileName::fromReadString(value->toString(), "");
     } else {
@@ -105,15 +104,15 @@ inline static bool set_stylesheet_container(const Game& game, CardP& card, Scrip
 inline static bool set_builtin_container(const Game& game, CardP& card, ScriptValueP& value, String key_name, bool ignore_field_not_found) {
   // check if the given value is for a built-in field, if found set it and return true
   key_name = unified_form(key_name);
-  if (key_name == _("notes") || key_name == _("note")) {
+  if (key_name == _("card_notes") || key_name == _("notes") || key_name == _("note")) {
     card->notes = value->toString();
     return true;
   }
-  else if (key_name == _("id") || key_name == _("uid")) {
+  else if (key_name == _("id") || key_name == _("uid") || key_name == _("uuid")) {
     card->uid = value->toString();
     return true;
   }
-  else if (key_name == _("linked_card") || key_name == _("linked_card_1")) {
+  else if (key_name == _("linked_card_1") || key_name == _("linked_card")) {
     card->linked_card_1 = value->toString();
     return true;
   }
@@ -129,7 +128,7 @@ inline static bool set_builtin_container(const Game& game, CardP& card, ScriptVa
     card->linked_card_4 = value->toString();
     return true;
   }
-  else if (key_name == _("linked_relation") || key_name == _("linked_relation_1")) {
+  else if (key_name == _("linked_relation_1") || key_name == _("linked_relation")) {
     card->linked_relation_1 = value->toString();
     return true;
   }

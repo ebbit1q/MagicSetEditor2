@@ -17,6 +17,7 @@
 DECLARE_POINTER_TYPE(GeneratedImage);
 DECLARE_POINTER_TYPE(SymbolVariation);
 class Package;
+class Set;
 
 // ----------------------------------------------------------------------------- : GeneratedImage
 
@@ -450,16 +451,33 @@ private:
 
 // ----------------------------------------------------------------------------- : ExternalImage
 
-/// Load an image from the filesystem
+/// Load an image from outside the data folder
 class ExternalImage : public GeneratedImage {
 public:
-  ExternalImage(const String& filepath);
+  inline String toString() { return savename; }
+  inline String toCode() const override { return _("<image>"); }
+
+protected:
+  String loadpath;
+  String savename;
+};
+
+// ----------------------------------------------------------------------------- : ImportedImage
+
+/// Load an image from the filesystem
+class ImportedImage : public ExternalImage {
+public:
+  ImportedImage(Set* set, const String& filepath);
   Image generate(const Options&) override;
   bool operator == (const GeneratedImage& that) const override;
-  inline String toString() { return filepath; }
-  inline String toCode() const override { return _("<image>"); }
-private:
-  String filepath;
-  String filepathSanitized;
-  bool loaded; ///< Make sure we at least load the image from outside the package once, as it may have been updated externally
+};
+
+// ----------------------------------------------------------------------------- : DownloadedImage
+
+/// Load an image from the internet
+class DownloadedImage : public ExternalImage {
+public:
+  DownloadedImage(Set* set, const String& url);
+  Image generate(const Options&) override;
+  bool operator == (const GeneratedImage& that) const override;
 };

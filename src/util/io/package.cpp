@@ -189,7 +189,7 @@ public:
 
 // ----------------------------------------------------------------------------- : Package : inside
 
-bool Package::existsIn(const String& file) {
+bool Package::contains(const String& file) {
   FileInfos::iterator it = files.find(normalize_internal_filename(file));
   if (it == files.end()) {
     // does it look like a relative filename?
@@ -650,11 +650,11 @@ void Packaged::loadFully() {
   }
 }
 
-void Packaged::save() {
+void Packaged::save(bool remove_unused) {
   WITH_DYNAMIC_ARG(writing_package, this);
   writeFile(typeName(), *this, fileVersion());
   referenceFile(typeName());
-  Package::save();
+  Package::save(remove_unused);
 }
 void Packaged::saveAs(const String& package, bool remove_unused, bool as_directory) {
   WITH_DYNAMIC_ARG(writing_package, this);

@@ -103,7 +103,7 @@ bool PackageManager::existsInPackage(const String& name) {
     if (start < pos && pos != String::npos) {
       // open package
       PackagedP p = openAny(name.substr(start, pos - start));
-      return p->existsIn(name.substr(pos + 1));
+      return p->contains(name.substr(pos + 1));
     }
   }
   throw FileNotFoundError(name, _("No package name specified, use '/package/filename'"));

@@ -17,7 +17,7 @@
 /// A window for displaying the progression of a WebRequest and returning the WebResponse
 class WebRequestWindow : public wxDialog {
 public:
-  WebRequestWindow(Window* parent, const String& url, bool sizer=true);
+  WebRequestWindow(const String& url, bool sizer=true);
 
   wxWebResponse   out;
 
