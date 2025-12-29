@@ -194,12 +194,12 @@ private:
   DECLARE_EVENT_TABLE();
 
   void onMotion(wxMouseEvent& ev) {
-    wxFrame* frame = dynamic_cast<wxFrame*>( wxGetTopLevelParent(this) );
-    if (frame) {
-      String description = ev.GetX() > NAME_COLUMN_WIDTH + dimension_count * (DIMENSION_COLUMN_WIDTH + 1) ?
-                           String() : dimensions[findItem(ev)]->description.get();
-      frame->SetStatusText(description);
-    }
+    wxFrame* frame = dynamic_cast<wxFrame*>(wxGetTopLevelParent(this));
+    if (frame) frame->SetStatusText(dimensions[findItem(ev)]->description.get());
+  }
+  void onMouseLeave(wxMouseEvent& ev) {
+    wxFrame* frame = dynamic_cast<wxFrame*>(wxGetTopLevelParent(this));
+    if (frame) frame->SetStatusText(String());
   }
 };
 
@@ -594,6 +594,7 @@ END_EVENT_TABLE()
 
 BEGIN_EVENT_TABLE(StatDimensionList, GalleryList)
   EVT_MOTION(StatDimensionList::onMotion)
+  EVT_LEAVE_WINDOW(StatDimensionList::onMouseLeave)
 END_EVENT_TABLE()
 
 // ----------------------------------------------------------------------------- : Selection
