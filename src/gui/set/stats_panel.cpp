@@ -30,7 +30,7 @@ public:
   StatCategoryList(Window* parent, int id)
     : GalleryList(parent, id, wxVERTICAL)
   {
-    item_size = subcolumns[0].size = wxSize(150, 23);
+    item_size = subcolumns[0].size = wxSize(NAME_COLUMN_WIDTH, COLUMN_HEIGHT);
   }
   
   void show(const GameP&);
@@ -105,7 +105,7 @@ public:
     , prefered_dimension_count(dimension_count)
     , show_empty(show_empty)
   {
-    subcolumns[0].size = wxSize(210, 23);
+    subcolumns[0].size = wxSize(NAME_COLUMN_WIDTH, COLUMN_HEIGHT);
     if (dimension_count > 0) {
       subcolumns[0].selection  = NO_SELECTION;
       subcolumns[0].can_select = false;
@@ -116,13 +116,13 @@ public:
     col.selection = show_empty ? NO_SELECTION : 0;
     col.can_select = true;
     col.offset.x = subcolumns[0].size.x + SPACING;
-    col.size = wxSize(18,23);
+    col.size = wxSize(DIMENSION_COLUMN_WIDTH, COLUMN_HEIGHT);
     for (int i = 0 ; i < dimension_count ; ++i) {
       subcolumns.push_back(col);
       col.offset.x += col.size.x + SPACING;
     }
     // total
-    item_size = wxSize(col.offset.x - SPACING, 23);
+    item_size = wxSize(col.offset.x - SPACING, COLUMN_HEIGHT);
   }
   
   void show(const GameP&);
@@ -186,6 +186,21 @@ private:
   GameP game;
   bool show_empty;
   vector<StatsDimensionP> dimensions; ///< Dimensions, sorted by position_hint
+
+  static const int NAME_COLUMN_WIDTH = 210;
+  static const int DIMENSION_COLUMN_WIDTH = 18;
+  static const int COLUMN_HEIGHT = 23;
+
+  DECLARE_EVENT_TABLE();
+
+  void onMotion(wxMouseEvent& ev) {
+    wxFrame* frame = dynamic_cast<wxFrame*>( wxGetTopLevelParent(this) );
+    if (frame) {
+      String description = ev.GetX() > NAME_COLUMN_WIDTH + dimension_count * (DIMENSION_COLUMN_WIDTH + 1) ?
+                           String() : dimensions[findItem(ev)]->description.get();
+      frame->SetStatusText(description);
+    }
+  }
 };
 
 struct ComparePositionHint2{
@@ -575,6 +590,10 @@ void StatsPanel::filterCards() {
 
 BEGIN_EVENT_TABLE(StatsPanel, wxPanel)
   EVT_GRAPH_SELECT(wxID_ANY, StatsPanel::onGraphSelect)
+END_EVENT_TABLE()
+
+BEGIN_EVENT_TABLE(StatDimensionList, GalleryList)
+  EVT_MOTION(StatDimensionList::onMotion)
 END_EVENT_TABLE()
 
 // ----------------------------------------------------------------------------- : Selection
