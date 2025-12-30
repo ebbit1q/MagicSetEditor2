@@ -55,9 +55,10 @@ Image export_image(const SetP& set, const CardP& card, const bool write_metadata
 
   /// rotate
   img = rotate_image(img, angle_radians);
-  int width = img.GetWidth(), height = img.GetHeight();
 
   /// add print bleed edge
+  int width = img.GetWidth(), height = img.GetHeight();
+  bleed = max(0, min(width-1, min(height-1, bleed)));
   if (size.width < bleed + 2 || size.height < bleed + 2) {
     queue_message(MESSAGE_ERROR, _("Image too small to add bleed edge"));
   }
@@ -200,7 +201,7 @@ Image export_image( const SetP& set, const vector<CardP>& cards,
   Byte* pixels = global_img.GetData();
   Byte* alpha = global_img.GetAlpha();
   // fill with transparent
-  for (UInt i = 0; i < global_width*global_height; ++i) {
+  for (int i = 0; i < global_width*global_height; ++i) {
     pixels[3 * i + 0] = 0;
     pixels[3 * i + 1] = 0;
     pixels[3 * i + 2] = 0;

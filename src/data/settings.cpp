@@ -197,6 +197,7 @@ Settings::Settings()
   , symbol_grid              (true)
   , symbol_grid_snap         (false)
   , print_spacing            (0.33)
+  , print_bleed              (0.0)
   , print_cutter_lines       (CUTTER_ALL)
   , dark_mode_type           (DARKMODE_SYSTEM)
   , import_scale_selection   (0)
@@ -334,6 +335,7 @@ IMPLEMENT_REFLECTION_NO_SCRIPT(Settings) {
   REFLECT(symbol_grid_snap);
   REFLECT(default_game);
   REFLECT(print_spacing);
+  REFLECT(print_bleed);
   REFLECT(print_cutter_lines);
   REFLECT(dark_mode_type);
   REFLECT(apprentice_location);

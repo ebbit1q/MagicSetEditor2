@@ -29,12 +29,12 @@ public:
 
     threshold_top = 0.75 * default_size_mm.width;
     threshold_bottom = 0.1;
-    threshold_size = RealSize(0.05 * default_size_mm.width, 0.05 * default_size_mm.height);
+    threshold_size = RealSize(0.03 * default_size_mm.width, 0.03 * default_size_mm.height);
   }
   
   SetP set;
   vector<CardP> cards;      ///< Cards selected by the user for print
-  RealSize default_size_mm; ///< Size of a card with the default stylesheet in millimetres
+  RealSize default_size_mm; ///< Size of a card with the default stylesheet in millimetres, without bleed
 
   // align cards that are at most this far appart in millimeters
   double threshold_top;
@@ -44,8 +44,8 @@ public:
   RealSize threshold_size;
 
   struct CardLayout {
-    CardLayout(const CardP& card, const RealSize& size_mm, const RealSize& size_px, const Radians& rotation)
-    : card(card), size_mm(size_mm), size_px(size_px), rot(rotation), other_face(-1) {}
+    CardLayout(const CardP& card, const RealSize& size_mm, const RealSize& size_px, double bleed_size_px, Radians rotation)
+    : card(card), size_mm(size_mm), size_px(size_px), bleed_size_px(bleed_size_px), rot(rotation), other_face(-1) {}
 
     bool operator<(const CardLayout& that) const {
       return size_mm.width > that.size_mm.width; // put the widest cards first
@@ -54,6 +54,7 @@ public:
     CardP card;
     RealSize size_mm;
     RealSize size_px;
+    double bleed_size_px;
     Radians rot;
     RealSize pos;
     int other_face;

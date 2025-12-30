@@ -301,7 +301,7 @@ TransfersPreferencesPage::TransfersPreferencesPage(Window* parent) : Preferences
     export_scale->Append(String::Format(_("%d%%"), i));
   }
   int default_export_scale = settings.default_stylesheet_settings.export_scale_selection();
-  if (default_export_scale < 0 || default_export_scale > export_scale->GetCount() - 1) default_export_scale = 0;
+  if (default_export_scale < 0 || default_export_scale > (int)export_scale->GetCount() - 1) default_export_scale = 0;
   export_scale->SetSelection(default_export_scale);
 
   internal_image_extension->SetValue(settings.internal_image_extension);

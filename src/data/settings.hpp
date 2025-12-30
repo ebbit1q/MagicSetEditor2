@@ -209,6 +209,7 @@ public:
   // --------------------------------------------------- : Printing
 
   double print_spacing;
+  double print_bleed;
   CutterLinesType print_cutter_lines;
 
   // --------------------------------------------------- : Dark Mode

@@ -32,7 +32,7 @@ public:
   /** with the given rectangle of external coordinates and a given rotation angle and zoom factor.
    *  if is_internal then the rect gives the internal coordinates, its origin should be (0,0)
    */
-  Rotation(Radians angle = 0, const RealRect& rect = RealRect(0,0,0,0), double zoom = 1.0, double strectch = 1.0, RotationFlags flags = ROTATION_NORMAL);
+  Rotation(Radians angle = 0, const RealRect& rect = RealRect(0,0,0,0), double zoom = 1.0, double stretch = 1.0, RotationFlags flags = ROTATION_NORMAL);
   
   /// Change the zoom factor
   inline void setZoom(double z) { zoomX = zoomY = z; }

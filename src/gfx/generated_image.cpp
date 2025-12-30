@@ -326,13 +326,15 @@ Image BleedEdgedImage::generate(const Options& opt) {
   // create enlarged image
   Image base_img = base_image->generate(opt);
   int w = base_img.GetWidth(), h = base_img.GetHeight();
-  if (w <= 4 || h <= 4) {
+  if (w <= 3 || h <= 3) {
     queue_message(MESSAGE_ERROR, _("Image too small to add bleed edge"));
     return base_img;
   }
   bool is_landscape = w > h;
   int dw = int(w * (horizontal_size > 0.0 ? horizontal_size : is_landscape ? 0.037 : 0.048));
-  int dh = int(h * (vertical_size > 0.0 ? vertical_size : is_landscape ? 0.048 : 0.037));
+  int dh = int(h * (vertical_size   > 0.0 ? vertical_size   : is_landscape ? 0.048 : 0.037));
+  dw = min(w-1, max(0, dw));
+  dh = min(h-1, max(0, dh));
   if (dw <= 0 && dh <= 0) {
     return base_img;
   }
