@@ -1,5 +1,5 @@
 //+----------------------------------------------------------------------------+
-//| Description:  Magic Set Editor - Program to make Magic (tm) cards          |
+//| Description:  Magic Set Editor - Program to make card games                |
 //| Copyright:    (C) Twan van Laarhoven and the other MSE developers          |
 //| License:      GNU General Public License 2 or later (see file COPYING)     |
 //+----------------------------------------------------------------------------+
@@ -592,10 +592,12 @@ BEGIN_EVENT_TABLE(StatsPanel, wxPanel)
   EVT_GRAPH_SELECT(wxID_ANY, StatsPanel::onGraphSelect)
 END_EVENT_TABLE()
 
+#if USE_DIMENSION_LISTS
 BEGIN_EVENT_TABLE(StatDimensionList, GalleryList)
   EVT_MOTION(StatDimensionList::onMotion)
   EVT_LEAVE_WINDOW(StatDimensionList::onMouseLeave)
 END_EVENT_TABLE()
+#endif
 
 // ----------------------------------------------------------------------------- : Selection
 

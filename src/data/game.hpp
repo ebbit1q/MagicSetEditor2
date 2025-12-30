@@ -1,5 +1,5 @@
 //+----------------------------------------------------------------------------+
-//| Description:  Magic Set Editor - Program to make Magic (tm) cards          |
+//| Description:  Magic Set Editor - Program to make card games                |
 //| Copyright:    (C) Twan van Laarhoven and the other MSE developers          |
 //| License:      GNU General Public License 2 or later (see file COPYING)     |
 //+----------------------------------------------------------------------------+
@@ -68,16 +68,15 @@ public:
   /// Loads the game with a particular name, for example "magic"
   static GameP byName(const String& name);
   
-  /// Is this Magic the Gathering?
-  bool isMagic() const;
-  
   /// Initialize card_list_color_script
   void initCardListColorScript();
   
   static String typeNameStatic();
   String typeName() const override;
   Version fileVersion() const override;
-  
+
+  bool isMagic() const;
+
 protected:
   void validate(Version) override;
   

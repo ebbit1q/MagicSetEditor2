@@ -1,5 +1,5 @@
 //+----------------------------------------------------------------------------+
-//| Description:  Magic Set Editor - Program to make Magic (tm) cards          |
+//| Description:  Magic Set Editor - Program to make card games                |
 //| Copyright:    (C) Twan van Laarhoven and the other MSE developers          |
 //| License:      GNU General Public License 2 or later (see file COPYING)     |
 //+----------------------------------------------------------------------------+
@@ -55,7 +55,7 @@ public:
   vector<CardP>            cards;             ///< The cards in the set
   vector<KeywordP>         keywords;          ///< Additional keywords used in this set
   vector<PackTypeP>        pack_types;        ///< Additional/replacement pack types
-  String                   apprentice_code;   ///< Code to use for apprentice (Magic only)
+  String                   apprentice_code;   ///< Code to use for apprentice (magic only)
 
   ActionStack              actions;           ///< Actions performed on this set and the cards in it
   KeywordDatabase          keyword_db;        ///< Database for matching keywords, must be cleared when keywords change
