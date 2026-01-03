@@ -456,7 +456,7 @@ void ImageSlicePreview::update() {
 }
 
 wxSize ImageSlicePreview::getBestSliceSize() const {
-  float target_ratio = ((float)slice.target_size.GetWidth()) / ((float)slice.target_size.GetHeight());
+  double target_ratio = ((double)slice.target_size.GetWidth()) / ((double)slice.target_size.GetHeight());
   if (target_ratio > 1.0) {
     return wxSize(500, 500 / target_ratio);
   } else {

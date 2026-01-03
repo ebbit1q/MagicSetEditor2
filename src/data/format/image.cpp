@@ -10,6 +10,7 @@
 #include <util/tagged_string.hpp>
 #include <data/format/formats.hpp>
 #include <data/format/clipboard.hpp>
+#include <data/format/file_to_text.h>
 #include <data/game.hpp>
 #include <data/field/image.hpp>
 #include <data/set.hpp>
@@ -19,7 +20,6 @@
 #include <script/functions/json.hpp>
 #include <gui/util.hpp>
 #include <render/card/viewer.hpp>
-#include <wx/filename.h>
 
 class ZoomedUnrotatedDataViewer : public DataViewer {
 public:
@@ -137,15 +137,24 @@ Image export_image(const SetP& set, const CardP& card, const bool write_metadata
     boost::json::object& cardv_data = cardv["data"].as_object();
     StyleSheetP stylesheet = set->stylesheetForP(card);
     if (!settings.stylesheetSettingsFor(*stylesheet).card_notes_export()) cardv["notes"] = "";
+    // iterate over all image fields
     for(IndexMap<FieldP, ValueP>::iterator it = card_data.begin() ; it != card_data.end() ; ++it) {
       ImageValue* value = dynamic_cast<ImageValue*>(it->get());
       if (value && !value->filename.empty()) {
         FieldP field = (*it)->fieldP;
-        StyleP style = stylesheet->card_style.at(field->index);
+        ImageStyle* style = dynamic_cast<ImageStyle*>(stylesheet->card_style.at(field->index).get());
         if (style) {
           style->update(set->getContext(card));
-          std::string rect = style->getExternalRectString(zoom, angle_radians, bleed_pixels, width, height, 0).ToStdString();
-          cardv_data[field->name.ToStdString()] = rect;
+          // store the entire image in the metadata
+          if (style->store_in_metadata()) {
+            std::string bytes = style->getExternalImageString(set, value);
+            cardv_data[field->name.ToStdString()] = bytes;
+          }
+          // store only crop coordinates
+          else {
+            std::string rect = style->getExternalRectString(zoom, angle_radians, bleed_pixels, width, height, 0);
+            cardv_data[field->name.ToStdString()] = rect;
+          }
         }
       }
     }
@@ -225,12 +234,19 @@ Image export_image( const SetP& set, const vector<CardP>& cards,
       ImageValue* value = dynamic_cast<ImageValue*>(it->get());
       if (value && !value->filename.empty()) {
         FieldP field = (*it)->fieldP;
-        StyleP style = stylesheet->card_style.at(field->index);
+        ImageStyle* style = dynamic_cast<ImageStyle*>(stylesheet->card_style.at(field->index).get());
         if (style) {
           style->update(set->getContext(card));
-          Rotation rotation();
-          std::string rect = style->getExternalRectString(zooms[i], angles[i], bleeds[i], widths[i], heights[i], offsets[i]).ToStdString();
-          cardv_data[field->name.ToStdString()] = rect;
+          // store the entire image in the metadata
+          if (style->store_in_metadata()) {
+            std::string bytes = style->getExternalImageString(set, value);
+            cardv_data[field->name.ToStdString()] = bytes;
+          }
+          // store only crop coordinates
+          else {
+            std::string rect = style->getExternalRectString(zooms[i], angles[i], bleeds[i], widths[i], heights[i], offsets[i]);
+            cardv_data[field->name.ToStdString()] = rect;
+          }
         }
       }
     }

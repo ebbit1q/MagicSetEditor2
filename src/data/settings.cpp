@@ -265,7 +265,7 @@ double Settings::exportScaleSettingsFor(const StyleSheet& stylesheet) {
   if (export_scale == 0) return adaptiveScaleSettingsFor(stylesheet, 300.0, 50.0);
   if (export_scale == 1) return adaptiveScaleSettingsFor(stylesheet, 300.0, 1.0);
   if (export_scale == 2) return adaptiveScaleSettingsFor(stylesheet, 150.0, 1.0);
-  return scale_choices[export_scale - 3] / 100;
+  return (double)scale_choices[export_scale - 3] / 100.0;
 }
 
 double Settings::importScaleSettingsFor(const StyleSheet& stylesheet) {
@@ -273,7 +273,7 @@ double Settings::importScaleSettingsFor(const StyleSheet& stylesheet) {
   if (import_scale_selection == 1) return adaptiveScaleSettingsFor(stylesheet, 300.0, 50.0);
   if (import_scale_selection == 2) return adaptiveScaleSettingsFor(stylesheet, 300.0, 1.0);
   if (import_scale_selection == 3) return adaptiveScaleSettingsFor(stylesheet, 150.0, 1.0);
-  return scale_choices[import_scale_selection - 4] / 100;
+  return (double)scale_choices[import_scale_selection - 4] / 100.0;
 }
 
 double Settings::adaptiveScaleSettingsFor(const StyleSheet& stylesheet, double dpi_target, double dpi_leeway) {

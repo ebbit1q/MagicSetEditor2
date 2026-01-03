@@ -310,7 +310,7 @@ bool CardListBase::parseImage(Image& image, vector<CardP>& out) {
           if (rect.width > 0 && rect.height > 0) {
             Image img = image.GetSubImage(rect);
             img = rotate_image(img, deg_to_rad(360-degrees));
-            LocalFileName filename = set->newFileName((*it)->fieldP->name, settings.internal_image_extension ? _(".png") : _("")); // a new unique name in the package
+            LocalFileName filename = set->newFileName("cropped_image", settings.internal_image_extension ? _(".png") : _("")); // a new unique name in the package
             img.SaveFile(set->nameOut(filename), wxBITMAP_TYPE_PNG);
             value->filename = filename;
           }
@@ -340,6 +340,23 @@ bool CardListBase::parseText(String& text, vector<CardP>& out) {
       out.push_back(make_intrusive<Card>(*c->getValue()));
     }
   } catch (...) {}
+
+  // recreate images to populate image fields
+  for (int k = j; k < out.size(); k++) {
+    CardP& card = out[k];
+    for (IndexMap<FieldP, ValueP>::iterator it = card->data.begin(); it != card->data.end(); it++) {
+      ImageValue* value = dynamic_cast<ImageValue*>(it->get());
+      if (value) {
+        Image img = value->filename.getExternalImage();
+        if (img.IsOk()) {
+          LocalFileName filename = set->newFileName(_("decoded_image"), settings.internal_image_extension ? _(".png") : _("")); // a new unique name in the package
+          img.SaveFile(set->nameOut(filename), wxBITMAP_TYPE_PNG);
+          value->filename = filename;
+        }
+      }
+    }
+  }
+
   return j < out.size();
 }
 

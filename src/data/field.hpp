@@ -103,15 +103,15 @@ public:
   Style(const FieldP&);
   virtual ~Style();
   
-  const FieldP       fieldP;          ///< Field this style is for, should have the right type!
+  const FieldP         fieldP;        ///< Field this style is for, should have the right type!
   
-  int                z_index;         ///< Stacking of values of this field, higher = on top
-  int                tab_index;       ///< Tab index in editor
-  Scriptable<double> left,  top;      ///< Position of this field
-  Scriptable<double> width, height;   ///< Position of this field
-  Scriptable<double> right, bottom;   ///< Position of this field
-  Scriptable<Degrees> angle;          ///< Rotation of the box
-  Scriptable<bool>   visible;         ///< Is this field visible?
+  int                  z_index;       ///< Stacking of values of this field, higher = on top
+  int                  tab_index;     ///< Tab index in editor
+  Scriptable<double>   left,  top;    ///< Position of this field
+  Scriptable<double>   right, bottom; ///< Position of this field
+  Scriptable<double>   width, height; ///< Size of this field
+  Scriptable<Degrees>  angle;         ///< Rotation of the box
+  Scriptable<bool>     visible;       ///< Is this field visible?
   CachedScriptableMask mask;          ///< Mask image
   
   enum AutomaticSide {
@@ -123,10 +123,10 @@ public:
   } automatic_side : 8;  ///< Which of (left, width,  right) and (top,  height, bottom) is determined automatically?
   bool content_dependent;  ///< Does this style depend on content properties?
   
-  inline RealPoint getPos()  const { return RealPoint(left, top); }
-  inline RealSize  getSize() const { return RealSize(width, height); }
-  inline RealRect  getExternalRect() const { return RealRect(left, top, width, height); }
-  inline String    getExternalRectString(double scale, Radians angle, double bleed, int img_width, int img_height, int img_offset) { ///< update the style before calling this
+  inline RealPoint   getPos()  const { return RealPoint(left, top); }
+  inline RealSize    getSize() const { return RealSize(width, height); }
+  inline RealRect    getExternalRect() const { return RealRect(left, top, width, height); }
+  inline std::string getExternalRectString(double scale, Radians angle, double bleed, int img_width, int img_height, int img_offset) { ///< update the style before calling this
     double x = left * scale, y = top * scale;
     double w = width * scale, h = height * scale;
     RealRect rect(x, y, w, h);
@@ -142,14 +142,14 @@ public:
       rect = RealRect(img_width - y - h, x, h, w);
       degrees = 270;
     } else {
-      return _("");
+      return "";
     }
-    return _("---") + wxString::Format(wxT("%i"), (int)std::ceil( rect.x + bleed + img_offset)) +
-           _("-") +   wxString::Format(wxT("%i"), (int)std::ceil( rect.y + bleed)) +
-           _("-") +   wxString::Format(wxT("%i"), (int)std::floor(rect.width)) +
-           _("-") +   wxString::Format(wxT("%i"), (int)std::floor(rect.height)) +
-           _("-") +   wxString::Format(wxT("%i"), degrees) +
-           _("---");
+    return "<mse-crop-data>" + std::to_string((int)std::ceil (rect.x + bleed + img_offset)) +
+           "-"               + std::to_string((int)std::ceil (rect.y + bleed)) +
+           "-"               + std::to_string((int)std::floor(rect.width)) +
+           "-"               + std::to_string((int)std::floor(rect.height)) +
+           "-"               + std::to_string(degrees) +
+           "</mse-crop-data>";
   }
 
   /// Does this style have a non-zero size (or is it scripted)?

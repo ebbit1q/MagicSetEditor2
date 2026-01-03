@@ -18,17 +18,18 @@ IMPLEMENT_REFLECTION(ImageField) {
   REFLECT_BASE(Field);
 }
 
-
 // ----------------------------------------------------------------------------- : ImageStyle
 
 IMPLEMENT_REFLECTION(ImageStyle) {
   REFLECT_BASE(Style);
   REFLECT_N("default", default_image);
+  REFLECT(store_in_metadata);
 }
 
 int ImageStyle::update(Context& ctx) {
   int changes = Style::update(ctx);
   changes |= default_image.update(ctx) * CHANGE_DEFAULT;
+  changes |= store_in_metadata.update(ctx) * CHANGE_OTHER;
   return changes;
 }
 
