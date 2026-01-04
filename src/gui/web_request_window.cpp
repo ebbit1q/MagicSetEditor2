@@ -13,7 +13,7 @@
 // ----------------------------------------------------------------------------- : WebRequestWindow
 
 WebRequestWindow::WebRequestWindow(const String& url, bool sizer)
-  : wxDialog(wxTheApp->GetTopWindow(), wxID_ANY, _TITLE_("web request"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
+  : wxDialog(NULL, wxID_ANY, _TITLE_("web request"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER | wxDIALOG_NO_PARENT)
 {
   // init controls
   info = new wxStaticText(this, -1, _LABEL_("web request address"));
