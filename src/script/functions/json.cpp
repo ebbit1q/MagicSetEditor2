@@ -316,9 +316,12 @@ ScriptValueP json_to_mse(const boost::json::value& jv, Set* set) {
   else if (jv.is_string()) {
     if (jv.as_string().empty()) return to_script(String());
     std::string string = boost::json::value_to<std::string>(jv);
-    String wxstring = String(string);
-    if (wxstring.empty()) wxstring = String(string.c_str(), wxConvUTF8);
-    return to_script(wxstring);
+    const char* cstring = string.c_str();
+    size_t nulpos = strlen(cstring);
+    // if the string contains nul bytes, we have to use the std::string constructor, even though we can't specify the encoding
+    if (nulpos < string.size()) return to_script(String(string));
+    // if the string doesn't contain nul bytes, we can use the constructor that allows to specify the encoding
+    else return to_script(String(cstring, wxConvUTF8));
   }
   else if (jv.is_array()) {
     boost::json::array array = jv.get_array();
