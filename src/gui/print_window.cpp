@@ -303,13 +303,17 @@ void CardsPrintout::drawCard(DC& dc, PrintJob::CardLayout& card_layout) {
   bufferDC.SetDeviceOrigin(0,0);
   /// add print bleed edge
   if (bleed > 0) {
-    Image left_border = bufferDC.GetAsBitmap(&wxRect(bleed + 1, bleed, bleed, height - 2 * bleed)).ConvertToImage();
+    auto left_rect = wxRect(bleed + 1, bleed, bleed, height - 2 * bleed);
+    Image left_border = bufferDC.GetAsBitmap(&left_rect).ConvertToImage();
     bufferDC.DrawBitmap(left_border.Mirror(true), 0, bleed);
-    Image right_border = bufferDC.GetAsBitmap(&wxRect(width - 2 * bleed - 1, bleed, bleed, height - 2 * bleed)).ConvertToImage();
+    auto right_rect = wxRect(width - 2 * bleed - 1, bleed, bleed, height - 2 * bleed);
+    Image right_border = bufferDC.GetAsBitmap(&right_rect).ConvertToImage();
     bufferDC.DrawBitmap(right_border.Mirror(true), width - bleed - 1, bleed);
-    Image top_border = bufferDC.GetAsBitmap(&wxRect(0, bleed + 1, width, bleed)).ConvertToImage();
+    auto top_rect = wxRect(0, bleed + 1, width, bleed);
+    Image top_border = bufferDC.GetAsBitmap(&top_rect).ConvertToImage();
     bufferDC.DrawBitmap(top_border.Mirror(false), 0, 0);
-    Image bottom_border = bufferDC.GetAsBitmap(&wxRect(0, height - 2 * bleed - 1, width, bleed)).ConvertToImage();
+    auto bottom_rect = wxRect(0, height - 2 * bleed - 1, width, bleed);
+    Image bottom_border = bufferDC.GetAsBitmap(&bottom_rect).ConvertToImage();
     bufferDC.DrawBitmap(bottom_border.Mirror(false), 0, height - bleed - 1);
   }
   // render card dc to page dc
@@ -482,3 +486,4 @@ void print_preview(Window* parent, const SetP& set, const ExportCardSelectionCho
 void print_set(Window* parent, const SetP& set, const ExportCardSelectionChoices& choices) {
   print_set(parent, make_print_job(parent, set, choices));
 }
+
