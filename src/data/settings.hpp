@@ -157,6 +157,7 @@ public:
   String default_image_dir;  ///< Where to look for images to import
   String default_symbol_dir; ///< Where to look for .mse-symbol files
   String default_export_dir; ///< Where to export to by default
+  String default_import_dir; ///< Where to import to by default
   
   // --------------------------------------------------- : Set window
   bool set_window_maximized;

@@ -89,9 +89,11 @@ void AddJSONWindow::onJSONTypeChange(wxCommandEvent&) {
 }
 
 void AddJSONWindow::onBrowseFiles(wxCommandEvent&) {
-  wxFileDialog* dlg = new wxFileDialog(this, _TITLE_("add card json file"), settings.default_set_dir, _(""), _("JSON files|*.json|All files (*.*)|*"), wxFD_OPEN);
+  wxFileDialog* dlg = new wxFileDialog(this, _TITLE_("add card json file"), settings.default_import_dir, _(""), _("JSON files|*.json|All files (*.*)|*"), wxFD_OPEN);
   if (dlg->ShowModal() == wxID_OK) {
-    file_path->SetValue(dlg->GetPath());
+    const String& path = dlg->GetPath();
+    file_path->SetValue(path);
+    settings.default_import_dir = wxPathOnly(path);
   }
 }
 

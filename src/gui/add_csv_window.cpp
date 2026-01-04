@@ -66,9 +66,11 @@ void AddCSVWindow::onSeparatorTypeChange(wxCommandEvent&) {
 }
 
 void AddCSVWindow::onBrowseFiles(wxCommandEvent&) {
-  wxFileDialog* dlg = new wxFileDialog(this, _TITLE_("add card csv file"), settings.default_set_dir, _(""), _("CSV files|*.csv;*.tsv|All files (*.*)|*"), wxFD_OPEN);
+  wxFileDialog* dlg = new wxFileDialog(this, _TITLE_("add card csv file"), settings.default_import_dir, _(""), _("CSV files|*.csv;*.tsv|All files (*.*)|*"), wxFD_OPEN);
   if (dlg->ShowModal() == wxID_OK) {
-    file_path->SetValue(dlg->GetPath());
+    const String& path = dlg->GetPath();
+    file_path->SetValue(path);
+    settings.default_import_dir = wxPathOnly(path);
   }
 }
 

@@ -325,6 +325,7 @@ IMPLEMENT_REFLECTION_NO_SCRIPT(Settings) {
   REFLECT(default_image_dir);
   REFLECT(default_symbol_dir);
   REFLECT(default_export_dir);
+  REFLECT(default_import_dir);
   REFLECT(set_window_maximized);
   REFLECT(set_window_width);
   REFLECT(set_window_height);
