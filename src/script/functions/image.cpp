@@ -57,6 +57,7 @@ SCRIPT_FUNCTION(import_image) {
 }
 
 SCRIPT_FUNCTION(download_image) {
+  if (!settings.allow_image_download) return script_nil;
   SCRIPT_PARAM(Set*, set);
   SCRIPT_PARAM(String, input);
   return make_intrusive<DownloadedImage>(set, input);

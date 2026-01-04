@@ -229,7 +229,7 @@ public:
   // --------------------------------------------------- : Internal settings
 
   int import_scale_selection;
-  bool internal_image_extension;
+  bool allow_image_download;
 
   // --------------------------------------------------- : Update checking
 

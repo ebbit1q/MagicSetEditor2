@@ -68,7 +68,7 @@ public:
   void store() override;
 
 private:
-  wxCheckBox* non_normal_export, *bleed_export, *notes_export, *internal_image_extension;
+  wxCheckBox* non_normal_export, *bleed_export, *notes_export, *allow_image_download;
 
   wxChoice*   export_scale, *import_scale;
 };
@@ -287,7 +287,7 @@ TransfersPreferencesPage::TransfersPreferencesPage(Window* parent) : Preferences
   notes_export             = new wxCheckBox(this, wxID_ANY, _BUTTON_("notes export"));
   export_scale             = new wxChoice  (this, ID_EXPORT_ZOOM);
 
-  internal_image_extension = new wxCheckBox(this, wxID_ANY, _BUTTON_("internal image extension"));
+  allow_image_download     = new wxCheckBox(this, wxID_ANY, _BUTTON_("allow image download"));
   import_scale             = new wxChoice  (this, ID_IMPORT_ZOOM);
 
   // set values
@@ -304,7 +304,7 @@ TransfersPreferencesPage::TransfersPreferencesPage(Window* parent) : Preferences
   if (default_export_scale < 0 || default_export_scale > (int)export_scale->GetCount() - 1) default_export_scale = 0;
   export_scale->SetSelection(default_export_scale);
 
-  internal_image_extension->SetValue(settings.internal_image_extension);
+  allow_image_download->SetValue(settings.allow_image_download);
   import_scale->Append(_LABEL_("use export scale"));
   import_scale->Append(_LABEL_("export around 300"));
   import_scale->Append(_LABEL_("export force 300"));
@@ -336,7 +336,7 @@ TransfersPreferencesPage::TransfersPreferencesPage(Window* parent) : Preferences
         s6->Add(import_scale);
       s5->Add(s6, 0, wxEXPAND | wxALL & ~wxBottom, 4);
       s5->Add(new wxStaticText(this, wxID_ANY, _LABEL_("internal scale desc")), 0, wxALL & ~wxTOP, 4);
-      s5->Add(internal_image_extension, 0, wxEXPAND | wxALL, 4);
+      s5->Add(allow_image_download, 0, wxEXPAND | wxALL, 4);
     s->Add(s2, 0, wxEXPAND | wxALL, 8);
     s->Add(s5, 0, wxEXPAND | wxALL, 8);
   export_scale->SetFocus();
@@ -350,7 +350,7 @@ void TransfersPreferencesPage::store() {
   settings.default_stylesheet_settings.card_notes_export      = notes_export->GetValue();
   settings.default_stylesheet_settings.export_scale_selection = export_scale->GetSelection();
 
-  settings.internal_image_extension                           = internal_image_extension->GetValue();
+  settings.allow_image_download                               = allow_image_download->GetValue();
   settings.import_scale_selection                             = import_scale->GetSelection();
 }
 

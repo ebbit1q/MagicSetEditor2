@@ -201,7 +201,7 @@ Settings::Settings()
   , print_cutter_lines       (CUTTER_ALL)
   , dark_mode_type           (DARKMODE_SYSTEM)
   , import_scale_selection   (0)
-  , internal_image_extension (true)
+  , allow_image_download     (true)
   #if USE_OLD_STYLE_UPDATE_CHECKER
   , updates_url              (_("https://magicseteditor.boards.net/page/downloads"))
   #endif
@@ -340,7 +340,7 @@ IMPLEMENT_REFLECTION_NO_SCRIPT(Settings) {
   REFLECT(dark_mode_type);
   REFLECT(apprentice_location);
   REFLECT(import_scale_selection);
-  REFLECT(internal_image_extension);
+  REFLECT(allow_image_download);
   #if USE_OLD_STYLE_UPDATE_CHECKER
     REFLECT(updates_url);
   #else

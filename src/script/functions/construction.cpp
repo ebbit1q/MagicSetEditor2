@@ -35,7 +35,7 @@ SCRIPT_FUNCTION(new_card) {
   ScriptValueP key;
   while (ScriptValueP value = it->next(&key)) {
     assert(key);
-    if (key == script_nil) continue;
+    if (key == script_nil || value == script_nil) continue;
     String key_name = key->toString();
     if (set_stylesheet_container(*game, new_card, value, key_name, ignore_field_not_found)) break;
   }
@@ -43,7 +43,7 @@ SCRIPT_FUNCTION(new_card) {
   it = input->makeIterator();
   while (ScriptValueP value = it->next(&key)) {
     assert(key);
-    if (key == script_nil) continue;
+    if (key == script_nil || value == script_nil) continue;
     String key_name = key->toString();
     // check if the given value is for a built-in field
     if (set_builtin_container(*game, new_card, value, key_name, ignore_field_not_found)) continue;
@@ -66,7 +66,7 @@ SCRIPT_FUNCTION(new_card) {
         ScriptValueP script_key;
         while (ScriptValueP script_value = script_it->next(&script_key)) {
           assert(script_key);
-          if (script_key == script_nil) continue;
+          if (script_key == script_nil || script_value == script_nil) continue;
           String script_key_name = script_key->toString();
           if (set_stylesheet_container(*game, new_card, script_value, script_key_name, ignore_field_not_found)) break;
         }
@@ -74,7 +74,7 @@ SCRIPT_FUNCTION(new_card) {
         script_it = script_input->makeIterator();
         while (ScriptValueP script_value = script_it->next(&script_key)) {
           assert(script_key);
-          if (script_key == script_nil) continue;
+          if (script_key == script_nil || script_value == script_nil) continue;
           String script_key_name = script_key->toString();
           // check if the script value is for a built-in field
           if (set_builtin_container(*game, new_card, script_value, script_key_name, ignore_field_not_found)) continue;
@@ -109,7 +109,7 @@ SCRIPT_FUNCTION(new_card) {
       ScriptValueP script_key;
       while (ScriptValueP script_value = script_it->next(&script_key)) {
         assert(script_key);
-        if (script_key == script_nil) continue;
+        if (script_key == script_nil || script_value == script_nil) continue;
         String script_key_name = script_key->toString();
         if (set_stylesheet_container(*game, new_card, script_value, script_key_name, ignore_field_not_found)) break;
       }
@@ -117,7 +117,7 @@ SCRIPT_FUNCTION(new_card) {
       script_it = script_input->makeIterator();
       while (ScriptValueP script_value = script_it->next(&script_key)) {
         assert(script_key);
-        if (script_key == script_nil) continue;
+        if (script_key == script_nil || script_value == script_nil) continue;
         String script_key_name = script_key->toString();
         // check if the script value is for a built-in field
         if (set_builtin_container(*game, new_card, script_value, script_key_name, ignore_field_not_found)) continue;

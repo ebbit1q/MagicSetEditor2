@@ -160,7 +160,7 @@ inline static bool set_builtin_container(const Game& game, CardP& card, ScriptVa
     ScriptValueP key;
     while (ScriptValueP value = it->next(&key)) {
       assert(key);
-      if (key == script_nil) continue;
+      if (key == script_nil || value == script_nil) continue;
       String key_name = key->toString();
       Value* container = get_container(data, type, key_name, ignore_field_not_found);
       set_container(container, value, key_name);

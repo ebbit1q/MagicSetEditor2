@@ -310,7 +310,7 @@ bool CardListBase::parseImage(Image& image, vector<CardP>& out) {
           if (rect.width > 0 && rect.height > 0) {
             Image img = image.GetSubImage(rect);
             img = rotate_image(img, deg_to_rad(360-degrees));
-            LocalFileName filename = set->newFileName("cropped_image", settings.internal_image_extension ? _(".png") : _("")); // a new unique name in the package
+            LocalFileName filename = set->newFileName("cropped_image", _(".png")); // a new unique name in the package
             img.SaveFile(set->nameOut(filename), wxBITMAP_TYPE_PNG);
             value->filename = filename;
           }
@@ -349,7 +349,7 @@ bool CardListBase::parseText(String& text, vector<CardP>& out) {
       if (value) {
         Image img = value->filename.getExternalImage();
         if (img.IsOk()) {
-          LocalFileName filename = set->newFileName(_("decoded_image"), settings.internal_image_extension ? _(".png") : _("")); // a new unique name in the package
+          LocalFileName filename = set->newFileName(_("decoded_image"), _(".png")); // a new unique name in the package
           img.SaveFile(set->nameOut(filename), wxBITMAP_TYPE_PNG);
           value->filename = filename;
         }
