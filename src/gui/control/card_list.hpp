@@ -70,8 +70,9 @@ public:
   inline void  setCard(const CardP& card, bool event = false) { selectItem(card, true, event); }
   
   // --------------------------------------------------- : Clipboard and Drag'n'Drop
-  
+
   CardListDropTarget* drop_target;
+  wxTimer drop_timer;
 
   bool canCut()    const override;
   bool canCopy()   const override;
@@ -168,6 +169,7 @@ private:
   void onSelectColumns   (wxCommandEvent&);
   void onChar            (wxKeyEvent&);
   void onBeginDrag       (wxListEvent&);
+  void OnDragTimer       (wxTimerEvent&);
   void onDrag            (wxMouseEvent&);
   void onContextMenu     (wxContextMenuEvent&);
 };

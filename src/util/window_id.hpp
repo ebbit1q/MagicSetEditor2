@@ -279,6 +279,8 @@ enum ControlID {
   ID_MOVE_DOWN,
   ID_SHOW,
   ID_HIDE,
+  // Card list drag'n'drop timer
+  ID_DROP_TIMER,
   // Card select
   ID_SELECT_CARDS,
   ID_SELECTION_CHOICE,

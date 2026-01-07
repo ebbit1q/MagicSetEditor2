@@ -155,9 +155,12 @@ CardsOnClipboard::CardsOnClipboard(const SetP& set, const String id, const vecto
     }
     String temp_path = wxFileName::CreateTempFileName(_("mse")) + _(".png");
     img.SaveFile(temp_path, wxBITMAP_TYPE_PNG);
-    wxFileDataObject* data = new wxFileDataObject();
-    data->AddFile(temp_path);
-    Add(data);
+    wxFileDataObject* fileData = new wxFileDataObject();
+    fileData->AddFile(temp_path);
+    Add(fileData);
+    wxImageDataObject* imgData = new wxImageDataObject();
+    imgData->SetImage(img);
+    Add(imgData);
   }
   // Conversion to serialized card format
   Add(new CardsDataObject(set, id, cards), true);

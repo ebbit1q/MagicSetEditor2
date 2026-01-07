@@ -58,7 +58,7 @@ CardListBase* CardSelectEvent::getTheCardList() const {
 // ----------------------------------------------------------------------------- : CardListBase
 
 CardListBase::CardListBase(Window* parent, int id, long additional_style)
-  : ItemList(parent, id, additional_style, true)
+  : ItemList(parent, id, additional_style, true) , drop_timer(this, ID_DROP_TIMER)
 {
   drop_target = new CardListDropTarget(this);
 }
@@ -627,14 +627,20 @@ void CardListBase::onChar(wxKeyEvent& ev) {
 }
 
 void CardListBase::onBeginDrag(wxListEvent&) {
-  vector<CardP> cards;
-  getSelection(cards);
-  String transaction_id = generate_uid();
-  CardsOnClipboard* card_data = new CardsOnClipboard(set, transaction_id, cards);
-  drop_target->ignored_id = transaction_id;
-  wxDropSource drag_source(this);
-  drag_source.SetData(*card_data);
-  drag_source.DoDragDrop(wxDrag_CopyOnly);
+  drop_timer.Start(200, wxTIMER_ONE_SHOT);
+}
+
+void CardListBase::OnDragTimer(wxTimerEvent& ev) {
+  if (ev.GetId() == ID_DROP_TIMER && wxGetMouseState().LeftIsDown()) {
+    vector<CardP> cards;
+    getSelection(cards);
+    String transaction_id = generate_uid();
+    CardsOnClipboard* card_data = new CardsOnClipboard(set, transaction_id, cards);
+    drop_target->ignored_id = transaction_id;
+    wxDropSource drag_source(this);
+    drag_source.SetData(*card_data);
+    drag_source.DoDragDrop(wxDrag_CopyOnly);
+  }
 }
 
 void CardListBase::onDrag(wxMouseEvent& ev) {
@@ -705,6 +711,7 @@ BEGIN_EVENT_TABLE(CardListBase, ItemList)
   EVT_LIST_COL_END_DRAG    (wxID_ANY,          CardListBase::onColumnResize)
   EVT_LIST_ITEM_ACTIVATED  (wxID_ANY,          CardListBase::onItemActivate)
   EVT_LIST_BEGIN_DRAG      (wxID_ANY,          CardListBase::onBeginDrag)
+  EVT_TIMER                (ID_DROP_TIMER,     CardListBase::OnDragTimer)
   EVT_CHAR                 (                   CardListBase::onChar)
   EVT_MOTION               (                   CardListBase::onDrag)
   EVT_MENU                 (ID_SELECT_COLUMNS, CardListBase::onSelectColumns)
