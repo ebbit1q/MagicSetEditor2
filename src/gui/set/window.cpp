@@ -102,7 +102,7 @@ SetWindow::SetWindow(Window* parent, const SetP& set)
   menuBar->Append(menuWindow, _MENU_("window"));
   
   auto menuHelp = new wxMenu();
-    add_menu_item_tr(menuHelp, ID_HELP_INDEX, "help", "index");
+    //add_menu_item_tr(menuHelp, ID_HELP_INDEX, "help", "index"); // not implemented
     add_menu_item_tr(menuHelp, ID_HELP_WEBSITE, nullptr, "website");
     add_menu_item_tr(menuHelp, ID_HELP_DOCUMENTATION, nullptr, "documentation");
     add_menu_item_tr(menuHelp, ID_HELP_ABOUT, nullptr, "about");
@@ -533,7 +533,7 @@ void SetWindow::onUpdateUI(wxUpdateUIEvent& ev) {
     case ID_WINDOW_KEYWORDS: ev.Enable(set->game->has_keywords);  break;
     case ID_WINDOW_RANDOM_PACK: ev.Enable(!set->game->pack_types.empty());  break;
     // help
-    case ID_HELP_INDEX     : ev.Enable(false);            break; // not implemented
+    //case ID_HELP_INDEX     : ev.Enable(false);            break; // not implemented
     // other
     default:
       // items created by the panel, and cut/copy/paste and find/replace
@@ -894,7 +894,7 @@ BEGIN_EVENT_TABLE(SetWindow, wxFrame)
   EVT_MENU      (ID_EDIT_PREFERENCES,  SetWindow::onEditPreferences)
   EVT_MENU      (ID_WINDOW_NEW,      SetWindow::onWindowNewWindow)
   EVT_TOOL_RANGE    (ID_WINDOW_MIN, ID_WINDOW_MAX, SetWindow::onWindowSelect)
-  EVT_MENU      (ID_HELP_INDEX,      SetWindow::onHelpIndex)
+  //EVT_MENU      (ID_HELP_INDEX,      SetWindow::onHelpIndex) // not implemented
   EVT_MENU      (ID_HELP_WEBSITE,    SetWindow::onHelpWebsite)
   EVT_MENU      (ID_HELP_DOCUMENTATION, SetWindow::onHelpDocumentation)
   EVT_MENU      (ID_HELP_ABOUT,      SetWindow::onHelpAbout)
