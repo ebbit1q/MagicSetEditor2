@@ -242,6 +242,7 @@ public:
   CheckUpdates check_updates;
   bool   check_updates_all; ///< Check updates of all packages, not just the program
   String website_url;
+  String documentation_url;
   
   // --------------------------------------------------- : Installation settings
 

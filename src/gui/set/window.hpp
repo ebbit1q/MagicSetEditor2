@@ -166,6 +166,7 @@ private:
   
   void onHelpIndex           (wxCommandEvent&);
   void onHelpWebsite         (wxCommandEvent&);
+  void onHelpDocumentation   (wxCommandEvent&);
   void onHelpAbout           (wxCommandEvent&);
   
   // --------------------------------------------------- : Window events - other

@@ -210,6 +210,7 @@ Settings::Settings()
   , check_updates            (CHECK_IF_CONNECTED)
   , check_updates_all        (true)
   , website_url              (_("https://magicseteditor.boards.net/"))
+  , documentation_url        (_("https://mseverse.miraheze.org/wiki/Dev:Documentation#Topics"))
   , install_type             (INSTALL_DEFAULT)
 {}
 
@@ -353,6 +354,7 @@ IMPLEMENT_REFLECTION_NO_SCRIPT(Settings) {
   REFLECT(check_updates_all);
   REFLECT(install_type);
   REFLECT(website_url);
+  REFLECT(documentation_url);
   REFLECT(game_settings);
   REFLECT(stylesheet_settings);
   REFLECT(default_stylesheet_settings);

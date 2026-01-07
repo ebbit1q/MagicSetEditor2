@@ -24,7 +24,7 @@ bool ImageValueEditor::onLeftDClick(const RealPoint&, wxMouseEvent&) {
   String directory = settings.default_image_dir;
   String filename = _("");
   CardP card = parent.getCard();
-  String cardname = card ? card->identification() : _("clipboard");
+  String cardname = card ? card->identification() : _("clipboard"); // use card.uid instead of card->identification() ?
   if (ImageSliceWindow::previously_used_settings_path.find(cardname) != ImageSliceWindow::previously_used_settings_path.end()) {
     String filepath = ImageSliceWindow::previously_used_settings_path[cardname];
     size_t pos = filepath.rfind(wxFileName::GetPathSeparator());

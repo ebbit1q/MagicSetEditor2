@@ -104,6 +104,7 @@ SetWindow::SetWindow(Window* parent, const SetP& set)
   auto menuHelp = new wxMenu();
     add_menu_item_tr(menuHelp, ID_HELP_INDEX, "help", "index");
     add_menu_item_tr(menuHelp, ID_HELP_WEBSITE, nullptr, "website");
+    add_menu_item_tr(menuHelp, ID_HELP_DOCUMENTATION, nullptr, "documentation");
     add_menu_item_tr(menuHelp, ID_HELP_ABOUT, nullptr, "about");
   menuBar->Append(menuHelp, _MENU_("help"));
   
@@ -831,6 +832,10 @@ void SetWindow::onHelpWebsite(wxCommandEvent&) {
   wxLaunchDefaultBrowser(settings.website_url);
 }
 
+void SetWindow::onHelpDocumentation(wxCommandEvent&) {
+  wxLaunchDefaultBrowser(settings.documentation_url);
+}
+
 void SetWindow::onHelpAbout(wxCommandEvent&) {
   AboutWindow wnd(this);
   wnd.ShowModal();
@@ -891,6 +896,7 @@ BEGIN_EVENT_TABLE(SetWindow, wxFrame)
   EVT_TOOL_RANGE    (ID_WINDOW_MIN, ID_WINDOW_MAX, SetWindow::onWindowSelect)
   EVT_MENU      (ID_HELP_INDEX,      SetWindow::onHelpIndex)
   EVT_MENU      (ID_HELP_WEBSITE,    SetWindow::onHelpWebsite)
+  EVT_MENU      (ID_HELP_DOCUMENTATION, SetWindow::onHelpDocumentation)
   EVT_MENU      (ID_HELP_ABOUT,      SetWindow::onHelpAbout)
   EVT_MENU_OPEN    (            SetWindow::onMenuOpen)
   EVT_TOOL_RANGE    (ID_CHILD_MIN, ID_CHILD_MAX,   SetWindow::onChildMenu)
