@@ -215,7 +215,7 @@ void ScriptStyleEvent::perform(bool) {
 BulkAction::BulkAction(const vector<shared_ptr<Action>>& actions, const SetP& set, CardListBase* card_list_window)
   : actions(actions), set(set), card_list_window(card_list_window)
 {
-  if (actions.empty()) throw InternalError(_("BulkAction created with no actions"));
+  if (actions.empty()) throw ScriptError(_("BulkAction created with no actions"));
   name_do = actions.front()->getName(false) + _(" ") + _ACTION_("bulk");
   name_undo = actions.front()->getName(true) + _(" ") + _ACTION_("bulk");
 }

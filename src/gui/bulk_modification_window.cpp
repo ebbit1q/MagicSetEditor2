@@ -186,10 +186,10 @@ void BulkModificationWindow::onOk(wxCommandEvent&) {
   } else { // predicate
     FOR_EACH(card, set->cards) {
       Context& ctx = set->getContext(card);
-      ScriptValueP result = predicate_script->eval(ctx, false);
+      ScriptValueP result = predicate_script->eval(ctx);
       if (result->type() != SCRIPT_BOOL) {
-        queue_message(MESSAGE_ERROR, _ERROR_("bulk modify predicate is not bool"));
-        EndModal(wxID_ABORT);
+        wxMessageDialog dial = wxMessageDialog(this, _ERROR_1_("bulk modify predicate is not bool", result->typeName()));
+        dial.ShowModal();
         return;
       }
       if (result->toBool()) {
@@ -199,8 +199,8 @@ void BulkModificationWindow::onOk(wxCommandEvent&) {
   }
   int count = cards.size();
   if (count == 0) {
-    queue_message(MESSAGE_ERROR, _ERROR_("bulk modify no cards"));
-    EndModal(wxID_ABORT);
+    wxMessageDialog dial = wxMessageDialog(this, selection_type == 3 ? _ERROR_("bulk modify no cards verify") : _ERROR_("bulk modify no cards"));
+    dial.ShowModal();
     return;
   }
   // get the new script values
@@ -212,9 +212,12 @@ void BulkModificationWindow::onOk(wxCommandEvent&) {
     FOR_EACH(card, cards) {
       Context& ctx = set->getContext(card);
       ScriptValueP new_value = modification_script->eval(ctx, false);
-      if (new_value->type() != SCRIPT_STRING) {
-        queue_message(MESSAGE_ERROR, _ERROR_("bulk modify mod is not string"));
-        EndModal(wxID_ABORT);
+      if (new_value->type() == SCRIPT_NIL) {
+        queue_message(MESSAGE_WARNING, _ERROR_1_("bulk modify mod is nil", card->identification()));
+      }
+      else if (new_value->type() != SCRIPT_STRING) {
+        wxMessageDialog dial = wxMessageDialog(this, _ERROR_1_("bulk modify mod is not string", new_value->typeName()));
+        dial.ShowModal();
         return;
       }
       new_values.push_back(new_value->toString());
@@ -244,6 +247,9 @@ void BulkModificationWindow::onOk(wxCommandEvent&) {
       values.push_back(value);
       Context& ctx = set->getContext(card);
       ScriptValueP new_value = modification_script->eval(ctx, false);
+      if (new_value->type() == SCRIPT_NIL) {
+        queue_message(MESSAGE_WARNING, _ERROR_1_("bulk modify mod is nil", card->identification()));
+      }
       new_values.push_back(new_value);
     }
     assert(count == values.size());
@@ -251,6 +257,12 @@ void BulkModificationWindow::onOk(wxCommandEvent&) {
     // make the modifications (I have lost my battle with c++ templates)
     if (dynamic_cast<TextValue*>(values.front())) {
       for (int i = 0; i < count; ++i) {
+        if (new_values[i]->type() == SCRIPT_NIL) continue;
+        if (new_values[i]->type() != SCRIPT_STRING) {
+          wxMessageDialog dial = wxMessageDialog(this, _ERROR_1_("bulk modify mod is not string", new_values[i]->typeName()));
+          dial.ShowModal();
+          return;
+        }
         TextValue* value = dynamic_cast<TextValue*>(values[i]);
         TextValue::ValueType new_value = new_values[i]->toString();
         shared_ptr<SimpleValueAction<TextValue, false>> action = make_shared<SimpleValueAction<TextValue, false>>(value, new_value);
@@ -260,6 +272,12 @@ void BulkModificationWindow::onOk(wxCommandEvent&) {
     }
     else if (dynamic_cast<MultipleChoiceValue*>(values.front())) {
       for (int i = 0; i < count; ++i) {
+        if (new_values[i]->type() == SCRIPT_NIL) continue;
+        if (new_values[i]->type() != SCRIPT_STRING) {
+          wxMessageDialog dial = wxMessageDialog(this, _ERROR_1_("bulk modify mod is not string", new_values[i]->typeName()));
+          dial.ShowModal();
+          return;
+        }
         MultipleChoiceValue* value = dynamic_cast<MultipleChoiceValue*>(values[i]);
         MultipleChoiceValue::ValueType new_value = { new_values[i]->toString(), _("") };
         shared_ptr<SimpleValueAction<MultipleChoiceValue, false>> action = make_shared<SimpleValueAction<MultipleChoiceValue, false>>(value, new_value);
@@ -269,6 +287,12 @@ void BulkModificationWindow::onOk(wxCommandEvent&) {
     }
     else if (dynamic_cast<ChoiceValue*>(values.front())) {
       for (int i = 0; i < count; ++i) {
+        if (new_values[i]->type() == SCRIPT_NIL) continue;
+        if (new_values[i]->type() != SCRIPT_STRING) {
+          wxMessageDialog dial = wxMessageDialog(this, _ERROR_1_("bulk modify mod is not string", new_values[i]->typeName()));
+          dial.ShowModal();
+          return;
+        }
         ChoiceValue* value = dynamic_cast<ChoiceValue*>(values[i]);
         ChoiceValue::ValueType new_value = new_values[i]->toString();
         shared_ptr<SimpleValueAction<ChoiceValue, false>> action = make_shared<SimpleValueAction<ChoiceValue, false>>(value, new_value);
@@ -278,6 +302,12 @@ void BulkModificationWindow::onOk(wxCommandEvent&) {
     }
     else if (dynamic_cast<PackageChoiceValue*>(values.front())) {
       for (int i = 0; i < count; ++i) {
+        if (new_values[i]->type() == SCRIPT_NIL) continue;
+        if (new_values[i]->type() != SCRIPT_STRING) {
+          wxMessageDialog dial = wxMessageDialog(this, _ERROR_1_("bulk modify mod is not string", new_values[i]->typeName()));
+          dial.ShowModal();
+          return;
+        }
         PackageChoiceValue* value = dynamic_cast<PackageChoiceValue*>(values[i]);
         PackageChoiceValue::ValueType new_value = new_values[i]->toString();
         shared_ptr<SimpleValueAction<PackageChoiceValue, false>> action = make_shared<SimpleValueAction<PackageChoiceValue, false>>(value, new_value);
@@ -287,41 +317,72 @@ void BulkModificationWindow::onOk(wxCommandEvent&) {
     }
     else if (dynamic_cast<ColorValue*>(values.front())) {
       for (int i = 0; i < count; ++i) {
-        ColorValue* value = dynamic_cast<ColorValue*>(values[i]);
-        ColorValue::ValueType new_value = new_values[i]->toColor();
-        shared_ptr<SimpleValueAction<ColorValue, false>> action = make_shared<SimpleValueAction<ColorValue, false>>(value, new_value);
-        action->setCard(cards[i]);
-        actions.push_back(action);
+        if (new_values[i]->type() == SCRIPT_NIL) continue;
+        try {
+          ColorValue::ValueType new_value = new_values[i]->toColor();
+          ColorValue* value = dynamic_cast<ColorValue*>(values[i]);
+          shared_ptr<SimpleValueAction<ColorValue, false>> action = make_shared<SimpleValueAction<ColorValue, false>>(value, new_value);
+          action->setCard(cards[i]);
+          actions.push_back(action);
+        }
+        catch (...) {
+          wxMessageDialog dial = wxMessageDialog(this, _ERROR_1_("bulk modify mod is not color", new_values[i]->typeName()));
+          dial.ShowModal();
+          return;
+        }
       }
     }
     else if (dynamic_cast<ImageValue*>(values.front())) {
       for (int i = 0; i < count; ++i) {
-        ImageValue* value = dynamic_cast<ImageValue*>(values[i]);
+        if (new_values[i]->type() == SCRIPT_NIL) continue;
         if (ExternalImage* img = dynamic_cast<ExternalImage*>(new_values[i].get())) {
+          ImageValue* value = dynamic_cast<ImageValue*>(values[i]);
           ImageValue::ValueType new_value = LocalFileName::fromReadString(img->toString(), "");
           shared_ptr<SimpleValueAction<ImageValue, false>> action = make_shared<SimpleValueAction<ImageValue, false>>(value, new_value);
           action->setCard(cards[i]);
           actions.push_back(action);
         }
+        else {
+          wxMessageDialog dial = wxMessageDialog(this, _ERROR_1_("bulk modify mod is not image", new_values[i]->typeName()));
+          dial.ShowModal();
+          return;
+        }
       }
     }
     else if (dynamic_cast<SymbolValue*>(values.front())) {
       for (int i = 0; i < count; ++i) {
-        SymbolValue* value = dynamic_cast<SymbolValue*>(values[i]);
+        if (new_values[i]->type() == SCRIPT_NIL) continue;
         if (ExternalImage* img = dynamic_cast<ExternalImage*>(new_values[i].get())) {
+          SymbolValue* value = dynamic_cast<SymbolValue*>(values[i]);
           SymbolValue::ValueType new_value = LocalFileName::fromReadString(img->toString(), "");
           shared_ptr<SimpleValueAction<SymbolValue, false>> action = make_shared<SimpleValueAction<SymbolValue, false>>(value, new_value);
           action->setCard(cards[i]);
           actions.push_back(action);
         }
+        else {
+          wxMessageDialog dial = wxMessageDialog(this, _ERROR_1_("bulk modify mod is not image", new_values[i]->typeName()));
+          dial.ShowModal();
+          return;
+        }
       }
     }
     else {
-      queue_message(MESSAGE_ERROR, _ERROR_("bulk modify script type unknown"));
+      wxMessageDialog dial = wxMessageDialog(this, _ERROR_1_("bulk modify value type unknown", field_name));
+      dial.ShowModal();
+      return;
     }
   }
-  set->actions.addAction(make_unique<BulkAction>(actions, set, card_list_window), false);
-  EndModal(wxID_OK);
+  if (actions.empty()) {
+    wxMessageDialog dial = wxMessageDialog(this, _ERROR_("bulk modify nothing"));
+    dial.ShowModal();
+    return;
+  }
+  else {
+    set->actions.addAction(make_unique<BulkAction>(actions, set, card_list_window), false);
+    wxMessageDialog dial = wxMessageDialog(this, _ERROR_1_("bulk modify success", String() << actions.size()));
+    dial.ShowModal();
+    EndModal(wxID_OK);
+  }
 }
 
 BEGIN_EVENT_TABLE(BulkModificationWindow, wxDialog)

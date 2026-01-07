@@ -695,7 +695,7 @@ ImportedImage::ImportedImage(Set* set, const String& filepath)
   if (!img.IsOk()) throw ScriptError(_ERROR_1_("import not image", loadpath));
 
   // add the file to the set (or overwrite it if pre-existing), save set
-  savename = normalize_internal_filename(loadpath);
+  savename = normalize_internal_filename(loadpath + _(".png"));
   savename.Replace(":",  "-");
   savename.Replace("/",  "-");
   auto outStream = set->openOut(savename);
@@ -739,7 +739,7 @@ DownloadedImage::DownloadedImage(Set* set, const String& url)
   if (!img.IsOk()) throw ScriptError(_ERROR_("web request corrupted"));
 
   // add the file to the set (or overwrite it if pre-existing), save set
-  savename = normalize_internal_filename(loadpath);
+  savename = normalize_internal_filename(loadpath + _(".png"));
   savename.Replace(":",  "-");
   savename.Replace("/",  "-");
   auto outStream = set->openOut(savename);
