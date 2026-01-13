@@ -695,6 +695,8 @@ label:
 	installer status:					Status:
 	no version:							-
 
+	load image:							Double click to load image
+
 	# print dialog
 	put space between cards:			Put space between cards?
 	spacing print:						Spacing between cards in millimeters

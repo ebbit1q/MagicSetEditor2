@@ -22,9 +22,13 @@ Font::Font()
   , scale_down_to(100000)
   , max_stretch(1.0)
   , color(Color(0,0,0))
+  , shadow_color(Color(0,0,0))
   , shadow_displacement_x(0)
   , shadow_displacement_y(0)
   , shadow_blur(0)
+  , stroke_color(Color(0,0,0))
+  , stroke_radius(0)
+  , stroke_blur(0)
   , separator_color(Color(0,0,0,128))
   , flags(FONT_NORMAL)
 {}
@@ -96,6 +100,9 @@ bool Font::update(Context& ctx) {
   changes |= shadow_displacement_x.update(ctx);
   changes |= shadow_displacement_y.update(ctx);
   changes |= shadow_blur          .update(ctx);
+  changes |= stroke_color         .update(ctx);
+  changes |= stroke_radius        .update(ctx);
+  changes |= stroke_blur          .update(ctx);
   flags = (flags & ~FONT_BOLD & ~FONT_ITALIC)
         | (weight() == _("bold")   ? FONT_BOLD   : FONT_NORMAL)
         | (style()  == _("italic") ? FONT_ITALIC : FONT_NORMAL);
@@ -114,6 +121,9 @@ void Font::initDependencies(Context& ctx, const Dependency& dep) const {
   shadow_displacement_x.initDependencies(ctx, dep);
   shadow_displacement_y.initDependencies(ctx, dep);
   shadow_blur          .initDependencies(ctx, dep);
+  stroke_color         .initDependencies(ctx, dep);
+  stroke_blur          .initDependencies(ctx, dep);
+  stroke_radius        .initDependencies(ctx, dep);
 }
 
 FontP Font::make(int add_flags, bool add_underline, bool add_strikethrough, String const* other_family, Color const* other_color, double const* other_size) const {
@@ -204,9 +214,12 @@ IMPLEMENT_REFLECTION_NO_SCRIPT(Font) {
   REFLECT(color);
   REFLECT(scale_down_to);
   REFLECT(max_stretch);
+  REFLECT(shadow_color);
   REFLECT(shadow_displacement_x);
   REFLECT(shadow_displacement_y);
-  REFLECT(shadow_color);
   REFLECT(shadow_blur);
+  REFLECT(stroke_color);
+  REFLECT(stroke_radius);
+  REFLECT(stroke_blur);
   REFLECT(separator_color);
 }

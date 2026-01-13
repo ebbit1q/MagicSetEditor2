@@ -20,6 +20,7 @@ DECLARE_POINTER_TYPE(SymbolFont);
 DECLARE_POINTER_TYPE(SymbolInFont);
 DECLARE_POINTER_TYPE(InsertSymbolMenu);
 class RotatedDC;
+class SymbolFontRef;
 struct CharInfo;
 
 // ----------------------------------------------------------------------------- : SymbolFont
@@ -56,12 +57,12 @@ public:
   size_t recognizePrefix(const String& text, size_t start) const;
   
   /// Draw a piece of text
-  void draw(RotatedDC& dc, Context& ctx, const RealRect& rect, double font_size, const Alignment& align, const String& text);
+  void draw(RotatedDC& dc, Context& ctx, const RealRect& rect, double scale, const SymbolFontRef& font, const String& text);
   /// Get information on characters in a string
   void getCharInfo(RotatedDC& dc, Context& ctx, double font_size, const String& text, vector<CharInfo>& out);
   
   /// Draw a piece of text prepared using split
-  void draw(RotatedDC& dc, RealRect rect, double font_size, const Alignment& align, const SplitSymbols& text);
+  void draw(RotatedDC& dc, RealRect rect, double scale, const SymbolFontRef& font, const SplitSymbols& text);
   /// Get information on characters in a string
   void getCharInfo(RotatedDC& dc, double font_size, const SplitSymbols& text, vector<CharInfo>& out);
   
@@ -99,7 +100,7 @@ private:
   SymbolInFont* defaultSymbol() const;
   
   /// Draws a single symbol inside the given rectangle
-  void drawSymbol  (RotatedDC& dc, RealRect sym_rect, double font_size, const Alignment& align, SymbolInFont& sym, const String& text);
+  void drawSymbol(RotatedDC& dc, RealRect sym_rect, double scale, const SymbolFontRef& font, SymbolInFont& sym, const String& text, double stretch);
   
   /// Size of a single symbol, including spacing
   RealSize symbolSize       (double font_size, const DrawableSymbol& sym);
@@ -158,15 +159,33 @@ public:
   bool update(Context& ctx);
   void initDependencies(Context&, const Dependency&) const;
   
-  /// Is a font loaded?
+  /// Is the referenced symbol font loaded?
   bool valid() const;
-    
-  Scriptable<String>    name;          ///< Font package name, can be changed with script
-  Scriptable<double>    size;          ///< Size of the font
-  double                scale_down_to; ///< Mimumum size of the font
-  Scriptable<Alignment> alignment;     ///< Alignment of symbols in a line of text
-  SymbolFontP           font;          ///< The font, if it is loaded
   
+  Scriptable<String>    name;                 ///< The referenced symbol font's package name (folder name)
+  Scriptable<double>    size;                 ///< Size of the font
+  double                scale_down_to;        ///< Minimum size of the font
+  Scriptable<bool>      underline;            ///< Underlined?
+  Scriptable<bool>      strikethrough;        ///< Struck through?
+  Scriptable<Alignment> alignment;            ///< Alignment of symbols in a line of text
+  Scriptable<Color>     shadow_color;         ///< Color for the shadow
+  Scriptable<double>    shadow_displacement_x;///< Offset of the shadow in pixels, for a font size of 15
+  Scriptable<double>    shadow_displacement_y;///< Offset of the shadow in pixels, for a font size of 15
+  Scriptable<double>    shadow_blur;          ///< Blur radius of the shadow in pixels, for a font size of 15
+  Scriptable<Color>     stroke_color;         ///< Color for the stroke
+  Scriptable<double>    stroke_radius;        ///< Thickness of the stroke in pixels, for a font size of 15
+  Scriptable<double>    stroke_blur;          ///< Blur radius of the stroke in pixels, for a font size of 15
+  SymbolFontP           font;                 ///< The symbol font this is referencing, if it is loaded
+
+  /// Add a shadow under symbols?
+  inline bool hasShadow() const {
+    return (!almost_equal(shadow_blur(), 0.0) || !almost_equal(shadow_displacement_x(), 0.0) || !almost_equal(shadow_displacement_y(), 0.0)) && shadow_color().Alpha() != 0;
+  }
+  /// Add a stroke effect around symbols?
+  inline bool hasStroke() const {
+    return (!almost_equal(stroke_blur(), 0.0) || !almost_equal(stroke_radius(), 0.0)) && stroke_color().Alpha() != 0;
+  }
+
 private:
   DECLARE_REFLECTION();
   

@@ -7,6 +7,7 @@
 // ----------------------------------------------------------------------------- : Includes
 
 #include <util/prec.hpp>
+#include <gfx/gfx.hpp>
 #include <data/symbol_font.hpp>
 #include <data/stylesheet.hpp>
 #include <util/dynamic_arg.hpp>
@@ -269,31 +270,131 @@ SymbolInFont* SymbolFont::defaultSymbol() const {
 
 // ----------------------------------------------------------------------------- : SymbolFont : drawing
 
-void SymbolFont::draw(RotatedDC& dc, Context& ctx, const RealRect& rect, double font_size, const Alignment& align, const String& text) {
+void SymbolFont::draw(RotatedDC& dc, Context& ctx, const RealRect& rect, double scale, const SymbolFontRef& font, const String& text) {
   SplitSymbols symbols;
   update(ctx);
   split(text, symbols);
-  draw(dc, rect, font_size, align, symbols);
+  draw(dc, rect, scale, font, symbols);
 }
 
-void SymbolFont::draw(RotatedDC& dc, RealRect rect, double font_size, const Alignment& align, const SplitSymbols& text) {
+void SymbolFont::draw(RotatedDC& dc, RealRect rect, double scale, const SymbolFontRef& font, const SplitSymbols& text) {
+  double stretch = dc.getStretch();
   FOR_EACH_CONST(sym, text) {
-    RealSize size = dc.trInvS(symbolSize(dc.trS(font_size), sym));
+    RealSize size = dc.trInvS(symbolSize(dc.trS(scale * font.size), sym));
+    size = RealSize(size.width*stretch, size.height);
     RealRect sym_rect = split_left(rect, size);
-    drawSymbol(dc, sym_rect, font_size, align, *sym.symbol, sym.draw_text);
+    // TODO: draw all stroke effects and shadows first, then draw all symbols
+    drawSymbol(dc, sym_rect, scale, font, *sym.symbol, sym.draw_text, stretch);
   }
 }
 
-void SymbolFont::drawSymbol(RotatedDC& dc, RealRect sym_rect, double font_size, const Alignment& align, SymbolInFont& sym, const String& text) {
-  // 1. draw symbol
-  // find bitmap
-  Bitmap bmp = sym.getBitmap(*this, dc.trS(font_size));
-  // draw aligned in the rectangle
+void SymbolFont::drawSymbol(RotatedDC& dc, RealRect sym_rect, double scale, const SymbolFontRef& font, SymbolInFont& sym, const String& text, double stretch) {
+  // 1. find bitmap and pos
+  double font_size = scale * font.size();
+  double font_size_ext = dc.trS(scale * font.size());
+  Bitmap bmp = sym.getBitmap(*this, font_size_ext);
+  if (!almost_equal(stretch, 1.0)) {
+    bmp = Bitmap(resample(bmp.ConvertToImage(), bmp.GetWidth() * stretch, bmp.GetHeight()));
+  }
   RealSize  bmp_size = dc.trInvS(RealSize(bmp));
-  RealPoint bmp_pos  = align_in_rect(align, bmp_size, sym_rect);
+  RealPoint bmp_pos  = align_in_rect(font.alignment(), bmp_size, sym_rect);
+  // 2. draw potential stroke or shadow
+  double s_scale = font_size_ext / 15.;
+  if (font.hasStroke()) {
+    // add margin
+    Image img = bmp.ConvertToImage();
+    if (!img.HasAlpha()) set_alpha(img, 0);
+    int blur_radius = lround(font.stroke_blur() * s_scale);
+    int stroke_radius = lround(font.stroke_radius() * s_scale);
+    int margin = blur_radius + stroke_radius;
+    int s_width = img.GetWidth() + 2 * margin, s_height = img.GetHeight() + 2 * margin;
+    int x_end = s_width - margin;
+    int y_end = s_height - margin;
+    wxImage s_img(s_width, s_height, false);
+    s_img.InitAlpha();
+    // convert to stroke color
+    Byte* s_data = s_img.GetData();
+    Byte* s_alpha = s_img.GetAlpha(), *alpha = img.GetAlpha();
+    Color color = font.stroke_color();
+    unsigned char r = color.Red();
+    unsigned char g = color.Green();
+    unsigned char b = color.Blue();
+    unsigned char a = color.Alpha();
+    for (int y = 0 ; y < s_height ; ++y) {
+      for (int x = 0 ; x < s_width ; ++x) {
+        s_data[0] = r;
+        s_data[1] = g;
+        s_data[2] = b;
+        s_data += 3;
+        if (margin <= x && x < x_end && margin <= y && y < y_end) {
+          s_alpha[0] = alpha[0] * a / 255;
+          alpha += 1;
+        }
+        else {
+          s_alpha[0] = 0;
+        }
+        s_alpha += 1;
+      }
+    }
+    // add stroke effect
+    for (int i = 0 ; i < stroke_radius ; ++i) {
+      thicken_image_alpha(s_img, 1);
+    }
+    // add blur
+    for (int i = 0 ; i < blur_radius ; ++i) {
+      blur_image_alpha(s_img, 3);
+    }
+    // draw
+    RealSize  s_size = dc.trInvS(RealSize(s_img));
+    RealPoint s_pos(bmp_pos.x - (s_size.width - bmp_size.width)/2, bmp_pos.y - (s_size.height - bmp_size.height)/2);
+    dc.DrawImage(s_img, s_pos);
+  }
+  else if (font.hasShadow()) {
+    // add margin
+    Image img = bmp.ConvertToImage();
+    if (!img.HasAlpha()) set_alpha(img, 0);
+    int margin = lround(font.shadow_blur() * s_scale);
+    int s_width = img.GetWidth() + 2 * margin, s_height = img.GetHeight() + 2 * margin;
+    int x_end = s_width - margin;
+    int y_end = s_height - margin;
+    wxImage s_img(s_width, s_height, false);
+    s_img.InitAlpha();
+    // convert to shadow color
+    Byte* s_data = s_img.GetData();
+    Byte* s_alpha = s_img.GetAlpha(), *alpha = img.GetAlpha();
+    Color color = font.shadow_color();
+    unsigned char r = color.Red();
+    unsigned char g = color.Green();
+    unsigned char b = color.Blue();
+    unsigned char a = color.Alpha();
+    for (int y = 0 ; y < s_height ; ++y) {
+      for (int x = 0 ; x < s_width ; ++x) {
+        s_data[0] = r;
+        s_data[1] = g;
+        s_data[2] = b;
+        s_data += 3;
+        if (margin <= x && x < x_end && margin <= y && y < y_end) {
+          s_alpha[0] = alpha[0] * a / 255;
+          alpha += 1;
+        }
+        else {
+          s_alpha[0] = 0;
+        }
+        s_alpha += 1;
+      }
+    }
+    // add blur
+    for (int i = 0 ; i < margin ; ++i) {
+      blur_image_alpha(s_img, 3);
+    }
+    // draw
+    RealSize  s_size = dc.trInvS(RealSize(s_img));
+    RealPoint s_pos(bmp_pos.x - (s_size.width - bmp_size.width)/2, bmp_pos.y - (s_size.height - bmp_size.height)/2);
+    dc.DrawImage(s_img, s_pos + RealPoint(font.shadow_displacement_x(), font.shadow_displacement_y()) * scale);
+  }
+  // 3. draw bitmap
   dc.DrawBitmap(bmp, bmp_pos);
-  
-  // 2. draw text
+  // 4. draw text
   if (text.empty() || !sym.text_font) return;
   // only use the bitmap rectangle
   sym_rect = RealRect(bmp_pos, bmp_size);
@@ -304,7 +405,7 @@ void SymbolFont::drawSymbol(RotatedDC& dc, RealRect sym_rect, double font_size, 
   sym_rect.height -= font_size * (sym.text_margin_top  + sym.text_margin_bottom);
   // setup text, shrink it
   double size = font_size * sym.text_font->size;
-  double stretch = 1.0;
+  double text_stretch = 1.0;
   RealSize ts;
   while (true) {
     if (size <= 0) return; // text too small
@@ -314,7 +415,7 @@ void SymbolFont::drawSymbol(RotatedDC& dc, RealRect sym_rect, double font_size, 
       if (ts.width <= sym_rect.width) {
         break; // text fits
       } else if (ts.width * sym.text_font->max_stretch <= sym_rect.width) {
-        stretch = sym_rect.width / ts.width;
+        text_stretch = sym_rect.width / ts.width;
         ts.width = sym_rect.width; // for alignment
         break;
       }
@@ -325,7 +426,7 @@ void SymbolFont::drawSymbol(RotatedDC& dc, RealRect sym_rect, double font_size, 
   // align text
   RealPoint text_pos = align_in_rect(sym.text_alignment, ts, sym_rect);
   // draw text
-  dc.DrawTextWithShadow(text, *sym.text_font, text_pos, font_size, stretch);
+  dc.DrawTextWithShadowOrStroke(text, *sym.text_font, text_pos, font_size, text_stretch);
 }
 
 Image SymbolFont::getImage(double font_size, const DrawableSymbol& sym) {
@@ -345,7 +446,7 @@ Image SymbolFont::getImage(double font_size, const DrawableSymbol& sym) {
   sym_rect.height -= font_size * (sym.symbol->text_margin_top  + sym.symbol->text_margin_bottom);
   // setup text, shrink it
   double size = font_size * sym.symbol->text_font->size;
-  double stretch = 1.0;
+  double text_stretch = 1.0;
   RealSize ts;
   while (true) {
     if (size <= 0) return sym.symbol->getImage(*this, font_size); // text too small
@@ -355,7 +456,7 @@ Image SymbolFont::getImage(double font_size, const DrawableSymbol& sym) {
       if (ts.width <= sym_rect.width) {
         break; // text fits
       } else if (ts.width * sym.symbol->text_font->max_stretch <= sym_rect.width) {
-        stretch = sym_rect.width / ts.width;
+        text_stretch = sym_rect.width / ts.width;
         ts.width = sym_rect.width; // for alignment
         break;
       }
@@ -366,7 +467,7 @@ Image SymbolFont::getImage(double font_size, const DrawableSymbol& sym) {
   // align text
   RealPoint text_pos = align_in_rect(sym.symbol->text_alignment, ts, sym_rect);
   // draw text
-  rdc.DrawTextWithShadow(sym.draw_text, *sym.symbol->text_font, text_pos, font_size, stretch);
+  rdc.DrawTextWithShadowOrStroke(sym.draw_text, *sym.symbol->text_font, text_pos, font_size, text_stretch);
   // done
   dc.SelectObject(wxNullBitmap);
   return bmp.ConvertToImage();
@@ -568,7 +669,16 @@ void after_reading(InsertSymbolMenu& m, Version ver) {
 SymbolFontRef::SymbolFontRef()
   : size(12)
   , scale_down_to(1)
+  , underline(false)
+  , strikethrough(false)
   , alignment(ALIGN_MIDDLE_CENTER)
+  , shadow_color(Color(0,0,0))
+  , shadow_displacement_x(0)
+  , shadow_displacement_y(0)
+  , shadow_blur(0)
+  , stroke_color(Color(0,0,0))
+  , stroke_radius(0)
+  , stroke_blur(0)
 {}
 
 bool SymbolFontRef::valid() const {
@@ -584,14 +694,32 @@ bool SymbolFontRef::update(Context& ctx) {
   } else if (!font) {
     loadFont(ctx);
   }
-  changes |= size.update(ctx);
-  changes |= alignment.update(ctx);
+  changes |= size                 .update(ctx);
+  changes |= underline            .update(ctx);
+  changes |= strikethrough        .update(ctx);
+  changes |= alignment            .update(ctx);
+  changes |= shadow_color         .update(ctx);
+  changes |= shadow_displacement_x.update(ctx);
+  changes |= shadow_displacement_y.update(ctx);
+  changes |= shadow_blur          .update(ctx);
+  changes |= stroke_color         .update(ctx);
+  changes |= stroke_radius        .update(ctx);
+  changes |= stroke_blur          .update(ctx);
   return changes;
 }
 void SymbolFontRef::initDependencies(Context& ctx, const Dependency& dep) const {
-  name.initDependencies(ctx, dep);
-  size.initDependencies(ctx, dep);
-  alignment.initDependencies(ctx, dep);
+  name                 .initDependencies(ctx, dep);
+  size                 .initDependencies(ctx, dep);
+  underline            .initDependencies(ctx, dep);
+  strikethrough        .initDependencies(ctx, dep);
+  alignment            .initDependencies(ctx, dep);
+  shadow_color         .initDependencies(ctx, dep);
+  shadow_displacement_x.initDependencies(ctx, dep);
+  shadow_displacement_y.initDependencies(ctx, dep);
+  shadow_blur          .initDependencies(ctx, dep);
+  stroke_color         .initDependencies(ctx, dep);
+  stroke_radius        .initDependencies(ctx, dep);
+  stroke_blur          .initDependencies(ctx, dep);
 }
 
 void SymbolFontRef::loadFont(Context& ctx) {
@@ -614,5 +742,14 @@ IMPLEMENT_REFLECTION(SymbolFontRef) {
   REFLECT(name);
   REFLECT(size);
   REFLECT(scale_down_to);
+  REFLECT(underline);
+  REFLECT(strikethrough);
   REFLECT(alignment);
+  REFLECT(shadow_color);
+  REFLECT(shadow_displacement_x);
+  REFLECT(shadow_displacement_y);
+  REFLECT(shadow_blur);
+  REFLECT(stroke_color);
+  REFLECT(stroke_radius);
+  REFLECT(stroke_blur);
 }

@@ -9,6 +9,9 @@
 #include <util/prec.hpp>
 #include <gfx/gfx.hpp>
 #include <util/error.hpp>
+#if defined(__WXMSW__) && wxUSE_WXDIB
+#include <wx/msw/dib.h>
+#endif
 
 // ----------------------------------------------------------------------------- : Saturation
 
@@ -69,6 +72,294 @@ void invert(Image& img) {
   for (int i = 0 ; i < n ; ++i) {
     data[i] = 255 - data[i];
   }
+}
+
+// ----------------------------------------------------------------------------- : Blurring
+
+Byte blur_pixel_alpha(Byte* in, int x, int y, int width, int height, int center_weight) {
+  return (  center_weight * in[0]                + // center
+         (x == 0          ? in[0] : in[-1])      + // left
+         (y == 0          ? in[0] : in[-width])  + // up
+         (x == width - 1  ? in[0] : in[1])       + // right
+         (y == height - 1 ? in[0] : in[width])     // down
+         ) / (4 + center_weight);
+}
+
+void blur_image_alpha(Image& img, int center_weight) {
+  if (!img.HasAlpha()) return;
+  int width = img.GetWidth(), height = img.GetHeight();
+  Byte* data = img.GetAlpha();
+  for (int y = 0 ; y < height ; ++y) {
+    for (int x = 0 ; x < width ; ++x) {
+      *data = blur_pixel_alpha(data, x, y, width, height, center_weight);
+      ++data;
+    }
+  }
+}
+
+// ----------------------------------------------------------------------------- : Thickening
+
+Byte thicken_pixel_alpha_7x7(std::vector<unsigned char> in, int i, int x, int y, int width, int height) {
+  Byte result = in[i];
+  Byte diag = in[i];
+  Byte corner = in[i];
+  if (x > 2) {
+    if (y > 1)          corner = max(corner, in[i -3 -2*width]);
+    if (y > 0)          diag   = max(diag  , in[i -3 -1*width]);
+                        result = max(result, in[i -3         ]);
+    if (y < height - 1) diag   = max(diag  , in[i -3 +1*width]);
+    if (y < height - 2) corner = max(corner, in[i -3 +2*width]);
+  }
+  if (x > 1) {
+    if (y > 2)          corner = max(corner, in[i -2 -3*width]);
+    if (y > 1)          result = max(result, in[i -2 -2*width]);
+    if (y > 0)          result = max(result, in[i -2 -1*width]);
+                        result = max(result, in[i -2         ]);
+    if (y < height - 1) result = max(result, in[i -2 +1*width]);
+    if (y < height - 2) result = max(result, in[i -2 +2*width]);
+    if (y < height - 3) corner = max(corner, in[i -2 +3*width]);
+  }
+  if (x > 0) {
+    if (y > 2)          diag   = max(diag  , in[i -1 -3*width]);
+    if (y > 1)          result = max(result, in[i -1 -2*width]);
+    if (y > 0)          result = max(result, in[i -1 -1*width]);
+                        result = max(result, in[i -1         ]);
+    if (y < height - 1) result = max(result, in[i -1 +1*width]);
+    if (y < height - 2) result = max(result, in[i -1 +2*width]);
+    if (y < height - 3) diag   = max(diag  , in[i -1 +3*width]);
+  }
+  
+    if (y > 2)          result = max(result, in[i    -3*width]);
+    if (y > 1)          result = max(result, in[i    -2*width]);
+    if (y > 0)          result = max(result, in[i    -1*width]);
+
+    if (y < height - 1) result = max(result, in[i    +1*width]);
+    if (y < height - 2) result = max(result, in[i    +2*width]);
+    if (y < height - 3) result = max(result, in[i    +3*width]);
+
+  if (x < width - 1) {
+    if (y > 2)          diag   = max(diag  , in[i +1 -3*width]);
+    if (y > 1)          result = max(result, in[i +1 -2*width]);
+    if (y > 0)          result = max(result, in[i +1 -1*width]);
+                        result = max(result, in[i +1         ]);
+    if (y < height - 1) result = max(result, in[i +1 +1*width]);
+    if (y < height - 2) result = max(result, in[i +1 +2*width]);
+    if (y < height - 3) diag   = max(diag  , in[i +1 +3*width]);
+  }
+  if (x < width - 2) {
+    if (y > 2)          corner = max(corner, in[i +2 -3*width]);
+    if (y > 1)          result = max(result, in[i +2 -2*width]);
+    if (y > 0)          result = max(result, in[i +2 -1*width]);
+                        result = max(result, in[i +2         ]);
+    if (y < height - 1) result = max(result, in[i +2 +1*width]);
+    if (y < height - 2) result = max(result, in[i +2 +2*width]);
+    if (y < height - 3) corner = max(corner, in[i +2 +3*width]);
+  }
+  if (x < width - 3) {
+    if (y > 1)          corner = max(corner, in[i +3 -2*width]);
+    if (y > 0)          diag   = max(diag  , in[i +3 -1*width]);
+                        result = max(result, in[i +3         ]);
+    if (y < height - 1) diag   = max(diag  , in[i +3 +1*width]);
+    if (y < height - 2) corner = max(corner, in[i +3 +2*width]);
+  }
+  if (diag   > result) result = (Byte)((4 * (int)diag   +     (int)result) / 5);
+  if (corner > result) result = (Byte)((2 * (int)corner + 3 * (int)result) / 5);
+  return result;
+}
+
+Byte thicken_pixel_alpha_5x5(std::vector<unsigned char> in, int i, int x, int y, int width, int height) {
+  Byte result = in[i];
+  Byte diag = in[i];
+  if (x > 1) {
+    if (y > 0)          diag   = max(diag  , in[i -2 -1*width]);
+                        result = max(result, in[i -2         ]);
+    if (y < height - 1) diag   = max(diag  , in[i -2 +1*width]);
+  }
+  if (x > 0) {
+    if (y > 1)          diag   = max(diag  , in[i -1 -2*width]);
+    if (y > 0)          result = max(result, in[i -1 -1*width]);
+                        result = max(result, in[i -1         ]);
+    if (y < height - 1) result = max(result, in[i -1 +1*width]);
+    if (y < height - 2) diag   = max(diag  , in[i -1 +2*width]);
+  }
+
+    if (y > 1)          result = max(result, in[i    -2*width]);
+    if (y > 0)          result = max(result, in[i    -1*width]);
+
+    if (y < height - 1) result = max(result, in[i    +1*width]);
+    if (y < height - 2) result = max(result, in[i    +2*width]);
+
+  if (x < width - 1) {
+    if (y > 1)          diag   = max(diag  , in[i +1 -2*width]);
+    if (y > 0)          result = max(result, in[i +1 -1*width]);
+                        result = max(result, in[i +1         ]);
+    if (y < height - 1) result = max(result, in[i +1 +1*width]);
+    if (y < height - 2) diag   = max(diag  , in[i +1 +2*width]);
+  }
+  if (x < width - 2) {
+    if (y > 0)          diag   = max(diag  , in[i +2 -1*width]);
+                        result = max(result, in[i +2         ]);
+    if (y < height - 1) diag   = max(diag  , in[i +2 +1*width]);
+  }
+  if (diag > result) result = (Byte)((3 * (int)diag + (int)result) / 4);
+  return result;
+}
+
+Byte thicken_pixel_alpha_3x3(std::vector<unsigned char> in, int i, int x, int y, int width, int height) {
+  Byte result = in[i];
+  Byte diag = in[i];
+  if (x > 0) {
+    if (y > 0)          diag   = max(diag,   in[i -1 -width]);
+                        result = max(result, in[i -1       ]);
+    if (y < height - 1) diag   = max(diag,   in[i -1 +width]);
+  }
+    if (y > 0)          result = max(result, in[i    -width]);
+
+    if (y < height - 1) result = max(result, in[i    +width]);
+  if (x < width - 1) {
+    if (y > 0)          diag   = max(diag,   in[i +1 -width]);
+                        result = max(result, in[i +1       ]);
+    if (y < height - 1) diag   = max(diag,   in[i +1 +width]);
+  }
+  if (diag > result) result = (Byte)((3*(int)diag + 2*(int)result) / 5);
+  return result;
+}
+
+void thicken_image_alpha(Image& img, int radius) {
+  if (!img.HasAlpha()) return;
+  int width = img.GetWidth(), height = img.GetHeight();
+  Byte* data = img.GetAlpha();
+  std::vector<Byte> copy(data, data + width * height);
+  int i = 0;
+  for (int y = 0 ; y < height ; ++y) {
+    for (int x = 0 ; x < width ; ++x) {
+      *data = radius == 1 ? thicken_pixel_alpha_3x3(copy, i, x, y, width, height) :
+              radius == 2 ? thicken_pixel_alpha_5x5(copy, i, x, y, width, height) :
+                            thicken_pixel_alpha_7x7(copy, i, x, y, width, height) ;
+      ++data;
+      ++i;
+    }
+  }
+}
+
+// ----------------------------------------------------------------------------- : Resampled text
+
+void downsample_to_alpha(Bitmap& bmp_in, Image& img_out) {
+  Byte* temp = nullptr;
+#if defined(__WXMSW__) && wxUSE_WXDIB
+  wxDIB img_in(bmp_in);
+  if (!img_in.IsOk()) return;
+  // if text_scaling = 4, then the line always is dword aligned, so we need no adjusting
+  // we created a bitmap with depth 24, so that is what we should have here
+  if (img_in.GetDepth() != 24) throw InternalError(_("DIB has wrong bit depth"));
+#else
+  Image img_in = bmp_in.ConvertToImage();
+#endif
+  Byte* in  = img_in.GetData();
+  Byte* out = img_in.GetData();
+  // scale in the x direction, this overwrites parts of the input image
+  if (img_in.GetWidth() == img_out.GetWidth() * text_scaling) {
+    // no stretching
+    int count = img_out.GetWidth() * img_in.GetHeight();
+    for (int i = 0 ; i < count ; ++i) {
+      int total = 0;
+      for (int j = 0 ; j < text_scaling ; ++j) {
+        total += in[3 * (j + text_scaling * i)];
+      }
+      out[i] = total / text_scaling;
+    }
+  } else {
+    // resample to buffer
+    temp = new Byte[img_out.GetWidth() * img_in.GetHeight()];
+    out = temp;
+    // custom stretch, see resample_image.cpp
+    const int shift = 32-12-8; // => max size = 4096, max alpha = 255
+    int w1 = img_in.GetWidth(), w2 = img_out.GetWidth(), h = img_in.GetHeight();
+    int out_fact = (w2 << shift) / w1; // how much to output for 256 input = 1 pixel
+    int out_rest = (w2 << shift) % w1;
+    // make the image 'bolder' to compensate for compressing it
+    int mul = 128 + min(256, 128*w1/(text_scaling*w2));
+    for (int y = 0 ; y < h ; ++y) {
+      int in_rem = out_fact + out_rest;
+      for (int x = 0 ; x < w2 ; ++x) {
+        int out_rem = 1 << shift;
+        int tot = 0;
+        while (out_rem >= in_rem) {
+          // eat a whole input pixel
+          tot += *in * in_rem;
+          out_rem -= in_rem;
+          in_rem = out_fact;
+          in += 3;
+        }
+        if (out_rem > 0) {
+          // eat a partial input pixel
+          tot += *in * out_rem;
+          in_rem -= out_rem;
+        }
+        // store
+        *out = top(((tot >> shift) * mul) >> 8);
+        out += 1;
+      }
+    }
+    in = temp;
+  }
+
+  // now scale in the y direction, and write to the output alpha
+  img_out.InitAlpha();
+  int line_size_in = img_out.GetWidth();
+#if defined(__WXMSW__) && wxUSE_WXDIB
+  // DIBs are upside down
+  out = img_out.GetAlpha() + (img_out.GetHeight() - 1) * line_size_in;
+  int line_size_out = -line_size_in;
+#else
+  out = img_out.GetAlpha();
+  int line_size_out = line_size_in;
+#endif
+  int h = img_out.GetHeight();
+  if (img_in.GetHeight() == h * text_scaling) {
+    // no stretching
+    for (int y = 0 ; y < h ; ++y) {
+      for (int x = 0 ; x < line_size_in ; ++x) {
+        int total = 0;
+        for (int j = 0 ; j < text_scaling ; ++j) {
+          total += in[x + line_size_in * (j + text_scaling * y)];
+        }
+        out[x + line_size_out * y] = total / text_scaling;
+      }
+    }
+  } else {
+    const int shift = 32-12-8; // => max size = 4096, max alpha = 255
+    int h1 = img_in.GetHeight(), w = img_out.GetWidth();
+    int out_fact = (h << shift) / h1; // how much to output for 256 input = 1 pixel
+    int out_rest = (h << shift) % h1;
+    int mul = 128 + min(256, 128*h1/(text_scaling*h));
+    for (int x = 0 ; x < w ; ++x) {
+      int in_rem = out_fact + out_rest;
+      for (int y = 0 ; y < h ; ++y) {
+        int out_rem = 1 << shift;
+        int tot = 0;
+        while (out_rem >= in_rem) {
+          // eat a whole input pixel
+          tot += *in * in_rem;
+          out_rem -= in_rem;
+          in_rem = out_fact;
+          in += line_size_in;
+        }
+        if (out_rem > 0) {
+          // eat a partial input pixel
+          tot += *in * out_rem;
+          in_rem -= out_rem;
+        }
+        // store
+        *out = top(((tot >> shift) * mul) >> 8);
+        out += line_size_out;
+      }
+      in  = in  - h1 * line_size_in  + 1;
+      out = out - h  * line_size_out + 1;
+    }
+  }
+
+  delete[] temp;
 }
 
 // ----------------------------------------------------------------------------- : Coloring symbol images

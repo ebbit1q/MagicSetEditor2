@@ -29,11 +29,11 @@ enum FontFlags
 ,  FONT_CODE_OPER   = 0x80 // syntax highlighting
 };
 
-/// A font for rendering text
+/// A reference to a font for rendering text
 /** Contains additional information about scaling, color and shadow */
 class Font : public IntrusivePtrBase<Font> {
 public:
-  Scriptable<String> name;                 ///< Name of the font
+  Scriptable<String> name;                 ///< Name of the referenced font
   Scriptable<String> italic_name;          ///< Font name for italic text (optional)
   Scriptable<double> size;                 ///< Size of the font
   Scriptable<String> weight, style;        ///< Weight and style of the font (bold/italic)
@@ -42,10 +42,13 @@ public:
   double             scale_down_to;        ///< Smallest size to scale down to
   double             max_stretch;          ///< How much should the font be stretched before scaling down?
   Scriptable<Color>  color;                ///< Color to use
-  Scriptable<Color>  shadow_color;         ///< Color for shadow
-  Scriptable<double> shadow_displacement_x;///< Position of the shadow
-  Scriptable<double> shadow_displacement_y;///< Position of the shadow
-  Scriptable<double> shadow_blur;          ///< Blur radius of the shadow
+  Scriptable<Color>  shadow_color;         ///< Color for the shadow
+  Scriptable<double> shadow_displacement_x;///< Offset of the shadow in pixels, for a font size of 15
+  Scriptable<double> shadow_displacement_y;///< Offset of the shadow in pixels, for a font size of 15
+  Scriptable<double> shadow_blur;          ///< Blur radius of the shadow in pixels, for a font size of 15
+  Scriptable<Color>  stroke_color;         ///< Color for the stroke
+  Scriptable<double> stroke_radius;        ///< Thickness of the stroke in pixels, for a font size of 15
+  Scriptable<double> stroke_blur;          ///< Blur radius of the stroke in pixels, for a font size of 15
   Color              separator_color;      ///< Color for <sep> text
   int                flags;                ///< FontFlags for this font
 
@@ -61,16 +64,20 @@ public:
   bool update(Context& ctx);
   /// Add the given dependency to the dependent_scripts list for the variables this font depends on
   void initDependencies(Context&, const Dependency&) const;
-  
-  /// Does this font have a shadow?
+
+  /// Add a shadow under the text?
   inline bool hasShadow() const {
-    return shadow_displacement_x != 0.0 || shadow_displacement_y != 0.0;
+    return (!almost_equal(shadow_blur(), 0.0) || !almost_equal(shadow_displacement_x(), 0.0) || !almost_equal(shadow_displacement_y(), 0.0)) && shadow_color().Alpha() != 0;
   }
-  
-  /// Add style to a font, and optionally change the font family, color and size
+  /// Add a stroke effect around the text?
+  inline bool hasStroke() const {
+    return (!almost_equal(stroke_blur(), 0.0) || !almost_equal(stroke_radius(), 0.0)) && stroke_color().Alpha() != 0;
+  }
+
+  /// Add style, and optionally change the font family, color and size
   FontP make(int add_flags, bool add_underline, bool add_strikethrough, String const* other_family, Color const* other_color, double const* other_size) const;
   
-  /// Convert this font to a wxFont
+  /// Convert this font reference to a wxFont
   wxFont toWxFont(double scale) const;
 
 private:

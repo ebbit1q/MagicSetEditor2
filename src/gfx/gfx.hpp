@@ -53,10 +53,14 @@ void sharp_resample_and_clip(const Image& img_in, Image& img_out, wxRect rect, i
  *  rect    = rectangle to draw in (a rectangle somewhere around pos)
  *  stretch = amount to stretch in the direction of the text after drawing
  */
-void draw_resampled_text(DC& dc, const RealPoint& pos, const RealRect& rect, double stretch, Radians angle, Color color, const String& text, int blur_radius = 0, int repeat = 1);
+void draw_resampled_text(DC& dc, const String& text, const RealPoint& pos, const RealRect& rect, Radians angle, Color color, int blur_radius = 0, Color stroke_color = Color(0,0,0), int stroke_radius = 0, double stretch = 1.0);
 
 // scaling factor to use when drawing resampled text
 extern const int text_scaling;
+
+// Downsamples the red channel of the input image to the alpha channel of the output image
+// img_in must be text_scaling times as large as img_out
+void downsample_to_alpha(Bitmap& bmp_in, Image& img_out);
 
 // ----------------------------------------------------------------------------- : Image rotation
 
@@ -91,6 +95,18 @@ void saturate(Image& image, double amount);
 
 /// Invert the colors in an image
 void invert(Image& img);
+
+// Blur the alpha of a pixel
+Byte blur_pixel_alpha(Byte* in, int x, int y, int width, int height, int center_weight = 2);
+// Blur the alpha channel of an image
+void blur_image_alpha(Image& img, int center_weight = 2);
+
+// Thicken the alpha of a pixel
+Byte thicken_pixel_alpha_3x3(std::vector<Byte> in, int i, int x, int y, int width, int height);
+Byte thicken_pixel_alpha_5x5(std::vector<Byte> in, int i, int x, int y, int width, int height);
+Byte thicken_pixel_alpha_7x7(std::vector<Byte> in, int i, int x, int y, int width, int height);
+// Thicken the alpha channel of an image
+void thicken_image_alpha(Image& img, int radius);
 
 // ----------------------------------------------------------------------------- : Combining
 

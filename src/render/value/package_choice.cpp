@@ -77,6 +77,6 @@ void PackageChoiceValueViewer::draw(RotatedDC& dc) {
   }
   dc.SetFont(font, 1.0);
   RealPoint pos = align_in_rect(ALIGN_MIDDLE_LEFT, RealSize(0, dc.GetCharHeight()), dc.getInternalRect()) + RealSize(17., 0) + margin;
-  dc.DrawTextWithShadow(text, font, pos);
+  dc.DrawTextWithShadowOrStroke(text, font, pos);
   if (nativeLook()) font.color = font_color;
 }

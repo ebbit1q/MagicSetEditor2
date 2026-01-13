@@ -182,27 +182,27 @@ RotatedDC::RotatedDC(DC& dc, const Rotation& rotation, RenderQuality quality)
 
 // ----------------------------------------------------------------------------- : RotatedDC : Drawing
 
-void RotatedDC::DrawText(const String& text, const RealPoint& pos, int blur_radius, int boldness, double stretch_) {
-  DrawText(text, pos, dc.GetTextForeground(), blur_radius, boldness, stretch_);
+void RotatedDC::DrawText(const String& text, const RealPoint& pos, int blur_radius, Color stroke_color, int stroke_radius, double stretch) {
+  DrawText(text, pos, dc.GetTextForeground(), blur_radius, stroke_color, stroke_radius, stretch);
 }
 
-void RotatedDC::DrawText(const String& text, const RealPoint& pos, Color color, int blur_radius, int boldness, double stretch_) {
+void RotatedDC::DrawText(const String& text, const RealPoint& pos, Color color, int blur_radius, Color stroke_color, int stroke_radius, double stretch) {
   if (text.empty()) return;
   if (color.Alpha() == 0) return;
   if (quality >= QUALITY_AA) {
     RealRect r(pos, GetTextExtent(text));
     RealRect r_ext = trRectToBB(r);
     RealPoint pos2 = tr(pos);
-    stretch_ *= getStretch();
-    if (fabs(stretch_ - 1) > 1e-6) {
-      r.width *= stretch_;
+    stretch *= getStretch();
+    if (fabs(stretch - 1) > 1e-6) {
+      r.width *= stretch;
       RealRect r_ext2 = trRectToBB(r);
       pos2.x += r_ext2.x - r_ext.x;
       pos2.y += r_ext2.y - r_ext.y;
       r_ext.x = r_ext2.x;
       r_ext.y = r_ext2.y;
     }
-    draw_resampled_text(dc, pos2, r_ext, stretch_, angle, color, text, blur_radius, boldness);
+    draw_resampled_text(dc, text, pos2, r_ext, angle, color, blur_radius, stroke_color, stroke_radius, stretch);
   } else if (quality >= QUALITY_SUB_PIXEL) {
     RealPoint p_ext = tr(pos)*text_scaling;
     double usx,usy;
@@ -218,9 +218,12 @@ void RotatedDC::DrawText(const String& text, const RealPoint& pos, Color color, 
   }
 }
 
-void RotatedDC::DrawTextWithShadow(const String& text, const Font& font, const RealPoint& pos, double scale, double stretch) {
-  DrawText(text, pos + RealSize(font.shadow_displacement_x, font.shadow_displacement_y) * scale, font.shadow_color, font.shadow_blur * scale, 1, stretch);
-  DrawText(text, pos, font.color, 0, 1, stretch);
+void RotatedDC::DrawTextWithShadowOrStroke(const String& text, const Font& font, const RealPoint& pos, double scale, double stretch) {
+  double s_scale = scale * dc.GetFont().GetPointSize() / text_scaling / 15.;
+  if (font.hasShadow() && !font.hasStroke()) {
+    DrawText(text, pos + RealSize(font.shadow_displacement_x, font.shadow_displacement_y) * scale, font.shadow_color, lround(font.shadow_blur * s_scale), Color(0,0,0), 0, stretch);
+  }
+  DrawText(text, pos, font.color, lround(font.stroke_blur * s_scale), font.stroke_color, lround(font.stroke_radius * s_scale), stretch);
 }
 
 void RotatedDC::DrawBitmap(const Bitmap& bitmap, const RealPoint& pos) {

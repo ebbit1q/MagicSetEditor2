@@ -117,7 +117,7 @@ void draw_choice_viewer(RotatedDC& dc, ValueViewer& viewer, ChoiceStyle& style, 
     dc.SetFont(font, 1.0);
     RealSize size = dc.GetTextExtent(text);
     RealPoint text_pos = align_in_rect(text_align, size, dc.getInternalRect()) + RealSize(margin, 0);
-    dc.DrawTextWithShadow(text, font, text_pos);
+    dc.DrawTextWithShadowOrStroke(text, font, text_pos);
     if (viewer.nativeLook()) font.color = font_color;
   }
 }

@@ -27,7 +27,7 @@ void FontTextElement::draw(RotatedDC& dc, double scale, const RealRect& rect, co
     margin = RealSize(1., 0);
   }
   dc.SetFont(*font, scale);
-  dc.DrawTextWithShadow(text, *font, rect.position() + margin);
+  dc.DrawTextWithShadowOrStroke(text, *font, rect.position() + margin);
   if (native_look) font->color = font_color;
 }
 

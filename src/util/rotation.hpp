@@ -157,10 +157,10 @@ public:
   // --------------------------------------------------- : Drawing
   
   /// Draw text
-  void DrawText  (const String& text, const RealPoint& pos,              int blur_radius = 0, int boldness = 1, double stretch = 1.0);
-  void DrawText  (const String& text, const RealPoint& pos, Color color, int blur_radius = 0, int boldness = 1, double stretch = 1.0);
-  /// Draw text with the shadow and color settings of the given font
-  void DrawTextWithShadow(const String& text, const Font& font, const RealPoint& pos, double scale = 1.0, double stretch = 1.0);
+  void DrawText  (const String& text, const RealPoint& pos,              int blur_radius = 0, Color stroke_color = Color(0,0,0), int stroke_radius = 0, double stretch = 1.0);
+  void DrawText  (const String& text, const RealPoint& pos, Color color, int blur_radius = 0, Color stroke_color = Color(0,0,0), int stroke_radius = 0, double stretch = 1.0);
+  /// Draw text with a shadow or stroke, and color settings of the given font
+  void DrawTextWithShadowOrStroke(const String& text, const Font& font, const RealPoint& pos, double scale = 1.0, double stretch = 1.0);
   /// Draw abitmap, it must already be zoomed!
   void DrawBitmap(const Bitmap& bitmap, const RealPoint& pos);
   /// Draw an image using the given combining mode, the image must already be zoomed!
