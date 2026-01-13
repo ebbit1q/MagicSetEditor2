@@ -51,7 +51,7 @@ void draw_resampled_text(DC& dc, const String& text, const RealPoint& pos, const
       set_alpha(img, color.Alpha() / 255.);
     }
     if (blur_radius > 0) {
-      Image s_img(w + 2*blur_radius, h + 2*blur_radius);
+      Image s_img(w + 2*blur_radius, h + 2*blur_radius, false);
       set_alpha(s_img, 0);
       s_img.Paste(img, blur_radius, blur_radius, wxIMAGE_ALPHA_BLEND_COMPOSE);
       for (int i = 0 ; i < blur_radius ; ++i) {
@@ -68,7 +68,7 @@ void draw_resampled_text(DC& dc, const String& text, const RealPoint& pos, const
   // otherwise add stroke effect
   else {
     int radius = blur_radius + stroke_radius;
-    Image s_img(w + 2*radius, h + 2*radius);
+    Image s_img(w + 2*radius, h + 2*radius, false);
     set_alpha(s_img, 0);
     s_img.Paste(img, radius, radius, wxIMAGE_ALPHA_BLEND_COMPOSE);
     for (int i = 0 ; i < stroke_radius ; ++i) {
