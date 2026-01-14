@@ -62,7 +62,7 @@ public:
   void getCharInfo(RotatedDC& dc, Context& ctx, double font_size, const String& text, vector<CharInfo>& out);
   
   /// Draw a piece of text prepared using split
-  void draw(RotatedDC& dc, RealRect rect, double scale, const SymbolFontRef& font, const SplitSymbols& text);
+  void draw(RotatedDC& dc, RealRect rect, double scale, const SymbolFontRef& font, const SplitSymbols& symbols);
   /// Get information on characters in a string
   void getCharInfo(RotatedDC& dc, double font_size, const SplitSymbols& text, vector<CharInfo>& out);
   
@@ -98,9 +98,6 @@ private:
   /// Find the default symbol
   /** may return nullptr */
   SymbolInFont* defaultSymbol() const;
-  
-  /// Draws a single symbol inside the given rectangle
-  void drawSymbol(RotatedDC& dc, RealRect sym_rect, double scale, const SymbolFontRef& font, SymbolInFont& sym, const String& text, double stretch);
   
   /// Size of a single symbol, including spacing
   RealSize symbolSize       (double font_size, const DrawableSymbol& sym);
