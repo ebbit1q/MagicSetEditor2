@@ -362,6 +362,50 @@ void downsample_to_alpha(Bitmap& bmp_in, Image& img_out) {
   delete[] temp;
 }
 
+Image make_stroke_image(Image& img, Color stroke_color, int stroke_radius, int blur_radius) {
+  stroke_radius = max(0,min(100,stroke_radius));
+  blur_radius   = max(0,min(100,blur_radius));
+  if (!img.HasAlpha()) set_alpha(img, 255);
+  int margin = blur_radius + stroke_radius;
+  int s_width = img.GetWidth() + 2 * margin, s_height = img.GetHeight() + 2 * margin;
+  int x_end = s_width - margin;
+  int y_end = s_height - margin;
+  wxImage s_img(s_width, s_height, false);
+  s_img.InitAlpha();
+  // convert to stroke color
+  Byte* s_data = s_img.GetData();
+  Byte* s_alpha = s_img.GetAlpha(), *alpha = img.GetAlpha();
+  unsigned char r = stroke_color.Red();
+  unsigned char g = stroke_color.Green();
+  unsigned char b = stroke_color.Blue();
+  unsigned char a = stroke_color.Alpha();
+  for (int y = 0 ; y < s_height ; ++y) {
+    for (int x = 0 ; x < s_width ; ++x) {
+      s_data[0] = r;
+      s_data[1] = g;
+      s_data[2] = b;
+      s_data += 3;
+      if (margin <= x && x < x_end && margin <= y && y < y_end) {
+        s_alpha[0] = alpha[0] * a / 255;
+        alpha += 1;
+      }
+      else {
+        s_alpha[0] = 0;
+      }
+      s_alpha += 1;
+    }
+  }
+  // add stroke effect
+  for (int i = 0 ; i < stroke_radius ; ++i) {
+    thicken_image_alpha(s_img, 1);
+  }
+  // add blur
+  for (int i = 0 ; i < blur_radius ; ++i) {
+    blur_image_alpha(s_img, 3);
+  }
+  return s_img;
+}
+
 // ----------------------------------------------------------------------------- : Coloring symbol images
 
 RGB recolor(RGB x, RGB cr, RGB cg, RGB cb, RGB cw) {

@@ -47,40 +47,22 @@ void draw_resampled_text(DC& dc, const String& text, const RealPoint& pos, const
   downsample_to_alpha(buffer, img);
   // if there is no stroke effect, just add blur and draw
   if (stroke_radius == 0) {
-    if (color.Alpha() != 255) {
-      set_alpha(img, color.Alpha() / 255.);
-    }
-    if (blur_radius > 0) {
-      Image s_img(w + 2*blur_radius, h + 2*blur_radius, false);
-      set_alpha(s_img, 0);
-      s_img.Paste(img, blur_radius, blur_radius, wxIMAGE_ALPHA_BLEND_COMPOSE);
-      for (int i = 0 ; i < blur_radius ; ++i) {
-        blur_image_alpha(s_img, 3);
+    if (blur_radius == 0) {
+      if (color.Alpha() != 255) {
+        set_alpha(img, color.Alpha() / 255.);
       }
-      fill_image(s_img, color);
-      dc.DrawBitmap(s_img, xi-blur_radius, yi-blur_radius);
-    }
-    else {
       fill_image(img, color);
       dc.DrawBitmap(img, xi, yi);
     }
+    else {
+      Image s_img = make_stroke_image(img, color, 0, blur_radius);
+      dc.DrawBitmap(s_img, xi-blur_radius, yi-blur_radius);
+    }
   }
-  // otherwise add stroke effect
+  // otherwise add stroke effect, add copy of text on top, draw
   else {
     int radius = blur_radius + stroke_radius;
-    Image s_img(w + 2*radius, h + 2*radius, false);
-    set_alpha(s_img, 0);
-    s_img.Paste(img, radius, radius, wxIMAGE_ALPHA_BLEND_COMPOSE);
-    for (int i = 0 ; i < stroke_radius ; ++i) {
-      thicken_image_alpha(s_img, 1);
-    }
-    for (int i = 0 ; i < blur_radius ; ++i) {
-      blur_image_alpha(s_img, 3);
-    }
-    if (stroke_color.Alpha() != 255) {
-      set_alpha(s_img, stroke_color.Alpha() / 255.);
-    }
-    fill_image(s_img, stroke_color);
+    Image s_img = make_stroke_image(img, stroke_color, stroke_radius, blur_radius);
     if (stroke_color != color) {
       fill_image(img, color);
       if (color.Alpha() != 255) {

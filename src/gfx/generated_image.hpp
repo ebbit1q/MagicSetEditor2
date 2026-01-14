@@ -318,6 +318,23 @@ private:
   double offset_x, offset_y;
 };
 
+// ----------------------------------------------------------------------------- : StrokeImage
+
+/// Create a stroke effect that goes around an image
+class StrokeImage : public GeneratedImage {
+public:
+  inline StrokeImage(const GeneratedImageP& base_image, int radius, int blur, Color color, bool include_image)
+    : base_image(base_image), radius(radius), blur(blur), color(color), include_image(include_image)
+  {}
+  Image generate(const Options& opt) override;
+  bool operator == (const GeneratedImage& that) const override;
+private:
+  GeneratedImageP base_image;
+  int radius, blur;
+  Color color;
+  bool include_image;
+};
+
 // ----------------------------------------------------------------------------- : BleedEdgedImage
 
 /// Add a crude bleed edge to an image

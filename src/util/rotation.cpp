@@ -221,7 +221,8 @@ void RotatedDC::DrawText(const String& text, const RealPoint& pos, Color color, 
 void RotatedDC::DrawTextWithShadowOrStroke(const String& text, const Font& font, const RealPoint& pos, double scale, double stretch) {
   double s_scale = scale * dc.GetFont().GetPointSize() / text_scaling / 15.;
   if (font.hasShadow() && !font.hasStroke()) {
-    DrawText(text, pos + RealSize(font.shadow_displacement_x, font.shadow_displacement_y) * scale, font.shadow_color, lround(font.shadow_blur * s_scale), Color(0,0,0), 0, stretch);
+    RealSize shadow_displacement = trInvS(RealSize(font.shadow_displacement_x, font.shadow_displacement_y) * s_scale);
+    DrawText(text, pos + shadow_displacement, font.shadow_color, lround(font.shadow_blur * s_scale), Color(0,0,0), 0, stretch);
   }
   DrawText(text, pos, font.color, lround(font.stroke_blur * s_scale), font.stroke_color, lround(font.stroke_radius * s_scale), stretch);
 }

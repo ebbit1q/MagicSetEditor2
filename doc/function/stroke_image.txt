@@ -1,0 +1,15 @@
+Function: add_stroke_effect
+
+--Usage--
+> add_stroke_effect(input: image, radius: number, blur: number, color: color)
+
+Add a stroke effect around an image.
+
+--Parameters--
+! Parameter				Type				Description
+| @input@				[[type:image]]		Image that needs a stroke effect
+| @radius@		[[type:int]]		Size of the stroke, in pixels
+| @blur@		[[type:int]]		Size of the blur of the stroke, in pixels. Optional, defaults to 0
+| @color@	[[type:color]]		Color of the stroke
+| @include_image@	[[type:boolean]]		Draw the original image in the middle of the stroke effect. Optional, defaults to true
+

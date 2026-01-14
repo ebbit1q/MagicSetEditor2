@@ -320,6 +320,26 @@ bool ResizeImage::operator == (const GeneratedImage& that) const {
     && height == that2->height;
 }
 
+// ----------------------------------------------------------------------------- : StrokeImage
+
+Image StrokeImage::generate(const Options& opt) {
+  // create enlarged image
+  Image base_img = base_image->generate(opt);
+  Image s_img = make_stroke_image(base_img, color, radius, blur);
+  if (include_image) {
+    int offset = radius + blur;
+    s_img.Paste(base_img, offset, offset, wxIMAGE_ALPHA_BLEND_COMPOSE);
+  }
+  return s_img;
+}
+bool StrokeImage::operator == (const GeneratedImage& that) const {
+  const StrokeImage* that2 = dynamic_cast<const StrokeImage*>(&that);
+  return that2 && *base_image == *that2->base_image
+    && radius == that2->radius
+    && blur == that2->blur
+    && color == that2->color;
+}
+
 // ----------------------------------------------------------------------------- : BleedEdgedImage
 
 Image BleedEdgedImage::generate(const Options& opt) {

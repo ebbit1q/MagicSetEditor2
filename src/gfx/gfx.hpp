@@ -108,6 +108,9 @@ Byte thicken_pixel_alpha_7x7(std::vector<Byte> in, int i, int x, int y, int widt
 // Thicken the alpha channel of an image
 void thicken_image_alpha(Image& img, int radius);
 
+// Create a stroke effect that goes around an image
+Image make_stroke_image(Image& img, Color stroke_color, int stroke_radius, int blur_radius = 0);
+
 // ----------------------------------------------------------------------------- : Combining
 
 /// Ways in which images can be combined, similair to what Photoshop supports

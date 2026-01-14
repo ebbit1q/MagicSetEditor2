@@ -301,96 +301,20 @@ void SymbolFont::draw(RotatedDC& dc, RealRect rect, double scale, const SymbolFo
     RealPoint bmp_pos  = align_in_rect(font.alignment(), bmp_size, sym_rect);
     // 2. draw potential stroke or shadow
     if (font.hasStroke()) {
-      // add margin
-      Image img = bmp.ConvertToImage();
-      if (!img.HasAlpha()) set_alpha(img, 0);
       int blur_radius = lround(font.stroke_blur() * s_scale);
       int stroke_radius = lround(font.stroke_radius() * s_scale);
-      int margin = blur_radius + stroke_radius;
-      int s_width = img.GetWidth() + 2 * margin, s_height = img.GetHeight() + 2 * margin;
-      int x_end = s_width - margin;
-      int y_end = s_height - margin;
-      wxImage s_img(s_width, s_height, false);
-      s_img.InitAlpha();
-      // convert to stroke color
-      Byte* s_data = s_img.GetData();
-      Byte* s_alpha = s_img.GetAlpha(), *alpha = img.GetAlpha();
-      Color color = font.stroke_color();
-      unsigned char r = color.Red();
-      unsigned char g = color.Green();
-      unsigned char b = color.Blue();
-      unsigned char a = color.Alpha();
-      for (int y = 0 ; y < s_height ; ++y) {
-        for (int x = 0 ; x < s_width ; ++x) {
-          s_data[0] = r;
-          s_data[1] = g;
-          s_data[2] = b;
-          s_data += 3;
-          if (margin <= x && x < x_end && margin <= y && y < y_end) {
-            s_alpha[0] = alpha[0] * a / 255;
-            alpha += 1;
-          }
-          else {
-            s_alpha[0] = 0;
-          }
-          s_alpha += 1;
-        }
-      }
-      // add stroke effect
-      for (int i = 0 ; i < stroke_radius ; ++i) {
-        thicken_image_alpha(s_img, 1);
-      }
-      // add blur
-      for (int i = 0 ; i < blur_radius ; ++i) {
-        blur_image_alpha(s_img, 3);
-      }
-      // draw
+      Image s_img = make_stroke_image(bmp.ConvertToImage(), font.stroke_color(), stroke_radius, blur_radius);
       RealSize  s_size = dc.trInvS(RealSize(s_img));
       RealPoint s_pos(bmp_pos.x - (s_size.width - bmp_size.width)/2, bmp_pos.y - (s_size.height - bmp_size.height)/2);
       dc.DrawImage(s_img, s_pos);
     }
     else if (font.hasShadow()) {
-      // add margin
-      Image img = bmp.ConvertToImage();
-      if (!img.HasAlpha()) set_alpha(img, 0);
-      int margin = lround(font.shadow_blur() * s_scale);
-      int s_width = img.GetWidth() + 2 * margin, s_height = img.GetHeight() + 2 * margin;
-      int x_end = s_width - margin;
-      int y_end = s_height - margin;
-      wxImage s_img(s_width, s_height, false);
-      s_img.InitAlpha();
-      // convert to shadow color
-      Byte* s_data = s_img.GetData();
-      Byte* s_alpha = s_img.GetAlpha(), *alpha = img.GetAlpha();
-      Color color = font.shadow_color();
-      unsigned char r = color.Red();
-      unsigned char g = color.Green();
-      unsigned char b = color.Blue();
-      unsigned char a = color.Alpha();
-      for (int y = 0 ; y < s_height ; ++y) {
-        for (int x = 0 ; x < s_width ; ++x) {
-          s_data[0] = r;
-          s_data[1] = g;
-          s_data[2] = b;
-          s_data += 3;
-          if (margin <= x && x < x_end && margin <= y && y < y_end) {
-            s_alpha[0] = alpha[0] * a / 255;
-            alpha += 1;
-          }
-          else {
-            s_alpha[0] = 0;
-          }
-          s_alpha += 1;
-        }
-      }
-      // add blur
-      for (int i = 0 ; i < margin ; ++i) {
-        blur_image_alpha(s_img, 3);
-      }
-      // draw
+      int blur_radius = lround(font.shadow_blur() * s_scale);
+      Image s_img = make_stroke_image(bmp.ConvertToImage(), font.shadow_color(), 0, blur_radius);
       RealSize  s_size = dc.trInvS(RealSize(s_img));
       RealPoint s_pos(bmp_pos.x - (s_size.width - bmp_size.width)/2, bmp_pos.y - (s_size.height - bmp_size.height)/2);
-      dc.DrawImage(s_img, s_pos + RealPoint(font.shadow_displacement_x(), font.shadow_displacement_y()) * scale);
+      RealSize s_displacement = dc.trInvS(RealSize(font.shadow_displacement_x, font.shadow_displacement_y) * s_scale);
+      dc.DrawImage(s_img, s_pos + s_displacement);
     }
     bmps.push_back(std::move(bmp));
     bmp_sizes.push_back(bmp_size);
