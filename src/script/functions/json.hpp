@@ -66,6 +66,10 @@ boost::json::object mse_to_json(const KeywordP& keyword);
 
 boost::json::object mse_to_json(const CardP& card, const Set* set);
 
+boost::json::object mse_to_json(const StyleP& style);
+
 boost::json::object mse_to_json(const Set* set);
+
+boost::json::object mse_to_json(const IndexMap<FieldP,ValueP>& map);
 
 boost::json::value mse_to_json(const ScriptValueP& sv, Set* set);

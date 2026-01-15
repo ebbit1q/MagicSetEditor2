@@ -67,6 +67,7 @@ void CardLinkWindow::getSelection(vector<CardP>& out) const {
 
 void CardLinkWindow::setSelection(const vector<CardP>& cards) {
   list->setSelection(cards);
+  queue_message(MESSAGE_WARNING, String("") << cards.size());
 }
 void CardLinkWindow::setRelationType() {
   int index = relation_type->GetSelection();

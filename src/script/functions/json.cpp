@@ -502,6 +502,23 @@ boost::json::object mse_to_json(const CardP& card, const Set* set) {
   return cardv;
 }
 
+boost::json::object mse_to_json(const StyleP& style) {
+  //style->update(set->getContext());
+  boost::json::object stylev;
+  stylev.emplace("mse_object_type", "style");
+  stylev.emplace("z_index",   wxString::Format(wxT("%i"),   style->z_index));
+  stylev.emplace("tab_index", wxString::Format(wxT("%i"),   style->tab_index));
+  stylev.emplace("left",      wxString::Format(wxT("%.2f"), style->left()));
+  stylev.emplace("top",       wxString::Format(wxT("%.2f"), style->top()));
+  stylev.emplace("right",     wxString::Format(wxT("%.2f"), style->right()));
+  stylev.emplace("bottom",    wxString::Format(wxT("%.2f"), style->bottom()));
+  stylev.emplace("width",     wxString::Format(wxT("%.2f"), style->width()));
+  stylev.emplace("height",    wxString::Format(wxT("%.2f"), style->height()));
+  stylev.emplace("angle",     wxString::Format(wxT("%.2f"), style->angle()));
+  stylev.emplace("visible", style->visible());
+  return stylev;
+}
+
 boost::json::object mse_to_json(const Set* set) {
   boost::json::object setv;
   setv.emplace("mse_object_type",    "set");
@@ -537,17 +554,28 @@ boost::json::object mse_to_json(const Set* set) {
   return setv;
 }
 
+boost::json::object mse_to_json(const IndexMap<FieldP, ValueP>& map) {
+  boost::json::object indexmapv;
+  indexmapv.emplace("mse_object_type", "index_map");
+  for (auto it = map.begin(); it != map.end(); ++it) {
+    write(indexmapv, (*it)->fieldP->name, *it);
+  }
+  return indexmapv;
+}
+
 boost::json::value mse_to_json(const ScriptValueP& sv, Set* set) {
-  ScriptType type = sv->type();
   // special types
-  if (ScriptObject<PackItemP>* i = dynamic_cast<ScriptObject<PackItemP>*>(sv.get())) return mse_to_json(i->getValue());
-  if (ScriptObject<PackTypeP>* t = dynamic_cast<ScriptObject<PackTypeP>*>(sv.get())) return mse_to_json(t->getValue());
-  if (ScriptObject<KeywordP>*  k = dynamic_cast<ScriptObject<KeywordP>*> (sv.get())) return mse_to_json(k->getValue());
-  if (ScriptObject<CardP>*     c = dynamic_cast<ScriptObject<CardP>*>    (sv.get())) return mse_to_json(c->getValue(), set);
-  if (ScriptObject<SetP>*      z = dynamic_cast<ScriptObject<SetP>*>     (sv.get())) return mse_to_json(z->getValue().get());
-  if (ScriptObject<Set*>*      s = dynamic_cast<ScriptObject<Set*>*>     (sv.get())) return mse_to_json(s->getValue());
+  if (ScriptObject<PackItemP>*            o = dynamic_cast<ScriptObject<PackItemP>*>           (sv.get())) return mse_to_json( o->getValue());
+  if (ScriptObject<PackTypeP>*            o = dynamic_cast<ScriptObject<PackTypeP>*>           (sv.get())) return mse_to_json( o->getValue());
+  if (ScriptObject<KeywordP>*             o = dynamic_cast<ScriptObject<KeywordP>*>            (sv.get())) return mse_to_json( o->getValue());
+  if (ScriptObject<StyleP>*               o = dynamic_cast<ScriptObject<StyleP>*>              (sv.get())) return mse_to_json( o->getValue());
+  if (ScriptObject<CardP>*                o = dynamic_cast<ScriptObject<CardP>*>               (sv.get())) return mse_to_json( o->getValue(), set);
+  if (ScriptObject<SetP>*                 o = dynamic_cast<ScriptObject<SetP>*>                (sv.get())) return mse_to_json( o->getValue().get());
+  if (ScriptObject<Set*>*                 o = dynamic_cast<ScriptObject<Set*>*>                (sv.get())) return mse_to_json( o->getValue());
+  if (ScriptMap<IndexMap<FieldP,ValueP>>* o = dynamic_cast<ScriptMap<IndexMap<FieldP,ValueP>>*>(sv.get())) return mse_to_json(*o->value);
 
   // primitive types
+  ScriptType type = sv->type();
   if (type == SCRIPT_NIL)      return boost::json::value(nullptr);
   if (type == SCRIPT_INT)      return boost::json::value(sv->toInt());
   if (type == SCRIPT_DOUBLE)   return boost::json::value(sv->toDouble());

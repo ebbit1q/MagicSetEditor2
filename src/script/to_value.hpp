@@ -185,7 +185,6 @@ public:
     compare_ptr = value;
     return COMPARE_AS_POINTER;
   }
-private:
   /// Store a pointer to a collection, collections are only ever used for structures owned outside the script
   const Collection* value;
 };
