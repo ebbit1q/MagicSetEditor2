@@ -43,7 +43,10 @@ public:
   
   /// Update the script, returns true if the value has changed
   bool update(Context& ctx);
-  
+
+  /// Get the string (filename) produced by the script, for debugging
+  inline String toScriptString() { return scriptString; }
+
   inline void initDependencies(Context& ctx, const Dependency& dep) const {
     script.initDependencies(ctx, dep);
   }
@@ -59,9 +62,10 @@ public:
   inline Script& getMutableScript() { return script.getMutableScript(); }
   /// Get access to the script, always returns a valid script
   ScriptP getValidScriptP();
-  
+
 protected:
-  OptionalScript  script;    ///< The script, not really optional
+  OptionalScript  script;   ///< The script, not really optional
+  String  scriptString;     ///< If the script evaluates to a string, store it here
   GeneratedImageP value;    ///< The image generator
   
   DECLARE_REFLECTION();
@@ -114,10 +118,16 @@ private:
 /// A version of ScriptableImage that caches an AlphaMask
 class CachedScriptableMask {
 public:
-  
+
+  /// Is there a mask set?
+  inline bool isSet() const { return script.isSet(); }
+
   /// Update the script, returns true if the value has changed
   bool update(Context& ctx);
-  
+
+  /// Get the string (filename) produced by the script, for debugging
+  inline String toScriptString() { return script.toScriptString(); }
+
   inline void initDependencies(Context& ctx, const Dependency& dep) const {
     script.initDependencies(ctx, dep);
   }

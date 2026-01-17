@@ -43,9 +43,15 @@ ImageCombine ScriptableImage::combine() const {
 
 bool ScriptableImage::update(Context& ctx) {
   if (!isScripted()) return false;
-  GeneratedImageP new_value = script.invoke(ctx)->toImage();
+  ScriptValueP eval = script.invoke(ctx);
+  GeneratedImageP new_value = eval->toImage();
   if (!new_value || !value || *new_value != *value) {
     value = new_value;
+    ScriptType type = eval->type();
+    if      (type == SCRIPT_NIL)    scriptString = _("<nil>");
+    else if (type == SCRIPT_STRING) scriptString = eval->toString();
+    else if (type == SCRIPT_IMAGE)  scriptString = _("<image from script>");
+    else                            scriptString = _("<unknown>");
     return true;
   } else {
     return false;

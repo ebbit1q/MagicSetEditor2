@@ -12,7 +12,11 @@
 #include <util/delayed_index_maps.hpp>
 #include <util/prec.hpp>
 #include <data/card.hpp>
+#include <data/field/information.hpp>
+#include <data/field/boolean.hpp>
+#include <data/field/multiple_choice.hpp>
 #include <data/format/clipboard.hpp>
+#include <render/symbol/filter.hpp>
 #include <script/functions/construction_helper.hpp>
 #include <sstream>
 #include <wx/sstream.h>
@@ -503,7 +507,9 @@ boost::json::object mse_to_json(const CardP& card, const Set* set) {
 }
 
 boost::json::object mse_to_json(const StyleP& style) {
-  //style->update(set->getContext());
+  //Context ctx = set->getContext();
+  //style->update(ctx);
+
   boost::json::object stylev;
   stylev.emplace("mse_object_type", "style");
   stylev.emplace("z_index",   wxString::Format(wxT("%i"),   style->z_index));
@@ -515,7 +521,279 @@ boost::json::object mse_to_json(const StyleP& style) {
   stylev.emplace("width",     wxString::Format(wxT("%.2f"), style->width()));
   stylev.emplace("height",    wxString::Format(wxT("%.2f"), style->height()));
   stylev.emplace("angle",     wxString::Format(wxT("%.2f"), style->angle()));
-  stylev.emplace("visible", style->visible());
+  stylev.emplace("visible",                                 style->visible());
+  stylev.emplace("mask",                                    style->mask.toScriptString());
+
+  if (TextStyle* s = dynamic_cast<TextStyle*>(style.get())) {
+    stylev.emplace("field_type", "text");
+
+    boost::json::object fontv;
+    fontv.emplace("name",                                                s->font.name());
+    fontv.emplace("italic_name",                                         s->font.italic_name());
+    fontv.emplace("size",                  wxString::Format(wxT("%.2f"), s->font.size()));
+    fontv.emplace("weight",                                              s->font.weight());
+    fontv.emplace("style",                                               s->font.style());
+    fontv.emplace("underline",                                           s->font.underline());
+    fontv.emplace("strikethrough",                                       s->font.strikethrough());
+    fontv.emplace("scale_down_to",         wxString::Format(wxT("%.2f"), s->font.scale_down_to));
+    fontv.emplace("max_stretch",           wxString::Format(wxT("%.2f"), s->font.max_stretch));
+    fontv.emplace("color",                 format_color(                 s->font.color()));
+    fontv.emplace("shadow_color",          format_color(                 s->font.shadow_color()));
+    fontv.emplace("shadow_displacement_x", wxString::Format(wxT("%.2f"), s->font.shadow_displacement_x()));
+    fontv.emplace("shadow_displacement_y", wxString::Format(wxT("%.2f"), s->font.shadow_displacement_y()));
+    fontv.emplace("shadow_blur",           wxString::Format(wxT("%.2f"), s->font.shadow_blur()));
+    fontv.emplace("stroke_color",          format_color(                 s->font.stroke_color()));
+    fontv.emplace("stroke_radius",         wxString::Format(wxT("%.2f"), s->font.stroke_radius()));
+    fontv.emplace("stroke_blur",           wxString::Format(wxT("%.2f"), s->font.stroke_blur()));
+    fontv.emplace("separator_color",       format_color(                 s->font.separator_color));
+    fontv.emplace("flags",                 wxString::Format(wxT("%i"),   s->font.flags));
+    stylev.emplace("font",                                               fontv);
+
+    boost::json::object symbolfontv;
+    symbolfontv.emplace("name",                                                s->symbol_font.name());
+    symbolfontv.emplace("size",                  wxString::Format(wxT("%.2f"), s->symbol_font.size()));
+    symbolfontv.emplace("underline",                                           s->symbol_font.underline());
+    symbolfontv.emplace("strikethrough",                                       s->symbol_font.strikethrough());
+    symbolfontv.emplace("scale_down_to",         wxString::Format(wxT("%.2f"), s->symbol_font.scale_down_to));
+    symbolfontv.emplace("shadow_color",          format_color(                 s->symbol_font.shadow_color()));
+    symbolfontv.emplace("shadow_displacement_x", wxString::Format(wxT("%.2f"), s->symbol_font.shadow_displacement_x()));
+    symbolfontv.emplace("shadow_displacement_y", wxString::Format(wxT("%.2f"), s->symbol_font.shadow_displacement_y()));
+    symbolfontv.emplace("shadow_blur",           wxString::Format(wxT("%.2f"), s->symbol_font.shadow_blur()));
+    symbolfontv.emplace("stroke_color",          format_color(                 s->symbol_font.stroke_color()));
+    symbolfontv.emplace("stroke_radius",         wxString::Format(wxT("%.2f"), s->symbol_font.stroke_radius()));
+    symbolfontv.emplace("stroke_blur",           wxString::Format(wxT("%.2f"), s->symbol_font.stroke_blur()));
+    stylev.emplace("symbol_font",                                        symbolfontv);
+
+    stylev.emplace("always_symbol",                                      s->always_symbol);
+    stylev.emplace("allow_formating",                                    s->allow_formating);
+    stylev.emplace("alignment",            alignment_to_string(          s->alignment()));
+    stylev.emplace("direction",            direction_to_string(          s->direction));
+    stylev.emplace("padding_left",         wxString::Format(wxT("%.2f"), s->padding_left()));
+    stylev.emplace("padding_right",        wxString::Format(wxT("%.2f"), s->padding_right()));
+    stylev.emplace("padding_top",          wxString::Format(wxT("%.2f"), s->padding_top()));
+    stylev.emplace("padding_bottom",       wxString::Format(wxT("%.2f"), s->padding_bottom()));
+    stylev.emplace("padding_left_min",     wxString::Format(wxT("%.2f"), s->padding_left_min()));
+    stylev.emplace("padding_right_min",    wxString::Format(wxT("%.2f"), s->padding_right_min()));
+    stylev.emplace("padding_top_min",      wxString::Format(wxT("%.2f"), s->padding_top_min()));
+    stylev.emplace("padding_bottom_min",   wxString::Format(wxT("%.2f"), s->padding_bottom_min()));
+    stylev.emplace("line_height_soft",     wxString::Format(wxT("%.2f"), s->line_height_soft()));
+    stylev.emplace("line_height_hard",     wxString::Format(wxT("%.2f"), s->line_height_hard()));
+    stylev.emplace("line_height_line",     wxString::Format(wxT("%.2f"), s->line_height_line()));
+    stylev.emplace("line_height_soft_max", wxString::Format(wxT("%.2f"), s->line_height_soft_max()));
+    stylev.emplace("line_height_hard_max", wxString::Format(wxT("%.2f"), s->line_height_hard_max()));
+    stylev.emplace("line_height_line_max", wxString::Format(wxT("%.2f"), s->line_height_line_max()));
+    stylev.emplace("paragraph_height",     wxString::Format(wxT("%.2f"), s->paragraph_height()));
+
+    boost::json::object layoutv;
+    layoutv.emplace("content_top",         wxString::Format(wxT("%.2f"), s->layout->top));
+    layoutv.emplace("content_middle",      wxString::Format(wxT("%.2f"), s->layout->middle()));
+    layoutv.emplace("content_bottom",      wxString::Format(wxT("%.2f"), s->layout->bottom()));
+    layoutv.emplace("content_width",       wxString::Format(wxT("%.2f"), s->layout->width));
+    layoutv.emplace("content_height",      wxString::Format(wxT("%.2f"), s->layout->height));
+    layoutv.emplace("content_lines",       wxString::Format(wxT("%i"),   s->layout->lines.size()));
+    layoutv.emplace("content_paragraphs",  wxString::Format(wxT("%i"),   s->layout->paragraphs.size()));
+    layoutv.emplace("content_blocks",      wxString::Format(wxT("%i"),   s->layout->blocks.size()));
+    boost::json::array separatorsv;
+    int size = s->layout->separators.size();
+    for (int i = 0; i < size; i++) {
+      separatorsv.emplace_back(wxString::Format(wxT("%.2f"), s->layout->separators[i]));
+    }
+    if (size > 0) layoutv.emplace("content_separators", separatorsv);
+
+    stylev.emplace("layout", layoutv);
+  }
+
+  else if (ImageStyle* s = dynamic_cast<ImageStyle*>(style.get())) {
+    stylev.emplace("field_type", "image");
+    stylev.emplace("default",           s->default_image.toScriptString());
+    stylev.emplace("store_in_metadata", s->store_in_metadata());
+  }
+
+  else if (MultipleChoiceStyle* s = dynamic_cast<MultipleChoiceStyle*>(style.get())) {
+    stylev.emplace("field_type", "multiple_choice");
+    stylev.emplace("popup_style",          popup_style_to_string(        s->popup_style));
+    stylev.emplace("render_style",         render_style_to_string(       s->render_style));
+    stylev.emplace("image",                                              s->image.toScriptString());
+    stylev.emplace("combine",              combine_to_string(            s->combine));
+    stylev.emplace("alignment",            alignment_to_string(          s->alignment));
+    stylev.emplace("direction",            direction_to_string(          s->direction()));
+    stylev.emplace("spacing",              wxString::Format(wxT("%.2f"), s->spacing()));
+
+    boost::json::object fontv;
+    fontv.emplace("name",                                                s->font.name());
+    fontv.emplace("italic_name",                                         s->font.italic_name());
+    fontv.emplace("size",                  wxString::Format(wxT("%.2f"), s->font.size()));
+    fontv.emplace("weight",                                              s->font.weight());
+    fontv.emplace("style",                                               s->font.style());
+    fontv.emplace("underline",                                           s->font.underline());
+    fontv.emplace("strikethrough",                                       s->font.strikethrough());
+    fontv.emplace("scale_down_to",         wxString::Format(wxT("%.2f"), s->font.scale_down_to));
+    fontv.emplace("max_stretch",           wxString::Format(wxT("%.2f"), s->font.max_stretch));
+    fontv.emplace("color",                 format_color(                 s->font.color()));
+    fontv.emplace("shadow_color",          format_color(                 s->font.shadow_color()));
+    fontv.emplace("shadow_displacement_x", wxString::Format(wxT("%.2f"), s->font.shadow_displacement_x()));
+    fontv.emplace("shadow_displacement_y", wxString::Format(wxT("%.2f"), s->font.shadow_displacement_y()));
+    fontv.emplace("shadow_blur",           wxString::Format(wxT("%.2f"), s->font.shadow_blur()));
+    fontv.emplace("stroke_color",          format_color(                 s->font.stroke_color()));
+    fontv.emplace("stroke_radius",         wxString::Format(wxT("%.2f"), s->font.stroke_radius()));
+    fontv.emplace("stroke_blur",           wxString::Format(wxT("%.2f"), s->font.stroke_blur()));
+    fontv.emplace("separator_color",       format_color(                 s->font.separator_color));
+    fontv.emplace("flags",                 wxString::Format(wxT("%i"),   s->font.flags));
+    stylev.emplace("font",                                               fontv);
+
+    boost::json::object choiceimagesv;
+    for (auto choice_image : s->choice_images) {
+      String image = choice_image.second.toScriptString();
+      if (!image.empty()) choiceimagesv.emplace(choice_image.first.ToStdString(), image);
+    }
+    if (choiceimagesv.size() > 0) stylev.emplace("choice_images", choiceimagesv);
+  }
+
+  else if (ChoiceStyle* s = dynamic_cast<ChoiceStyle*>(style.get())) {
+    stylev.emplace("field_type", dynamic_cast<BooleanStyle*>(style.get()) ? "boolean" : "choice");
+    stylev.emplace("popup_style",          popup_style_to_string(        s->popup_style));
+    stylev.emplace("render_style",         render_style_to_string(       s->render_style));
+    stylev.emplace("image",                                              s->image.toScriptString());
+    stylev.emplace("combine",              combine_to_string(            s->combine));
+    stylev.emplace("alignment",            alignment_to_string(          s->alignment));
+
+    boost::json::object fontv;
+    fontv.emplace("name",                                                s->font.name());
+    fontv.emplace("italic_name",                                         s->font.italic_name());
+    fontv.emplace("size",                  wxString::Format(wxT("%.2f"), s->font.size()));
+    fontv.emplace("weight",                                              s->font.weight());
+    fontv.emplace("style",                                               s->font.style());
+    fontv.emplace("underline",                                           s->font.underline());
+    fontv.emplace("strikethrough",                                       s->font.strikethrough());
+    fontv.emplace("scale_down_to",         wxString::Format(wxT("%.2f"), s->font.scale_down_to));
+    fontv.emplace("max_stretch",           wxString::Format(wxT("%.2f"), s->font.max_stretch));
+    fontv.emplace("color",                 format_color(                 s->font.color()));
+    fontv.emplace("shadow_color",          format_color(                 s->font.shadow_color()));
+    fontv.emplace("shadow_displacement_x", wxString::Format(wxT("%.2f"), s->font.shadow_displacement_x()));
+    fontv.emplace("shadow_displacement_y", wxString::Format(wxT("%.2f"), s->font.shadow_displacement_y()));
+    fontv.emplace("shadow_blur",           wxString::Format(wxT("%.2f"), s->font.shadow_blur()));
+    fontv.emplace("stroke_color",          format_color(                 s->font.stroke_color()));
+    fontv.emplace("stroke_radius",         wxString::Format(wxT("%.2f"), s->font.stroke_radius()));
+    fontv.emplace("stroke_blur",           wxString::Format(wxT("%.2f"), s->font.stroke_blur()));
+    fontv.emplace("separator_color",       format_color(                 s->font.separator_color));
+    fontv.emplace("flags",                 wxString::Format(wxT("%i"),   s->font.flags));
+    stylev.emplace("font",                                               fontv);
+
+    boost::json::object choiceimagesv;
+    for (auto choice_image : s->choice_images) {
+      String image = choice_image.second.toScriptString();
+      if (!image.empty()) choiceimagesv.emplace(choice_image.first.ToStdString(), image);
+    }
+    if (choiceimagesv.size() > 0) stylev.emplace("choice_images", choiceimagesv);
+  }
+
+  else if (PackageChoiceStyle* s = dynamic_cast<PackageChoiceStyle*>(style.get())) {
+    stylev.emplace("field_type", "package_choice");
+
+    boost::json::object fontv;
+    fontv.emplace("name",                                                s->font.name());
+    fontv.emplace("italic_name",                                         s->font.italic_name());
+    fontv.emplace("size",                  wxString::Format(wxT("%.2f"), s->font.size()));
+    fontv.emplace("weight",                                              s->font.weight());
+    fontv.emplace("style",                                               s->font.style());
+    fontv.emplace("underline",                                           s->font.underline());
+    fontv.emplace("strikethrough",                                       s->font.strikethrough());
+    fontv.emplace("scale_down_to",         wxString::Format(wxT("%.2f"), s->font.scale_down_to));
+    fontv.emplace("max_stretch",           wxString::Format(wxT("%.2f"), s->font.max_stretch));
+    fontv.emplace("color",                 format_color(                 s->font.color()));
+    fontv.emplace("shadow_color",          format_color(                 s->font.shadow_color()));
+    fontv.emplace("shadow_displacement_x", wxString::Format(wxT("%.2f"), s->font.shadow_displacement_x()));
+    fontv.emplace("shadow_displacement_y", wxString::Format(wxT("%.2f"), s->font.shadow_displacement_y()));
+    fontv.emplace("shadow_blur",           wxString::Format(wxT("%.2f"), s->font.shadow_blur()));
+    fontv.emplace("stroke_color",          format_color(                 s->font.stroke_color()));
+    fontv.emplace("stroke_radius",         wxString::Format(wxT("%.2f"), s->font.stroke_radius()));
+    fontv.emplace("stroke_blur",           wxString::Format(wxT("%.2f"), s->font.stroke_blur()));
+    fontv.emplace("separator_color",       format_color(                 s->font.separator_color));
+    fontv.emplace("flags",                 wxString::Format(wxT("%i"),   s->font.flags));
+    stylev.emplace("font",                                               fontv);
+  }
+
+  else if (ColorStyle* s = dynamic_cast<ColorStyle*>(style.get())) {
+    stylev.emplace("field_type", "color");
+    stylev.emplace("radius",               wxString::Format(wxT("%.2f"), s->radius()));
+    stylev.emplace("left_width",           wxString::Format(wxT("%.2f"), s->left_width()));
+    stylev.emplace("right_width",          wxString::Format(wxT("%.2f"), s->right_width()));
+    stylev.emplace("top_width",            wxString::Format(wxT("%.2f"), s->top_width()));
+    stylev.emplace("bottom_width",         wxString::Format(wxT("%.2f"), s->bottom_width()));
+    stylev.emplace("combine",              combine_to_string(            s->combine));
+  }
+
+  else if (SymbolStyle* s = dynamic_cast<SymbolStyle*>(style.get())) {
+    stylev.emplace("field_type", "symbol");
+    stylev.emplace("min_aspect_ratio", wxString::Format(wxT("%.2f"), s->min_aspect_ratio));
+    stylev.emplace("max_aspect_ratio", wxString::Format(wxT("%.2f"), s->max_aspect_ratio));
+    boost::json::array variationsv;
+    int size = s->variations.size();
+    for (int i = 0; i < size; i++) {
+      boost::json::object variationv;
+      variationv.emplace("name",                                           s->variations[i]->name);
+      variationv.emplace("border_radius",    wxString::Format(wxT("%.2f"), s->variations[i]->border_radius));
+      SymbolFilterP filter = s->variations[i]->filter;
+      if (SolidFillSymbolFilter* f = dynamic_cast<SolidFillSymbolFilter*>(filter.get())) {
+        variationv.emplace("fill_type",                                    f->fillType());
+        variationv.emplace("fill_color",     format_color(                 f->fill_color));
+        variationv.emplace("border_color",   format_color(                 f->border_color));
+      }
+      else if (RadialGradientSymbolFilter* f = dynamic_cast<RadialGradientSymbolFilter*>(filter.get())) {
+        variationv.emplace("fill_type",                                    f->fillType());
+        variationv.emplace("fill_color_1",   format_color(                 f->fill_color_1));
+        variationv.emplace("fill_color_2",   format_color(                 f->fill_color_2));
+        variationv.emplace("border_color_1", format_color(                 f->border_color_1));
+        variationv.emplace("border_color_2", format_color(                 f->border_color_2));
+      }
+      else if (LinearGradientSymbolFilter* f = dynamic_cast<LinearGradientSymbolFilter*>(filter.get())) {
+        variationv.emplace("fill_type",                                    f->fillType());
+        variationv.emplace("fill_color_1",   format_color(                 f->fill_color_1));
+        variationv.emplace("fill_color_2",   format_color(                 f->fill_color_2));
+        variationv.emplace("border_color_1", format_color(                 f->border_color_1));
+        variationv.emplace("border_color_2", format_color(                 f->border_color_2));
+        variationv.emplace("center_x",       wxString::Format(wxT("%.2f"), f->center_x));
+        variationv.emplace("center_y",       wxString::Format(wxT("%.2f"), f->center_y));
+        variationv.emplace("end_x",          wxString::Format(wxT("%.2f"), f->end_x));
+        variationv.emplace("end_y",          wxString::Format(wxT("%.2f"), f->end_y));
+      }
+      variationsv.emplace_back(variationv);
+    }
+    if (size > 0) stylev.emplace("variations", variationsv);
+  }
+
+  else if (InfoStyle* s = dynamic_cast<InfoStyle*>(style.get())) {
+    stylev.emplace("field_type", "info");
+    stylev.emplace("alignment",            alignment_to_string(          s->alignment));
+    stylev.emplace("padding_left",         wxString::Format(wxT("%.2f"), s->padding_left));
+    stylev.emplace("padding_right",        wxString::Format(wxT("%.2f"), s->padding_right));
+    stylev.emplace("padding_top",          wxString::Format(wxT("%.2f"), s->padding_top));
+    stylev.emplace("padding_bottom",       wxString::Format(wxT("%.2f"), s->padding_bottom));
+    stylev.emplace("background_color",     format_color(                 s->background_color));
+
+    boost::json::object fontv;
+    fontv.emplace("name",                                                s->font.name());
+    fontv.emplace("italic_name",                                         s->font.italic_name());
+    fontv.emplace("size",                  wxString::Format(wxT("%.2f"), s->font.size()));
+    fontv.emplace("weight",                                              s->font.weight());
+    fontv.emplace("style",                                               s->font.style());
+    fontv.emplace("underline",                                           s->font.underline());
+    fontv.emplace("strikethrough",                                       s->font.strikethrough());
+    fontv.emplace("scale_down_to",         wxString::Format(wxT("%.2f"), s->font.scale_down_to));
+    fontv.emplace("max_stretch",           wxString::Format(wxT("%.2f"), s->font.max_stretch));
+    fontv.emplace("color",                 format_color(                 s->font.color()));
+    fontv.emplace("shadow_color",          format_color(                 s->font.shadow_color()));
+    fontv.emplace("shadow_displacement_x", wxString::Format(wxT("%.2f"), s->font.shadow_displacement_x()));
+    fontv.emplace("shadow_displacement_y", wxString::Format(wxT("%.2f"), s->font.shadow_displacement_y()));
+    fontv.emplace("shadow_blur",           wxString::Format(wxT("%.2f"), s->font.shadow_blur()));
+    fontv.emplace("stroke_color",          format_color(                 s->font.stroke_color()));
+    fontv.emplace("stroke_radius",         wxString::Format(wxT("%.2f"), s->font.stroke_radius()));
+    fontv.emplace("stroke_blur",           wxString::Format(wxT("%.2f"), s->font.stroke_blur()));
+    fontv.emplace("separator_color",       format_color(                 s->font.separator_color));
+    fontv.emplace("flags",                 wxString::Format(wxT("%i"),   s->font.flags));
+    stylev.emplace("font",                                               fontv);
+  }
+
   return stylev;
 }
 

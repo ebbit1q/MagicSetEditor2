@@ -65,8 +65,8 @@ public:
   Color color(double x, double y, SymbolSet point) const override;
   String fillType() const override;
   bool operator == (const SymbolFilter& that) const override;
-private:
   Color fill_color, border_color;
+private:
   DECLARE_REFLECTION_OVERRIDE();
 };
 
@@ -78,9 +78,9 @@ public:
     : fill_color_1(fill_color_1), border_color_1(border_color_1)
     , fill_color_2(fill_color_2), border_color_2(border_color_2)
   {}
-protected:
   Color fill_color_1, border_color_1;
   Color fill_color_2, border_color_2;
+protected:
   template <typename T>
   Color color(double x, double y, SymbolSet point, const T* t) const;
   bool equal(const GradientSymbolFilter& that) const;
@@ -102,9 +102,9 @@ public:
   /// return time on the gradient, used by GradientSymbolFilter::color
   inline double t(double x, double y) const;
   
-private:
   double center_x, center_y;
   double end_x,    end_y;
+private:
   mutable double len;
   DECLARE_REFLECTION_OVERRIDE();
 };

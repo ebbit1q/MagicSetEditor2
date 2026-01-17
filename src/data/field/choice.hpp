@@ -112,6 +112,9 @@ enum ChoicePopupStyle
 ,  POPUP_DROPDOWN
 ,  POPUP_DROPDOWN_IN_PLACE
 };
+
+String popup_style_to_string(const ChoicePopupStyle&);
+
 // How should a choice value be rendered?
 enum ChoiceRenderStyle
 {  RENDER_TEXT            = 0x01  // render the name as text
@@ -128,6 +131,8 @@ enum ChoiceRenderStyle
 ,  RENDER_IMAGE_LIST      = RENDER_LIST      | RENDER_IMAGE
 ,  RENDER_BOTH_LIST       = RENDER_LIST      | RENDER_BOTH
 };
+
+String render_style_to_string(const ChoiceRenderStyle&);
 
 enum ThumbnailStatus
 {  THUMB_NOT_MADE // there is no image

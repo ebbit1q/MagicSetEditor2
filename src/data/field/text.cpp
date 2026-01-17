@@ -127,7 +127,7 @@ void LineLayout::reflect(GetMember& handler) const {
   REFLECT(top);
   REFLECT(height);
   REFLECT_N("bottom", bottom());
-  REFLECT_N("middle", top + height/2);
+  REFLECT_N("middle", middle());
   if (type > Type::LINE) REFLECT(lines);
   if (type > Type::PARAGRAPH) REFLECT(paragraphs);
   if (type > Type::BLOCK) REFLECT(blocks);

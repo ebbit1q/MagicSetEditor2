@@ -245,6 +245,8 @@ enum ImageCombine
 ,  COMBINE_SMALLER_THAN_250
 };
 
+String combine_to_string(const ImageCombine&);
+
 /// Combine image b onto image a using some combining function.
 /// The results are stored in the image A.
 /// This image gets the alpha channel from B, it should then be

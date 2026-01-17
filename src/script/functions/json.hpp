@@ -64,9 +64,9 @@ boost::json::object mse_to_json(const PackTypeP& pack);
 
 boost::json::object mse_to_json(const KeywordP& keyword);
 
-boost::json::object mse_to_json(const CardP& card, const Set* set);
-
 boost::json::object mse_to_json(const StyleP& style);
+
+boost::json::object mse_to_json(const CardP& card, const Set* set);
 
 boost::json::object mse_to_json(const Set* set);
 

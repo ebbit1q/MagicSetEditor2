@@ -57,6 +57,8 @@ RealPoint align_in_rect(Alignment align, const RealSize& to_align, const RealRec
 
 Alignment alignment_from_string(const String&);
 
+String alignment_to_string(const Alignment&);
+
 // ----------------------------------------------------------------------------- : Direction
 
 /// Direction to place something in
@@ -74,4 +76,6 @@ enum Direction {
 /// Move a point in a direction
 /** If the direction is horizontal the to_move.width is used, otherwise to_move.height */
 RealPoint move_in_direction(Direction dir, const RealPoint& point, const RealSize to_move, double spacing = 0);
+
+String direction_to_string(const Direction&);
 

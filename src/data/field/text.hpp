@@ -55,6 +55,7 @@ public:
 
   LineLayout() {}
   LineLayout(double width, double top, double height, Type type) : width(width), top(top), height(height), type(type) {}
+  inline double middle() const { return top+height/2.; }
   inline double bottom() const { return top+height; }
   void reflect(GetMember& gm) const;
 };
