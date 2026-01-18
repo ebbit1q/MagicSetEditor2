@@ -60,11 +60,6 @@ public:
     auto imageInputStream = set->openIn(value->filename);
     Image img(*imageInputStream, wxBITMAP_TYPE_PNG);
     if (!img.IsOk()) throw ScriptError(_ERROR_2_("file not found", value->filename.toStringForKey(), set));
-    String temppath = wxFileName::CreateTempFileName(_("mse")) + _(".png");
-    img.SaveFile(temppath);
-    std::string s = "<mse-image-data>" + fileToUTF8(temppath.ToStdString()) + "</mse-image-data>";
-    wxRemoveFile(temppath);
-    wxRemoveFile(temppath.substr(0, temppath.size() - 4));
-    return s;
+    return encodeImageInString(img);
   }
 };

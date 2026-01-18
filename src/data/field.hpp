@@ -127,29 +127,9 @@ public:
   inline RealSize    getSize() const { return RealSize(width, height); }
   inline RealRect    getExternalRect() const { return RealRect(left, top, width, height); }
   inline std::string getExternalRectString(double scale, Radians angle, double bleed, int img_width, int img_height, int img_offset) { ///< update the style before calling this
-    double x = left * scale, y = top * scale;
-    double w = width * scale, h = height * scale;
-    RealRect rect(x, y, w, h);
-    int degrees = 0;
-    if (is_rad0(angle)) {
-    } else if (is_rad180(angle)) {
-      rect = RealRect(img_width - x - w, img_height - y - h, w, h);
-      degrees = 180;
-    } else if (is_rad90(angle)) {
-      rect = RealRect(y, img_height - x - w, h, w);
-      degrees = 90;
-    } else if (is_rad270(angle)) {
-      rect = RealRect(img_width - y - h, x, h, w);
-      degrees = 270;
-    } else {
-      return "";
-    }
-    return "<mse-crop-data>" + std::to_string((int)std::ceil (rect.x + bleed + img_offset)) +
-           "-"               + std::to_string((int)std::ceil (rect.y + bleed)) +
-           "-"               + std::to_string((int)std::floor(rect.width)) +
-           "-"               + std::to_string((int)std::floor(rect.height)) +
-           "-"               + std::to_string(degrees) +
-           "</mse-crop-data>";
+    RealRect rect(left, top, width, height);
+    int degrees = lround(rad_to_deg(this->angle));
+    return transformAndEncodeRectInString(rect, degrees, scale, angle, bleed, img_width, img_height, img_offset);
   }
 
   /// Does this style have a non-zero size (or is it scripted)?

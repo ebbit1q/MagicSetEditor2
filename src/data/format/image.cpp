@@ -10,7 +10,6 @@
 #include <util/tagged_string.hpp>
 #include <data/format/formats.hpp>
 #include <data/format/clipboard.hpp>
-#include <data/format/file_to_text.h>
 #include <data/game.hpp>
 #include <data/field/image.hpp>
 #include <data/set.hpp>
