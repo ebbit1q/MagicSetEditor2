@@ -308,14 +308,15 @@ private:
 /// Crop an image at a certain point, to a certain size
 class CropImage : public SimpleFilterImage {
 public:
-  inline CropImage(const GeneratedImageP& image, double width, double height, double offset_x, double offset_y)
-    : SimpleFilterImage(image), width(width), height(height), offset_x(offset_x), offset_y(offset_y)
+  inline CropImage(const GeneratedImageP& image, double width, double height, double offset_x, double offset_y, Color background_color)
+    : SimpleFilterImage(image), width(width), height(height), offset_x(offset_x), offset_y(offset_y), background_color(background_color)
   {}
   Image generate(const Options& opt) override;
   bool operator == (const GeneratedImage& that) const override;
 private:
   double width, height;
   double offset_x, offset_y;
+  Color background_color;
 };
 
 // ----------------------------------------------------------------------------- : StrokeImage

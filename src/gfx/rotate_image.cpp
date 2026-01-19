@@ -8,6 +8,7 @@
 
 #include <util/prec.hpp>
 #include <gfx/gfx.hpp>
+#include <data/format/image_encoding.hpp>
 
 // ----------------------------------------------------------------------------- : Implementation
 
@@ -39,6 +40,14 @@ Image rotate_image_impl(const Image& img) {
       }
     }
   }
+  // transfer metadata
+  if (img.HasOption(wxIMAGE_OPTION_PNG_DESCRIPTION)) {
+    if (!almost_equal(Rotater::angle(), rad180)) {
+      swap(width, height);
+    }
+    String desc = transformAllEncodedRects(img.GetOption(wxIMAGE_OPTION_PNG_DESCRIPTION), 1.0, Rotater::angle(), 0, 0, width, height);
+    ret.SetOption(wxIMAGE_OPTION_PNG_DESCRIPTION, desc);
+  }
   // ret is rotated image
   return ret;
 }
@@ -57,6 +66,7 @@ struct Rotate90deg {
     int my = w - x - 1;
     return h * my + mx; // note: h, since that is the width of the target image
   }
+  inline static Radians angle() { return rad90; }
 };
 
 struct Rotate180deg {
@@ -68,6 +78,7 @@ struct Rotate180deg {
     UInt my = h - y - 1;
     return w * my + mx;
   }
+  inline static Radians angle() { return rad180; }
 };
 
 struct Rotate270deg {
@@ -79,6 +90,7 @@ struct Rotate270deg {
     UInt my = x;
     return h * my + mx;
   }
+  inline static Radians angle() { return rad270; }
 };
 
 // ----------------------------------------------------------------------------- : Interface

@@ -86,24 +86,23 @@ These functions are built into the program, other [[type:function]]s can be defi
 | [[fun:set_mask]]		Set the transparancy mask of an image.
 | [[fun:set_alpha]]		Change the transparency of an image.
 | [[fun:set_combine]]		Change how the image should be combined with the background.
-| [[fun:saturate]]		Saturate/desaturate an image.
+| [[fun:saturate_image]]		Saturate/desaturate an image.
 | [[fun:invert_image]]		Invert the colors of an image.
 | [[fun:recolor_image]]		Change the colors of an image to match the font color.
 | [[fun:resize_image]]		Stretch or squeeze an image to a given height and width.
-| [[fun:enlarge]]		Enlarge an image by putting a border around it.
+| [[fun:enlarge_image]]		Enlarge an image by putting a border around it.
+| [[fun:crop_image]]		Crop an image, giving only a small subset of it.
+| [[fun:insert_image]]		Insert an image inside another.
+| [[fun:flip_image]]	Flip an image horizontally or vertically.
+| [[fun:rotate_image]]		Rotate an image.
 | [[fun:add_stroke_effect]]		Add a stroke effect around an image.
 | [[fun:add_bleed_edge]]		Add a crude print bleed edge around an image.
-| [[fun:crop]]			Crop an image, giving only a small subset of it.
-| [[fun:flip_horizontal]]	Flip an image horizontally.
-| [[fun:flip_vertical]]		Flip an image vertically.
-| [[fun:rotate_image]]		Rotate an image.
-| [[fun:drop_shadow]]		Add a drop shadow to an image.
-| [[fun:insert_image]]		Insert an image inside another.
+| [[fun:add_drop_shadow]]		Add a drop shadow to an image.
 | [[fun:dimensions_of]]		Get the width and height of an image.
-| [[fun:symbol_variation]]	Render a variation of a [[type:symbol]].
-| [[fun:import_image]]	Load an image from outside the data folder.
-| [[fun:download_image]]	Download an image from a URL.
-| [[fun:built_in_image]]	Return an image built into the program.
+| [[fun:symbol_variation]]		Render a variation of a [[type:symbol]].
+| [[fun:import_image]]		Load an image from outside the data folder.
+| [[fun:download_image]]		Download an image from a URL.
+| [[fun:built_in_image]]		Return an image built into the program.
 	
 ! Cards				<<<
 | [[fun:new_card]]		Construct a new [[type:card]] object.

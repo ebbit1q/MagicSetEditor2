@@ -126,10 +126,10 @@ public:
   inline RealPoint   getPos()  const { return RealPoint(left, top); }
   inline RealSize    getSize() const { return RealSize(width, height); }
   inline RealRect    getExternalRect() const { return RealRect(left, top, width, height); }
-  inline std::string getExternalRectString(double scale, Radians angle, double bleed, int img_width, int img_height, int img_offset) { ///< update the style before calling this
+  inline std::string getExternalRectString(double scale, Radians angle, int offset_x, int offset_y, int img_width, int img_height) { ///< update the style before calling this
     RealRect rect(left, top, width, height);
     int degrees = lround(rad_to_deg(this->angle));
-    return transformAndEncodeRectInString(rect, degrees, scale, angle, bleed, img_width, img_height, img_offset);
+    return transformAndEncodeRectInString(rect, degrees, scale, angle, offset_x, offset_y, img_width, img_height);
   }
 
   /// Does this style have a non-zero size (or is it scripted)?

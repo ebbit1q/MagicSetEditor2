@@ -151,7 +151,7 @@ Image export_image(const SetP& set, const CardP& card, const bool write_metadata
           }
           // store only crop coordinates
           else {
-            std::string rect = style->getExternalRectString(zoom, angle_radians, bleed_pixels, width, height, 0);
+            std::string rect = style->getExternalRectString(zoom, angle_radians, bleed_pixels, bleed_pixels, width, height);
             cardv_data[field->name.ToStdString()] = rect;
           }
         }
@@ -243,7 +243,7 @@ Image export_image( const SetP& set, const vector<CardP>& cards,
           }
           // store only crop coordinates
           else {
-            std::string rect = style->getExternalRectString(zooms[i], angles[i], bleeds[i], widths[i], heights[i], offsets[i]);
+            std::string rect = style->getExternalRectString(zooms[i], angles[i], bleeds[i] + offsets[i], bleeds[i], widths[i], heights[i]);
             cardv_data[field->name.ToStdString()] = rect;
           }
         }

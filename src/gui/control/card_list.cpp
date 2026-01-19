@@ -307,6 +307,10 @@ bool CardListBase::parseImage(Image& image, vector<CardP>& out) {
           wxRect rect = wxRect(0,0,0,0);
           int degrees = 0;
           value->filename.getExternalRect(rect, degrees);
+          rect.x = max(0, rect.x);
+          rect.y = max(0, rect.y);
+          rect.width  -= max(0, (rect.x + rect.width)  - image.GetWidth());
+          rect.height -= max(0, (rect.y + rect.height) - image.GetHeight());
           if (rect.width > 0 && rect.height > 0) {
             Image img = image.GetSubImage(rect);
             img = rotate_image(img, deg_to_rad(360-degrees));

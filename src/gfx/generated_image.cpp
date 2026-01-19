@@ -434,6 +434,11 @@ Image BleedEdgedImage::generate(const Options& opt) {
       alpha[pixel] = alpha[mirror];
     }
   }
+  // transfer metadata
+  if (base_img.HasOption(wxIMAGE_OPTION_PNG_DESCRIPTION)) {
+    String desc = transformAllEncodedRects(base_img.GetOption(wxIMAGE_OPTION_PNG_DESCRIPTION), 1.0, 0.0, dw, dh, width, height);
+    img.SetOption(wxIMAGE_OPTION_PNG_DESCRIPTION, desc);
+  }
   // done
   return img;
 }
@@ -461,12 +466,16 @@ Image InsertedImage::generate(const Options& opt) {
   img.InitAlpha();
   Byte* data = img.GetData();
   Byte* alpha = img.GetAlpha();
+  Byte r = background_color.Red();
+  Byte g = background_color.Green();
+  Byte b = background_color.Blue();
+  Byte a = background_color.Alpha();
   for (UInt i = 0; i < size; ++i) {
-    data[0] = background_color.Red();
-    data[1] = background_color.Green();
-    data[2] = background_color.Blue();
+    data[0] = r;
+    data[1] = g;
+    data[2] = b;
     data += 3;
-    alpha[0] = background_color.Alpha();
+    alpha[0] = a;
     alpha += 1;
   }
   img.Paste(base_img, base_x, base_y, wxIMAGE_ALPHA_BLEND_COMPOSE);
@@ -488,13 +497,33 @@ bool InsertedImage::operator == (const GeneratedImage& that) const {
 // ----------------------------------------------------------------------------- : CropImage
 
 Image CropImage::generate(const Options& opt) {
-  return image->generate(opt).Size(wxSize((int)width, (int)height), wxPoint(-(int)offset_x, -(int)offset_y));
+  UInt size = width * height;
+  Image img = wxImage(width, height, false);
+  img.InitAlpha();
+  Byte* data = img.GetData();
+  Byte* alpha = img.GetAlpha();
+  Byte r = background_color.Red();
+  Byte g = background_color.Green();
+  Byte b = background_color.Blue();
+  Byte a = background_color.Alpha();
+  for (UInt i = 0; i < size; ++i) {
+    data[0] = r;
+    data[1] = g;
+    data[2] = b;
+    data += 3;
+    alpha[0] = a;
+    alpha += 1;
+  }
+  Image base_img = image->generate(opt);
+  img.Paste(base_img, -(int)offset_x, -(int)offset_y, wxIMAGE_ALPHA_BLEND_OVER);
+  return img;
 }
 bool CropImage::operator == (const GeneratedImage& that) const {
   const CropImage* that2 = dynamic_cast<const CropImage*>(&that);
   return that2 && *image      == *that2->image
                && width    == that2->width    && height   == that2->height
-               && offset_x == that2->offset_x && offset_y == that2->offset_y;
+               && offset_x == that2->offset_x && offset_y == that2->offset_y
+               && background_color == that2->background_color;
 }
 
 // ----------------------------------------------------------------------------- : DropShadowImage

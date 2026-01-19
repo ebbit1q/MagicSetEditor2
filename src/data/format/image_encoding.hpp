@@ -78,7 +78,7 @@ inline static bool decodeRectFromString(const String& rectString, wxRect& rect_o
 }
 
 /// Apply a transformation to a rect, return true if successful
-inline static bool transformEncodedRect(wxRect& rect, int& degrees, double scale, Radians angle, double bleed, int img_width, int img_height, int img_offset) {
+inline static bool transformEncodedRect(wxRect& rect, int& degrees, double scale, Radians angle, int offset_x, int offset_y, int img_width, int img_height) {
   if (degrees != 0 && degrees != 90 && degrees != 180 && degrees != 270) return false;
   rect = wxRect(rect.x * scale, rect.y * scale, rect.width * scale, rect.height * scale);
   if (is_rad0(angle)) {
@@ -94,22 +94,22 @@ inline static bool transformEncodedRect(wxRect& rect, int& degrees, double scale
   } else {
     return false;
   }
-  rect = wxRect(rect.x + bleed + img_offset, rect.y + bleed, rect.width, rect.height);
+  rect = wxRect(rect.x + offset_x, rect.y + offset_y, rect.width, rect.height);
   if (degrees >= 360) degrees -= 360;
   return true;
 }
 
 /// Retreive a rect encoded in a string, apply a transformation, then encode it back
-inline static String transformEncodedRect(const String& rectString, double scale, Radians angle, double bleed, int img_width, int img_height, int img_offset) { ///< update the style before calling this
+inline static String transformEncodedRect(const String& rectString, double scale, Radians angle, int offset_x, int offset_y, int img_width, int img_height) {
   wxRect rect;
   int degrees;
   if (!decodeRectFromString(rectString, rect, degrees)) return _("");
-  if (!transformEncodedRect(rect, degrees, scale, angle, bleed, img_width, img_height, img_offset)) return _("");
+  if (!transformEncodedRect(rect, degrees, scale, angle, offset_x, offset_y, img_width, img_height)) return _("");
   return encodeRectInWxString(rect, degrees);
 }
 
 /// Retreive all rects encoded in a string, apply a transformation, then encode them back
-inline static String transformAllEncodedRects(const String& rectString, double scale, Radians angle, double bleed, int img_width, int img_height, int img_offset) { ///< update the style before calling this
+inline static String transformAllEncodedRects(const String& rectString, double scale, Radians angle, int offset_x, int offset_y, int img_width, int img_height) {
   wxRect rect;
   int degrees;
   size_t start = rectString.find(_("<mse-crop-data>"));
@@ -119,7 +119,9 @@ inline static String transformAllEncodedRects(const String& rectString, double s
   while (start != String::npos) {
     result = result + rectString.substr(end, start - end);
     end = rectString.find(_("</mse-crop-data>"), start + 15);
-    result = result + transformEncodedRect(rectString.substr(start, end - start), scale, angle, bleed, img_width, img_height, img_offset);
+    if (end == String::npos) return rectString;
+    end += 16;
+    result = result + transformEncodedRect(rectString.substr(start, end - start), scale, angle, offset_x, offset_y, img_width, img_height);
     start = rectString.find(_("<mse-crop-data>"), end);
   }
   result = result + rectString.substr(end);
@@ -127,8 +129,8 @@ inline static String transformAllEncodedRects(const String& rectString, double s
 }
 
 /// Apply a transformation to a rect, then encode it in a string
-inline static std::string transformAndEncodeRectInString(wxRect rect, int degrees, double scale, Radians angle, double bleed, int img_width, int img_height, int img_offset) {
-  if (!transformEncodedRect(rect, degrees, scale, angle, bleed, img_width, img_height, img_offset)) return "";
+inline static std::string transformAndEncodeRectInString(wxRect rect, int degrees, double scale, Radians angle, int offset_x, int offset_y, int img_width, int img_height) {
+  if (!transformEncodedRect(rect, degrees, scale, angle, offset_x, offset_y, img_width, img_height)) return "";
   return encodeRectInStdString(rect, degrees);
 }
 
