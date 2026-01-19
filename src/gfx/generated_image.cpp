@@ -461,6 +461,8 @@ Image InsertedImage::generate(const Options& opt) {
   int inserted_y = offset_y < 0 ? 0         : offset_y;
   int width =  max(base_x + base_img.GetWidth(),  inserted_x + inserted_img.GetWidth());
   int height = max(base_y + base_img.GetHeight(), inserted_y + inserted_img.GetHeight());
+  if (width <= 0) throw ScriptError(_ERROR_1_("negative image width", "insert_image"));
+  if (height <= 0) throw ScriptError(_ERROR_1_("negative image height", "insert_image"));
   UInt size = width * height;
   Image img = wxImage(width, height, false);
   img.InitAlpha();
@@ -497,6 +499,8 @@ bool InsertedImage::operator == (const GeneratedImage& that) const {
 // ----------------------------------------------------------------------------- : CropImage
 
 Image CropImage::generate(const Options& opt) {
+  if (width <= 0) throw ScriptError(_ERROR_1_("negative image width", "crop_image"));
+  if (height <= 0) throw ScriptError(_ERROR_1_("negative image height", "crop_image"));
   UInt size = width * height;
   Image img = wxImage(width, height, false);
   img.InitAlpha();
