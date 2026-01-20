@@ -10,7 +10,7 @@ To see the required syntax, use an output of the [[fun:to_json]] function.
 --Parameters--
 ! Parameter	Type				Description
 | @input@	[[type:string]]		JSON string to convert to an MSE script value.
-| @set@		[[type:set]]		The active set. This can be omited since "set" is a predefined variable.
+| @set@		[[type:set]]		The active set. This can be omitted since "set" is a predefined variable.
 
 --Examples--
 > add_card_to_set(from_json("\{\"mse_object_type\":\"card\", \"data\":\{\"name\":\"Ajani\", \"rarity\":\"mythic rare\"\}\}"))

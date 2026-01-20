@@ -9,4 +9,4 @@ Returns nil if no link of type "Front Face", or no card was found.
 --Parameters--
 ! Parameter	Type				Description
 | @input@	[[type:card]]		The card whose links we'll inspect.
-| @set@		[[type:set]]		The set in which to look. This can be omited since 'set' is a predefined variable.
+| @set@		[[type:set]]		The set in which to look. This can be omitted since 'set' is a predefined variable.

@@ -65,6 +65,22 @@ SCRIPT_FUNCTION(download_image) {
 
 // ----------------------------------------------------------------------------- : Image functions
 
+SCRIPT_FUNCTION(get_metadata) {
+  SCRIPT_PARAM(Set*, set);
+  SCRIPT_PARAM(GeneratedImageP, input);
+  Image img = input->generate(GeneratedImage::Options(0, 0, set));
+  SCRIPT_RETURN(img.GetOption(wxIMAGE_OPTION_PNG_DESCRIPTION));
+}
+
+SCRIPT_FUNCTION(set_metadata) {
+  SCRIPT_PARAM(Set*, set);
+  SCRIPT_PARAM(GeneratedImageP, input);
+  SCRIPT_PARAM(String, metadata);
+  Image img = input->generate(GeneratedImage::Options(0, 0, set));
+  img.SetOption(wxIMAGE_OPTION_PNG_DESCRIPTION, metadata);
+  return make_intrusive<ArbitraryImage>(img);
+}
+
 SCRIPT_FUNCTION(width_of) {
   SCRIPT_PARAM(Set*, set);
   SCRIPT_PARAM(GeneratedImageP, input);
@@ -311,6 +327,8 @@ SCRIPT_FUNCTION(built_in_image) {
 void init_script_image_functions(Context& ctx) {
   ctx.setVariable(_("to_image"),         script_to_image);
   ctx.setVariable(_("to_card_image"),    script_to_card_image);
+  ctx.setVariable(_("set_metadata"),     script_set_metadata);
+  ctx.setVariable(_("get_metadata"),     script_get_metadata);
   ctx.setVariable(_("width_of"),         script_width_of);
   ctx.setVariable(_("height_of"),        script_height_of);
   ctx.setVariable(_("dimensions_of"),    script_dimensions_of);

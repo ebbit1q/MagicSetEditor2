@@ -10,4 +10,4 @@ Returns and array whose first element is the zoom percentage, the second is the 
 --Parameters--
 ! Parameter	Type					Description
 | @input@	[[type:card]]		The card you want to retrieve the export settings from.
-| @set@		[[type:set]]		The set the card belongs to. This can be omited since "set" is a predefined variable.
+| @set@		[[type:set]]		The set the card belongs to. This can be omitted since "set" is a predefined variable.

@@ -10,7 +10,7 @@ This is for use in exporter scripts. In card scripts, use the 'styling' predefin
 --Parameters--
 ! Parameter	Type					Description
 | @input@	[[type:card]]		The card you want to retrieve the styling data from.
-| @set@		[[type:set]]		The set the card belongs to. In an exporter script, this can be omited since 'set' is a predefined variable.
+| @set@		[[type:set]]		The set the card belongs to. In an exporter script, this can be omitted since 'set' is a predefined variable.
 
 --Examples--
 > # Retrieve the value "is foil" from the card's styling options

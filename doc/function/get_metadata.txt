@@ -1,0 +1,15 @@
+Function: get_metadata
+
+--Usage--
+> get_metadata(input: image)
+
+Returns the metadata of an image, or an empty string if there isn't any.
+
+Metadata is only stored when an image is saved as a PNG.
+It is saved in a uncompressed iTXt chunk with the key "Description".
+If the image is saved as a JPG, the metadata is lost.
+
+--Parameters--
+! Parameter	Type				Description
+| @input@	[[type:image]]		The image whose metadata we'll get.
+| @set@		[[type:set]]		The active set. This can be omitted since 'set' is a predefined variable.

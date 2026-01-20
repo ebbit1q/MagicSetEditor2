@@ -3,13 +3,14 @@ Function: to_json
 --Usage--
 > to_json(some_script_value)
 
-Convert a [[type:list]], a [[type:map]], a [[type:card]], a [[type:keyword]], a [[type:pack_type]] or a [[type:set]] to a JSON string.
+Convert a [[type:list]], a [[type:map]], a [[type:style]], a [[type:card]], a [[type:keyword]], a [[type:pack_type]] or a [[type:set]] to a JSON string.
 
+This method is also useful for debugging purposes.
 
 --Parameters--
 ! Parameter	Type				Description
 | @input@	some_script_value		MSE script value to convert to a JSON string.
-| @set@		[[type:set]]		The active set. This can be omited since "set" is a predefined variable.
+| @set@		[[type:set]]		The active set. This can be omitted since "set" is a predefined variable.
 
 --Examples--
 > to_json(card)
