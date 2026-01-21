@@ -7,6 +7,7 @@
 // ----------------------------------------------------------------------------- : Includes
 
 #include <util/prec.hpp>
+#include <data/format/image_encoding.hpp>
 #include <gfx/gfx.hpp>
 #include <util/reflect.hpp>
 #include <algorithm>
@@ -576,6 +577,9 @@ void combine_image(Image& a, const Image& b, ImageCombine combine) {
     DISPATCH(COMBINE_SMALLER_THAN_245);
     DISPATCH(COMBINE_SMALLER_THAN_250);
   }
+
+  //transfer metadata
+  a.SetOption(wxIMAGE_OPTION_PNG_DESCRIPTION, metadata_merge(a, b));
 }
 
 void draw_combine_image(DC& dc, UInt x, UInt y, const Image& img, ImageCombine combine) {

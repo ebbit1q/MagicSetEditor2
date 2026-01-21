@@ -9,13 +9,15 @@
 // ----------------------------------------------------------------------------- : Includes
 
 #include <util/prec.hpp>
+#include <util/real_point.hpp>
+#include <boost/json.hpp>
 #include <wx/filename.h>
 #include <fstream>
 
 // ----------------------------------------------------------------------------- : Crop Rect Encoding
 
 /// Encode a rect in a std::string
-inline static std::string encodeRectInStdString(wxRect rect, int degrees) {
+inline static std::string encodeRectInStdString(RealRect rect, int degrees) {
   return "<mse-crop-data>" + std::to_string((int)std::ceil (rect.x)) +
          ";"               + std::to_string((int)std::ceil (rect.y)) +
          ";"               + std::to_string((int)std::floor(rect.width)) +
@@ -25,7 +27,7 @@ inline static std::string encodeRectInStdString(wxRect rect, int degrees) {
 }
 
 /// Encode a rect in a wxString
-inline static String encodeRectInWxString(wxRect rect, int degrees) {
+inline static String encodeRectInWxString(RealRect rect, int degrees) {
   return _("<mse-crop-data>") + wxString::Format(wxT("%i"), (int)std::ceil (rect.x)) +
          _(";")               + wxString::Format(wxT("%i"), (int)std::ceil (rect.y)) +
          _(";")               + wxString::Format(wxT("%i"), (int)std::floor(rect.width)) +
@@ -35,7 +37,7 @@ inline static String encodeRectInWxString(wxRect rect, int degrees) {
 }
 
 /// Retreive a rect encoded in a string, return true if successful
-inline static bool decodeRectFromString(const String& rectString, wxRect& rect_out, int& degrees_out) {
+inline static bool decodeRectFromString(const String& rectString, RealRect& rect_out, int& degrees_out) {
   size_t start = rectString.find(_("<mse-crop-data>"));
   if (start == String::npos) return false;
   size_t end = rectString.find(_("</mse-crop-data>"), start + 15);
@@ -73,44 +75,22 @@ inline static bool decodeRectFromString(const String& rectString, wxRect& rect_o
 
   if(!string.ToInt(&degrees_out)) return false;
 
-  rect_out = wxRect(x, y, width, height);
-  return true;
-}
-
-/// Apply a transformation to a rect, return true if successful
-inline static bool transformEncodedRect(wxRect& rect, int& degrees, double scale, Radians angle, int offset_x, int offset_y, int img_width, int img_height) {
-  if (degrees != 0 && degrees != 90 && degrees != 180 && degrees != 270) return false;
-  rect = wxRect(rect.x * scale, rect.y * scale, rect.width * scale, rect.height * scale);
-  if (is_rad0(angle)) {
-  } else if (is_rad180(angle)) {
-    rect = wxRect(img_width - rect.x - rect.width, img_height - rect.y - rect.height, rect.width, rect.height);
-    degrees += 180;
-  } else if (is_rad90(angle)) {
-    rect = wxRect(rect.y, img_height - rect.x - rect.width, rect.height, rect.width);
-    degrees += 90;
-  } else if (is_rad270(angle)) {
-    rect = wxRect(img_width - rect.y - rect.height, rect.x, rect.height, rect.width);
-    degrees += 270;
-  } else {
-    return false;
-  }
-  rect = wxRect(rect.x + offset_x, rect.y + offset_y, rect.width, rect.height);
-  if (degrees >= 360) degrees -= 360;
+  rect_out = RealRect(x, y, width, height);
   return true;
 }
 
 /// Retreive a rect encoded in a string, apply a transformation, then encode it back
-inline static String transformEncodedRect(const String& rectString, double scale, Radians angle, int offset_x, int offset_y, int img_width, int img_height) {
-  wxRect rect;
+inline static String transformEncodedRect(const String& rectString, RectTransform transform, double param_x, double param_y, int mode) {
+  RealRect rect(0,0,0,0);
   int degrees;
   if (!decodeRectFromString(rectString, rect, degrees)) return _("");
-  if (!transformEncodedRect(rect, degrees, scale, angle, offset_x, offset_y, img_width, img_height)) return _("");
+  transform(rect, degrees, param_x, param_y, mode);
   return encodeRectInWxString(rect, degrees);
 }
 
 /// Retreive all rects encoded in a string, apply a transformation, then encode them back
-inline static String transformAllEncodedRects(const String& rectString, double scale, Radians angle, int offset_x, int offset_y, int img_width, int img_height) {
-  wxRect rect;
+inline static String transformAllEncodedRects(const String& rectString, RectTransform transform, double param_x, double param_y, int mode = 0) {
+  RealRect rect(0,0,0,0);
   int degrees;
   size_t start = rectString.find(_("<mse-crop-data>"));
   if (start == String::npos) return rectString;
@@ -121,17 +101,11 @@ inline static String transformAllEncodedRects(const String& rectString, double s
     end = rectString.find(_("</mse-crop-data>"), start + 15);
     if (end == String::npos) return rectString;
     end += 16;
-    result = result + transformEncodedRect(rectString.substr(start, end - start), scale, angle, offset_x, offset_y, img_width, img_height);
+    result = result + transformEncodedRect(rectString.substr(start, end - start), transform, param_x, param_y, mode);
     start = rectString.find(_("<mse-crop-data>"), end);
   }
   result = result + rectString.substr(end);
   return result;
-}
-
-/// Apply a transformation to a rect, then encode it in a string
-inline static std::string transformAndEncodeRectInString(wxRect rect, int degrees, double scale, Radians angle, int offset_x, int offset_y, int img_width, int img_height) {
-  if (!transformEncodedRect(rect, degrees, scale, angle, offset_x, offset_y, img_width, img_height)) return "";
-  return encodeRectInStdString(rect, degrees);
 }
 
 // ----------------------------------------------------------------------------- : File to UTF8 Encoding
@@ -226,4 +200,53 @@ inline static Image decodeImageFromString(const String& string) {
   wxRemoveFile(temppath);
   wxRemoveFile(temppath.substr(0, temppath.size() - 4));
   return img;
+}
+
+// ----------------------------------------------------------------------------- : Metadata manipulation
+
+inline static String metadata_merge(const Image& img1, const Image& img2, int offset_x1 = 0, int offset_y1 = 0, int offset_x2 = 0, int offset_y2 = 0)
+{
+  if (img1.HasOption(wxIMAGE_OPTION_PNG_DESCRIPTION)) {
+    String metadata1 = img1.GetOption(wxIMAGE_OPTION_PNG_DESCRIPTION);
+    if (offset_x1 != 0 || offset_y1 != 0) metadata1 = transformAllEncodedRects(metadata1, RealRect::translate, offset_x1, offset_y1);
+    if (img2.HasOption(wxIMAGE_OPTION_PNG_DESCRIPTION)) {
+      String metadata2 = img2.GetOption(wxIMAGE_OPTION_PNG_DESCRIPTION);
+      if (offset_x2 != 0 || offset_y2 != 0) metadata2 = transformAllEncodedRects(metadata2, RealRect::translate, offset_x2, offset_y2);
+      size_t end1 = metadata1.find(_("</mse-card-data>"));
+      size_t start2 = metadata2.find(_("<mse-card-data>"));
+      if (end1 != String::npos && start2 != String::npos && end1 > 0 && start2 + 16 < metadata2.size()) {
+        metadata1 = metadata1.substr(0, end1 - 1) + "," + metadata2.substr(start2 + 16);
+      }
+    }
+    return metadata1;
+  }
+  else if (img2.HasOption(wxIMAGE_OPTION_PNG_DESCRIPTION)) {
+    String metadata2 = img2.GetOption(wxIMAGE_OPTION_PNG_DESCRIPTION);
+    if (offset_x2 != 0 || offset_y2 != 0) metadata2 = transformAllEncodedRects(metadata2, RealRect::translate, offset_x2, offset_y2);
+    return metadata2;
+  }
+  return _("");
+}
+
+inline static boost::json::array metadata_to_json(const String& metadata) {
+  size_t start = metadata.find(_("<mse-card-data>"));
+  if (start == String::npos) return boost::json::array();
+  size_t end = metadata.find(_("</mse-card-data>"), start + 15);
+  if (end == String::npos) return boost::json::array();
+  String string = metadata.substr(start + 15, end - (start + 15));
+  try {
+    boost::system::error_code ec;
+    boost::json::parse_options options;
+    options.allow_invalid_utf8 = true;
+    boost::json::value jv = boost::json::parse(string.ToStdString(), ec, {}, options);
+    if(ec || !jv.is_array()) {
+      queue_message(MESSAGE_ERROR, _ERROR_("json cant parse"));
+      return boost::json::array();
+    }
+    return jv.as_array();
+  }
+  catch (...) {
+    queue_message(MESSAGE_ERROR, _ERROR_("json cant parse"));
+    return boost::json::array();
+  }
 }

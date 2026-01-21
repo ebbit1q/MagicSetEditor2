@@ -242,6 +242,44 @@ bool CardListBase::doBulkModification() {
   return false;
 }
 
+void CardListBase::parseImageMetadata(CardP& card, const Image& image)
+{
+  for (IndexMap<FieldP, ValueP>::iterator it = card->data.begin(); it != card->data.end(); it++) {
+    ImageValue* value = dynamic_cast<ImageValue*>(it->get());
+    if (value && !value->filename.empty()) {
+      RealRect rect(0.0, 0.0, 0.0, 0.0);
+      int degrees = 0;
+      decodeRectFromString(value->filename.toStringForKey(), rect, degrees);
+      rect = rect.intersect(RealRect(0.0, 0.0, image.GetWidth(), image.GetHeight()));
+      if (rect.width > 0.0 && rect.height > 0.0) {
+        Image img = image.GetSubImage(rect);
+        img = rotate_image(img, deg_to_rad(360 - degrees));
+        LocalFileName filename = set->newFileName("cropped_image", _(".png")); // a new unique name in the package
+        img.SaveFile(set->nameOut(filename), wxBITMAP_TYPE_PNG);
+        value->filename = filename;
+      }
+      else {
+        value->filename = LocalFileName();
+      }
+    }
+  }
+}
+
+void CardListBase::parseImageMetadata(CardP& card)
+{
+  for (IndexMap<FieldP, ValueP>::iterator it = card->data.begin(); it != card->data.end(); it++) {
+    ImageValue* value = dynamic_cast<ImageValue*>(it->get());
+    if (value) {
+      Image img = decodeImageFromString(value->filename.toStringForKey());
+      if (img.IsOk()) {
+        LocalFileName filename = set->newFileName(_("decoded_image"), _(".png")); // a new unique name in the package
+        img.SaveFile(set->nameOut(filename), wxBITMAP_TYPE_PNG);
+        value->filename = filename;
+      }
+    }
+  }
+}
+
 bool CardListBase::parseUrl(String& url, vector<CardP>& out) {
   size_t j = out.size();
   size_t pos = url.find("URL=");
@@ -298,28 +336,11 @@ bool CardListBase::parseImage(Image& image, vector<CardP>& out) {
   if (image.HasOption(wxIMAGE_OPTION_PNG_DESCRIPTION)) {
     auto text = image.GetOption(wxIMAGE_OPTION_PNG_DESCRIPTION);
     parseText(text, out);
+
     // crop image rects to populate image fields
-    for (; j < out.size(); j++) {
-      CardP& card = out[j];
-      for (IndexMap<FieldP, ValueP>::iterator it = card->data.begin(); it != card->data.end(); it++) {
-        ImageValue* value = dynamic_cast<ImageValue*>(it->get());
-        if (value && !value->filename.empty()) {
-          wxRect rect = wxRect(0,0,0,0);
-          int degrees = 0;
-          value->filename.getExternalRect(rect, degrees);
-          rect.x = max(0, rect.x);
-          rect.y = max(0, rect.y);
-          rect.width  -= max(0, (rect.x + rect.width)  - image.GetWidth());
-          rect.height -= max(0, (rect.y + rect.height) - image.GetHeight());
-          if (rect.width > 0 && rect.height > 0) {
-            Image img = image.GetSubImage(rect);
-            img = rotate_image(img, deg_to_rad(360-degrees));
-            LocalFileName filename = set->newFileName("cropped_image", _(".png")); // a new unique name in the package
-            img.SaveFile(set->nameOut(filename), wxBITMAP_TYPE_PNG);
-            value->filename = filename;
-          }
-        }
-      }
+    for (int k = j; k < out.size(); k++) {
+      CardP& card = out[k];
+      parseImageMetadata(card, image);
     }
   }
   return j < out.size();
@@ -345,20 +366,10 @@ bool CardListBase::parseText(String& text, vector<CardP>& out) {
     }
   } catch (...) {}
 
-  // recreate images to populate image fields
+  // decode images to populate image fields
   for (int k = j; k < out.size(); k++) {
     CardP& card = out[k];
-    for (IndexMap<FieldP, ValueP>::iterator it = card->data.begin(); it != card->data.end(); it++) {
-      ImageValue* value = dynamic_cast<ImageValue*>(it->get());
-      if (value) {
-        Image img = value->filename.getExternalImage();
-        if (img.IsOk()) {
-          LocalFileName filename = set->newFileName(_("decoded_image"), _(".png")); // a new unique name in the package
-          img.SaveFile(set->nameOut(filename), wxBITMAP_TYPE_PNG);
-          value->filename = filename;
-        }
-      }
-    }
+    parseImageMetadata(card);
   }
 
   return j < out.size();

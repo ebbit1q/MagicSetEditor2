@@ -42,11 +42,8 @@ Image rotate_image_impl(const Image& img) {
   }
   // transfer metadata
   if (img.HasOption(wxIMAGE_OPTION_PNG_DESCRIPTION)) {
-    if (!almost_equal(Rotater::angle(), rad180)) {
-      swap(width, height);
-    }
-    String desc = transformAllEncodedRects(img.GetOption(wxIMAGE_OPTION_PNG_DESCRIPTION), 1.0, Rotater::angle(), 0, 0, width, height);
-    ret.SetOption(wxIMAGE_OPTION_PNG_DESCRIPTION, desc);
+    String metadata = transformAllEncodedRects(img.GetOption(wxIMAGE_OPTION_PNG_DESCRIPTION), RealRect::rotate, width, height, lround(rad_to_deg(Rotater::angle())));
+    ret.SetOption(wxIMAGE_OPTION_PNG_DESCRIPTION, metadata);
   }
   // ret is rotated image
   return ret;
@@ -103,7 +100,9 @@ Image rotate_image(const Image& image, Radians angle) {
   if (is_rad270(a)) return rotate_image_impl<Rotate270deg>(image);
   else {
     if (!image.HasAlpha()) const_cast<Image&>(image).InitAlpha();
-    return image.Rotate(angle, wxPoint(0,0));
+    Image ret = image.Rotate(angle, wxPoint(0,0));
+    ret.SetOption(wxIMAGE_OPTION_PNG_DESCRIPTION, image.GetOption(wxIMAGE_OPTION_PNG_DESCRIPTION));
+    return ret;
   }
 }
 
@@ -133,6 +132,10 @@ Image flip_image_horizontal(Image const& img) {
     out.InitAlpha();
     do_flip(img.GetAlpha(), out.GetAlpha(), 1, w, h);
   }
+  if (img.HasOption(wxIMAGE_OPTION_PNG_DESCRIPTION)) {
+    String metadata = transformAllEncodedRects(img.GetOption(wxIMAGE_OPTION_PNG_DESCRIPTION), RealRect::flip, w, h, 1);
+    out.SetOption(wxIMAGE_OPTION_PNG_DESCRIPTION, metadata);
+  }
   return out;
 }
 
@@ -143,6 +146,10 @@ Image flip_image_vertical(Image const& img) {
   if (img.HasAlpha()) {
     out.InitAlpha();
     do_flip(img.GetAlpha(), out.GetAlpha(), 1 * w, h);
+  }
+  if (img.HasOption(wxIMAGE_OPTION_PNG_DESCRIPTION)) {
+    String metadata = transformAllEncodedRects(img.GetOption(wxIMAGE_OPTION_PNG_DESCRIPTION), RealRect::flip, w, h, 0);
+    out.SetOption(wxIMAGE_OPTION_PNG_DESCRIPTION, metadata);
   }
   return out;
 }

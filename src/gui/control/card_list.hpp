@@ -97,6 +97,10 @@ public:
   bool parseText (String& text,             vector<CardP>& out);
   bool parseImage(Image& image,             vector<CardP>& out);
 
+  /// Recreate the images for image fields from the metadata
+  void parseImageMetadata(CardP& card, const Image& image);
+  void parseImageMetadata(CardP& card);
+
   // --------------------------------------------------- : Card linking
   
   bool canLink()    const;

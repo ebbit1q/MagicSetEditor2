@@ -180,13 +180,13 @@ int Style::update(Context& ctx) {
   else if (automatic_side & AUTO_BOTTOM) bottom = top + height;
   else                                   {int tb = int(top + bottom); top = (tb - height) / 2; bottom = (tb + height) / 2; }
   // adjust rotation point
-  if (angle != 0 && (automatic_side & (AUTO_LEFT | AUTO_TOP))) {
+  if (!almost_equal(angle, 0.0) && (automatic_side & (AUTO_LEFT | AUTO_TOP))) {
     double s = sin(deg_to_rad(angle)), c = cos(deg_to_rad(angle));
     if (automatic_side & AUTO_LEFT) { // attach right corner instead of left
       left = left + width * (1 - c);
       top  = top  + width * s;
     }
-    if (automatic_side & AUTO_TOP) { // attach botom corner instead of top
+    if (automatic_side & AUTO_TOP) { // attach bottom corner instead of top
       left = left - height * s;
       top  = top  + height * (1 - c);
     }

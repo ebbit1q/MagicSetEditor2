@@ -54,15 +54,6 @@ public:
 
   inline String const& toStringForKey() const { return fn; }
 
-  /// Retreive a rect from a filename
-  inline void getExternalRect(wxRect& rect_out, int& degrees_out) {
-    decodeRectFromString(fn, rect_out, degrees_out);
-  }
-  /// Retreive an image from a filename
-  inline Image getExternalImage() {
-    return decodeImageFromString(fn);
-  }
-
 private:
   LocalFileName(const wxString& fn) : fn(fn) {}
   String fn;

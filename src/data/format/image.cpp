@@ -35,7 +35,7 @@ Rotation ZoomedUnrotatedDataViewer::getRotation() const {
 
 // ----------------------------------------------------------------------------- : wxImage export
 
-Image export_image(const SetP& set, const CardP& card, const bool write_metadata, const double zoom, const Radians angle_radians, const double bleed_pixels) {
+Image export_image(const SetP& set, const CardP& card, bool write_metadata, double zoom, Radians angle_radians, double bleed_pixels) {
   if (!set) throw Error(_("no set"));
   /// create and zoom
   ZoomedUnrotatedDataViewer viewer = ZoomedUnrotatedDataViewer(zoom);
@@ -130,46 +130,23 @@ Image export_image(const SetP& set, const CardP& card, const bool write_metadata
 
   /// add metadata
   if (write_metadata) {
-    String metadata = _("<mse-card-data>[");
-    IndexMap<FieldP, ValueP>& card_data = card->data;
-    boost::json::object cardv = mse_to_json(card, set.get());
-    boost::json::object& cardv_data = cardv["data"].as_object();
-    StyleSheetP stylesheet = set->stylesheetForP(card);
-    if (!settings.stylesheetSettingsFor(*stylesheet).card_notes_export()) cardv["notes"] = "";
-    // iterate over all image fields
-    for(IndexMap<FieldP, ValueP>::iterator it = card_data.begin() ; it != card_data.end() ; ++it) {
-      ImageValue* value = dynamic_cast<ImageValue*>(it->get());
-      if (value && !value->filename.empty()) {
-        FieldP field = (*it)->fieldP;
-        ImageStyle* style = dynamic_cast<ImageStyle*>(stylesheet->card_style.at(field->index).get());
-        if (style) {
-          style->update(set->getContext(card));
-          // store the entire image in the metadata
-          if (style->store_in_metadata()) {
-            std::string bytes = style->getExternalImageString(set, value);
-            cardv_data[field->name.ToStdString()] = bytes;
-          }
-          // store only crop coordinates
-          else {
-            std::string rect = style->getExternalRectString(zoom, angle_radians, bleed_pixels, bleed_pixels, width, height);
-            cardv_data[field->name.ToStdString()] = rect;
-          }
-        }
-      }
-    }
-    metadata += json_ugly_print(cardv) + _("]</mse-card-data>");
+    bool rotated = is_rad90(angle_radians) || is_rad270(angle_radians); // we stored width and height after rotation, but export_metadata expects them before rotation
+    String metadata = _("<mse-card-data>[")
+                    + export_metadata(set, card, zoom, angle_radians, rotated ? height : width, rotated ? width : height, bleed_pixels, bleed_pixels)
+                    + _("]</mse-card-data>");
     img.SetOption(wxIMAGE_OPTION_PNG_DESCRIPTION, metadata);
   }
 
   return img;
 }
 
-Image export_image( const SetP& set, const vector<CardP>& cards,
-                    const int padding,
-                    const double global_zoom,
-                    const bool use_zoom_setting,
-                    const bool use_rotation_setting,
-                    const bool use_bleed_setting) {
+Image export_image(const SetP& set,
+                   const vector<CardP>& cards,
+                   int padding,
+                   double global_zoom,
+                   bool use_zoom_setting,
+                   bool use_rotation_setting,
+                   bool use_bleed_setting) {
   if (!set) throw Error(_("no set"));
   if (cards.size() == 0) throw Error(_("no cards"));
   vector<Image> imgs;
@@ -224,32 +201,8 @@ Image export_image( const SetP& set, const vector<CardP>& cards,
   for (int i = 0; i < cards.size(); ++i) {
     if (i > 0) metadata += _(",");
     CardP card = cards[i];
-    IndexMap<FieldP, ValueP>& card_data = card->data;
-    boost::json::object cardv = mse_to_json(card, set.get());
-    boost::json::object& cardv_data = cardv["data"].as_object();
-    StyleSheetP stylesheet = set->stylesheetForP(card);
-    if (!settings.stylesheetSettingsFor(*stylesheet).card_notes_export()) cardv["notes"] = "";
-    for(IndexMap<FieldP, ValueP>::iterator it = card_data.begin() ; it != card_data.end() ; ++it) {
-      ImageValue* value = dynamic_cast<ImageValue*>(it->get());
-      if (value && !value->filename.empty()) {
-        FieldP field = (*it)->fieldP;
-        ImageStyle* style = dynamic_cast<ImageStyle*>(stylesheet->card_style.at(field->index).get());
-        if (style) {
-          style->update(set->getContext(card));
-          // store the entire image in the metadata
-          if (style->store_in_metadata()) {
-            std::string bytes = style->getExternalImageString(set, value);
-            cardv_data[field->name.ToStdString()] = bytes;
-          }
-          // store only crop coordinates
-          else {
-            std::string rect = style->getExternalRectString(zooms[i], angles[i], bleeds[i] + offsets[i], bleeds[i], widths[i], heights[i]);
-            cardv_data[field->name.ToStdString()] = rect;
-          }
-        }
-      }
-    }
-    metadata += json_ugly_print(cardv);
+    bool rotated = is_rad90(angles[i]) || is_rad270(angles[i]); // we stored width and height after rotation, but export_metadata expects them before rotation
+    metadata += export_metadata(set, card, zooms[i], angles[i], rotated ? heights[i] : widths[i], rotated ? widths[i] : heights[i], bleeds[i] + offsets[i], bleeds[i]);
   }
   metadata += _("]</mse-card-data>");
   global_img.SetOption(wxIMAGE_OPTION_PNG_DESCRIPTION, metadata);
@@ -265,8 +218,7 @@ void export_image(const SetP& set, const CardP& card, const String& filename) {
   img.SaveFile(filename);
 }
 
-void export_image(const SetP& set, const vector<CardP>& cards,
-  const String& path, const String& filename_template, FilenameConflicts conflicts)
+void export_image(const SetP& set, const vector<CardP>& cards, const String& path, const String& filename_template, FilenameConflicts conflicts)
 {
   wxBusyCursor busy;
   // Script
@@ -289,4 +241,44 @@ void export_image(const SetP& set, const vector<CardP>& cards,
     used.insert(filename);
     export_image(set, card, filename);
   }
+}
+
+String export_metadata(const SetP& set, const CardP& card, double zoom, Radians angle_radians, int width, int height, double offset_x, double offset_y)
+{
+  IndexMap<FieldP, ValueP>& card_data = card->data;
+  boost::json::object cardv = mse_to_json(card, set.get());
+  boost::json::object& cardv_data = cardv["data"].as_object();
+  StyleSheetP stylesheet = set->stylesheetForP(card);
+  if (!settings.stylesheetSettingsFor(*stylesheet).card_notes_export()) cardv["notes"] = "";
+  RealRect bounds_rect = RealRect(0, 0, width, height);
+  int bounds_degrees = 0;
+  RealRect::rotate(bounds_rect, bounds_degrees, width, height, lround(rad_to_deg(angle_radians)));
+  RealRect::translate(bounds_rect, bounds_degrees, offset_x, offset_y);
+  cardv.emplace("bounds", encodeRectInStdString(bounds_rect, bounds_degrees));
+  // iterate over all image fields
+  for (IndexMap<FieldP, ValueP>::iterator it = card_data.begin(); it != card_data.end(); ++it) {
+    ImageValue* value = dynamic_cast<ImageValue*>(it->get());
+    if (value && !value->filename.empty()) {
+      FieldP field = (*it)->fieldP;
+      ImageStyle* style = dynamic_cast<ImageStyle*>(stylesheet->card_style.at(field->index).get());
+      if (style) {
+        style->update(set->getContext(card));
+        // store the entire image in the metadata
+        if (style->store_in_metadata()) {
+          Image img = value->getImage(set);
+          cardv_data[field->name.ToStdString()] = encodeImageInString(img);
+        }
+        // store only crop coordinates
+        else {
+          RealRect rect = style->getCanonicalExternalRect();
+          int degrees = lround(style->angle());
+          RealRect::scale(rect, degrees, zoom, zoom);
+          RealRect::rotate(rect, degrees, width, height, lround(rad_to_deg(angle_radians))); // width and height are already scaled
+          RealRect::translate(rect, degrees, offset_x, offset_y); // offset_x and offset_y are already scaled and rotated
+          cardv_data[field->name.ToStdString()] = encodeRectInStdString(rect, degrees);
+        }
+      }
+    }
+  }
+  return json_ugly_print(cardv);
 }

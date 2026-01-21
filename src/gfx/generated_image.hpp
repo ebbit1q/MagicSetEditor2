@@ -467,6 +467,20 @@ private:
   Age age; ///< Age the image was last updated
 };
 
+// ----------------------------------------------------------------------------- : SetMetadataImage
+
+/// Change the alpha channel of an image
+class SetMetadataImage : public SimpleFilterImage {
+public:
+  inline SetMetadataImage(const GeneratedImageP& image, const String& metadata)
+    : SimpleFilterImage(image), metadata(metadata)
+  {}
+  Image generate(const Options& opt) override;
+  bool operator == (const GeneratedImage& that) const override;
+private:
+  String metadata;
+};
+
 // ----------------------------------------------------------------------------- : ExternalImage
 
 /// Load an image from outside the data folder

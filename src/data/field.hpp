@@ -126,12 +126,40 @@ public:
   inline RealPoint   getPos()  const { return RealPoint(left, top); }
   inline RealSize    getSize() const { return RealSize(width, height); }
   inline RealRect    getExternalRect() const { return RealRect(left, top, width, height); }
-  inline std::string getExternalRectString(double scale, Radians angle, int offset_x, int offset_y, int img_width, int img_height) { ///< update the style before calling this
-    RealRect rect(left, top, width, height);
-    int degrees = lround(rad_to_deg(this->angle));
-    return transformAndEncodeRectInString(rect, degrees, scale, angle, offset_x, offset_y, img_width, img_height);
+  inline RealRect    getCanonicalExternalRect() const {
+    if (almost_equal(angle, 90.0)) {
+      if (automatic_side & Style::AutomaticSide::AUTO_LEFT) {
+        if (automatic_side & Style::AutomaticSide::AUTO_TOP) return RealRect(left + width - height, top + height, height, width); //bottom right
+        else                                                 return RealRect(left + width, top, height, width);                   //top right
+      }
+      else {
+        if (automatic_side & Style::AutomaticSide::AUTO_TOP) return RealRect(left - height, top + height - width, height, width); //bottom left
+        else                                                 return RealRect(left, top - width, height, width);                   //top left
+      }
+    }
+    else if (almost_equal(angle, 270.0)) {
+      if (automatic_side & Style::AutomaticSide::AUTO_LEFT) {
+        if (automatic_side & Style::AutomaticSide::AUTO_TOP) return RealRect(left + width, top + height - width, height, width);  //bottom right
+        else                                                 return RealRect(left + width - height, top - width, height, width);  //top right
+      }
+      else {
+        if (automatic_side & Style::AutomaticSide::AUTO_TOP) return RealRect(left, top + height, height, width);                  //bottom left
+        else                                                 return RealRect(left - height, top, height, width);                  //top left
+      }
+    }
+    else if (almost_equal(angle, 180.0)) {
+      if (automatic_side & Style::AutomaticSide::AUTO_LEFT) {
+        if (automatic_side & Style::AutomaticSide::AUTO_TOP) return RealRect(left + width, top + height, width, height);          //bottom right
+        else                                                 return RealRect(left + width, top - height, width, height);          //top right
+      }
+      else {
+        if (automatic_side & Style::AutomaticSide::AUTO_TOP) return RealRect(left - width, top + height, width, height);          //bottom left
+        else                                                 return RealRect(left - width, top - height, width, height);          //top left
+      }
+    }
+    return getExternalRect();
   }
-
+  
   /// Does this style have a non-zero size (or is it scripted)?
   bool hasSize() const;
   

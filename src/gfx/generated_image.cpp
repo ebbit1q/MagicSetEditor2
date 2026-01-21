@@ -13,6 +13,7 @@
 #include <data/set.hpp>
 #include <data/symbol.hpp>
 #include <data/field/symbol.hpp>
+#include <script/functions/json.hpp>
 #include <render/symbol/filter.hpp>
 #include <gui/util.hpp> // load_resource_image
 #include <gui/web_request_window.hpp>
@@ -298,6 +299,11 @@ Image EnlargeImage::generate(const Options& opt) {
       memcpy(data2 + dw + (y+dh)*w2, data1 + y*w, w); // copy a line
     }
   }
+  // transfer metadata
+  if (img.HasOption(wxIMAGE_OPTION_PNG_DESCRIPTION)) {
+    String metadata = transformAllEncodedRects(img.GetOption(wxIMAGE_OPTION_PNG_DESCRIPTION), RealRect::translate, dw, dh);
+    larger.SetOption(wxIMAGE_OPTION_PNG_DESCRIPTION, metadata);
+  }
   // done
   return larger;
 }
@@ -436,8 +442,8 @@ Image BleedEdgedImage::generate(const Options& opt) {
   }
   // transfer metadata
   if (base_img.HasOption(wxIMAGE_OPTION_PNG_DESCRIPTION)) {
-    String desc = transformAllEncodedRects(base_img.GetOption(wxIMAGE_OPTION_PNG_DESCRIPTION), 1.0, 0.0, dw, dh, width, height);
-    img.SetOption(wxIMAGE_OPTION_PNG_DESCRIPTION, desc);
+    String metadata = transformAllEncodedRects(base_img.GetOption(wxIMAGE_OPTION_PNG_DESCRIPTION), RealRect::translate, dw, dh);
+    img.SetOption(wxIMAGE_OPTION_PNG_DESCRIPTION, metadata);
   }
   // done
   return img;
@@ -482,8 +488,11 @@ Image InsertedImage::generate(const Options& opt) {
   }
   img.Paste(base_img, base_x, base_y, wxIMAGE_ALPHA_BLEND_COMPOSE);
   img.Paste(inserted_img, inserted_x, inserted_y, wxIMAGE_ALPHA_BLEND_COMPOSE);
+  // transfer metadata
+  img.SetOption(wxIMAGE_OPTION_PNG_DESCRIPTION, metadata_merge(base_img, inserted_img, base_x, base_y, inserted_x, inserted_y));
   return img;
 }
+
 ImageCombine InsertedImage::combine() const {
   return base_image->combine();
 }
@@ -519,7 +528,29 @@ Image CropImage::generate(const Options& opt) {
     alpha += 1;
   }
   Image base_img = image->generate(opt);
-  img.Paste(base_img, -(int)offset_x, -(int)offset_y, wxIMAGE_ALPHA_BLEND_OVER);
+  img.Paste(base_img, -(int)offset_x, -(int)offset_y, wxIMAGE_ALPHA_BLEND_COMPOSE);
+  // transfer metadata
+  if (base_img.HasOption(wxIMAGE_OPTION_PNG_DESCRIPTION)) {
+    String metadata = transformAllEncodedRects(base_img.GetOption(wxIMAGE_OPTION_PNG_DESCRIPTION), RealRect::translate, -offset_x, -offset_y);
+    // prune out of bounds cards
+    boost::json::array cardsv = metadata_to_json(metadata);
+    boost::json::array inbounds_cardsv;
+    for (int i = 0; i < cardsv.size(); i++) {
+      boost::json::object cardv = cardsv[i].as_object();
+      if (cardv.contains("bounds")) {
+        String bounds = String(cardv["bounds"].as_string().c_str());
+        RealRect rect(0.0, 0.0, 0.0, 0.0);
+        int degrees = 0;
+        if (decodeRectFromString(bounds, rect, degrees)) {
+          rect = rect.intersect(RealRect(0.0, 0.0, width, height));
+          if (rect.width <= 0.0 || rect.height <= 0.0 ) continue;
+        }
+      }
+      inbounds_cardsv.emplace_back(cardv);
+    }
+    metadata = "<mse-card-data>" + json_ugly_print(inbounds_cardsv) + "</mse-card-data>";
+    img.SetOption(wxIMAGE_OPTION_PNG_DESCRIPTION, metadata);
+  }
   return img;
 }
 bool CropImage::operator == (const GeneratedImage& that) const {
@@ -728,6 +759,19 @@ bool ImageValueToImage::operator == (const GeneratedImage& that) const {
   const ImageValueToImage* that2 = dynamic_cast<const ImageValueToImage*>(&that);
   return that2 && filename == that2->filename
                && age      == that2->age;
+}
+
+// ----------------------------------------------------------------------------- : SetMetadataImage
+
+Image SetMetadataImage::generate(const Options& opt) {
+  Image img = image->generate(opt);
+  img.SetOption(wxIMAGE_OPTION_PNG_DESCRIPTION, metadata);
+  return img;
+}
+bool SetMetadataImage::operator == (const GeneratedImage& that) const {
+  const SetMetadataImage* that2 = dynamic_cast<const SetMetadataImage*>(&that);
+  return that2 && *image == *that2->image
+             && metadata  == that2->metadata;
 }
 
 // ----------------------------------------------------------------------------- : ImportedImage

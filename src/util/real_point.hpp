@@ -21,6 +21,10 @@
 /// A point using real (double) coordinates
 typedef Vector2D RealPoint;
 
+/// A transformation function on a rect and an angle in degrees
+class RealRect;
+typedef std::function<void(RealRect&,int&,double,double,int)> RectTransform;
+
 // ----------------------------------------------------------------------------- : Size using doubles
 
 /// A size (width,height) using real (double) coordinates
@@ -166,7 +170,44 @@ public:
   inline RealRect move(double dx, double dy, double dw, double dh) const {
     return RealRect(x + dx, y + dy, width + dw, height + dh);
   }
-  
+  /// Return a rectangle that is the intersection between this and the given rectangle
+  inline RealRect intersect(RealRect rect) const {
+    double left   = max(x,          rect.x);
+    double top    = max(y,          rect.y);
+    double right  = min(x + width,  rect.x + rect.width);
+    double bottom = min(y + height, rect.y + rect.height);
+    return RealRect(left, top, right - left, bottom - top);
+  }
+
+  /// Transformation methods with the same signature for encoded rects
+  inline static void scale(RealRect& rect, int& degrees, double scale_x, double scale_y, int unused = 0) {
+    rect = RealRect(scale_x * rect.x, scale_y * rect.y, scale_x * rect.width, scale_y * rect.height);
+  }
+  inline static void translate(RealRect& rect, int& degrees, double offset_x, double offset_y, int unused = 0) {
+    rect = RealRect(offset_x + rect.x, offset_y + rect.y, rect.width, rect.height);
+  }
+  inline static void flip(RealRect& rect, int& degrees, double width, double height, int horizontal) {
+    if (horizontal) {
+      rect = RealRect(width - rect.x - rect.width, rect.y, rect.width, rect.height);
+    }
+    else {
+      rect = RealRect(rect.x, height - rect.y - rect.height, rect.width, rect.height);
+    }
+  }
+  inline static void rotate(RealRect& rect, int& degrees, double width, double height, int angle) { // only handles right angle rotations
+    degrees += angle;
+    if (degrees >= 360) degrees -= 360;
+    if (angle == 180) {
+      rect = RealRect(width - rect.x - rect.width, height - rect.y - rect.height, rect.width, rect.height);
+    }
+    else if (angle == 90) {
+      rect = RealRect(rect.y, width - rect.x - rect.width, rect.height, rect.width);
+    }
+    else if (angle == 270) {
+      rect = RealRect(height - rect.y - rect.height, rect.x, rect.height, rect.width);
+    }
+  }
+
   inline operator wxRect() const {
     // Prevent rounding errors, for example if
     // x = 0.6 and width = 0.6

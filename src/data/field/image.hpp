@@ -39,6 +39,13 @@ public:
   inline ImageValue(const ImageFieldP& field) : Value(field) {}
   DECLARE_VALUE_TYPE(Image, LocalFileName);
 
+  inline Image getImage(const SetP& set) {
+    auto imageInputStream = set->openIn(filename);
+    Image img(*imageInputStream, wxBITMAP_TYPE_PNG);
+    if (!img.IsOk()) throw ScriptError(_ERROR_2_("file not found", filename.toStringForKey(), set));
+    return img;
+  }
+
   ValueType filename;    ///< Filename of the image (in the current package), or ""
   Age       last_update; ///< When was the image last changed?
 };
@@ -55,11 +62,4 @@ public:
   Scriptable<bool> store_in_metadata; ///< Is the image stored in full in the metadata when exporting?
   
   int update(Context&) override;
-
-  inline std::string getExternalImageString(const SetP& set, ImageValue* value) { ///< update the style before calling this
-    auto imageInputStream = set->openIn(value->filename);
-    Image img(*imageInputStream, wxBITMAP_TYPE_PNG);
-    if (!img.IsOk()) throw ScriptError(_ERROR_2_("file not found", value->filename.toStringForKey(), set));
-    return encodeImageInString(img);
-  }
 };

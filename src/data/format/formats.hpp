@@ -89,12 +89,18 @@ FileFormatP mtg_editor_file_format();
 // ----------------------------------------------------------------------------- : Other ways to export
 
 /// Generate a wxImage of one or more cards
-Image export_image(const SetP& set, const CardP& card, const bool write_metadata = true, const double zoom = 1.0, const Radians angle_radians = 0.0, const double bleed_pixels = 0.0);
-Image export_image(const SetP& set, const vector<CardP>& cards, const int padding = 2, const double global_zoom = 1.0, const bool use_zoom_setting = true, const bool use_rotation_setting = true, const bool use_bleed_setting = false);
+Image export_image(const SetP& set, const CardP& card, bool write_metadata = true, double zoom = 1.0, Radians angle_radians = 0.0, double bleed_pixels = 0.0);
+Image export_image(const SetP& set, const vector<CardP>& cards, int padding = 2, double global_zoom = 1.0, bool use_zoom_setting = true, bool use_rotation_setting = true, bool use_bleed_setting = false);
 
 /// Export the image of one or more cards to a given filename, using the app's zoom, rotation and bleed settings, and including metadata
 void export_image(const SetP& set, const CardP& card, const String& filename);
 void export_image(const SetP& set, const vector<CardP>& cards, const String& path, const String& filename_template, FilenameConflicts conflicts);
+
+/// Write the metadata for a card
+// Assuming first the zoom is applied, then the rotation, then the offset.
+// This means that width and height need to be already scaled by a factor of zoom, but not already rotated
+// while offset_x and offset_y need to be already scaled and already rotated.
+String export_metadata(const SetP& set, const CardP& card, double zoom, Radians angle_radians, int width, int height, double offset_x, double offset_y);
 
 /// Export a set to Magic Workstation format
 void export_mws(Window* parent, const SetP& set);

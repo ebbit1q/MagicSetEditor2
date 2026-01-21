@@ -7,6 +7,7 @@
 // ----------------------------------------------------------------------------- : Includes
 
 #include <util/prec.hpp>
+#include <data/format/image_encoding.hpp>
 #include <gfx/gfx.hpp>
 #include <util/error.hpp>
 
@@ -71,6 +72,9 @@ void linear_blend(Image& img1, const Image& img2, double x1,double y1, double x2
       }
     }
   }
+
+  //transfer metadata
+  img1.SetOption(wxIMAGE_OPTION_PNG_DESCRIPTION, metadata_merge(img1, img2));
 }
 
 // ----------------------------------------------------------------------------- : Mask Blend
@@ -102,6 +106,9 @@ void mask_blend(Image& img1, const Image& img2, const Image& mask) {
       alpha1[i] = (alpha1[i] * dataM[i * 3] + alpha2[i] * (255 - dataM[i * 3])) / 255;
     }
   }
+
+  //transfer metadata
+  img1.SetOption(wxIMAGE_OPTION_PNG_DESCRIPTION, metadata_merge(img1, img2));
 }
 
 // ----------------------------------------------------------------------------- : Alpha

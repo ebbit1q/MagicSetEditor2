@@ -76,9 +76,7 @@ SCRIPT_FUNCTION(set_metadata) {
   SCRIPT_PARAM(Set*, set);
   SCRIPT_PARAM(GeneratedImageP, input);
   SCRIPT_PARAM(String, metadata);
-  Image img = input->generate(GeneratedImage::Options(0, 0, set));
-  img.SetOption(wxIMAGE_OPTION_PNG_DESCRIPTION, metadata);
-  return make_intrusive<ArbitraryImage>(img);
+  return make_intrusive<SetMetadataImage>(input, metadata);
 }
 
 SCRIPT_FUNCTION(width_of) {

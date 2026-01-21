@@ -7,6 +7,7 @@
 // ----------------------------------------------------------------------------- : Includes
 
 #include <util/prec.hpp>
+#include <data/format/image_encoding.hpp>
 #include <gfx/gfx.hpp>
 #include <util/error.hpp>
 #if defined(__WXMSW__) && wxUSE_WXDIB
@@ -402,6 +403,11 @@ Image make_stroke_image(Image& img, Color stroke_color, int stroke_radius, int b
   // add blur
   for (int i = 0 ; i < blur_radius ; ++i) {
     blur_image_alpha(s_img, 3);
+  }
+  // transfer metadata
+  if (img.HasOption(wxIMAGE_OPTION_PNG_DESCRIPTION)) {
+    String metadata = transformAllEncodedRects(img.GetOption(wxIMAGE_OPTION_PNG_DESCRIPTION), RealRect::translate, margin, margin);
+    s_img.SetOption(wxIMAGE_OPTION_PNG_DESCRIPTION, metadata);
   }
   return s_img;
 }
