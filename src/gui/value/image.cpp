@@ -34,7 +34,7 @@ bool ImageValueEditor::onLeftDClick(const RealPoint&, wxMouseEvent&) {
     }
   }
   filename = wxFileSelector(_("Open image file"), directory, filename, _(""),
-                                 _("All images|*.bmp;*.jpg;*.jpeg;*.png;*.gif;*.tif;*.tiff|Windows bitmaps (*.bmp)|*.bmp|JPEG images (*.jpg;*.jpeg)|*.jpg;*.jpeg|PNG images (*.png)|*.png|GIF images (*.gif)|*.gif|TIFF images (*.tif;*.tiff)|*.tif;*.tiff"),
+                                 _("All images|*.bmp;*.jpg;*.jpeg;*.png;*.webp;*.gif;*.tif;*.tiff|Windows bitmaps (*.bmp)|*.bmp|JPEG images (*.jpg;*.jpeg)|*.jpg;*.jpeg|PNG images (*.png)|*.png|WebP images (*.webp)|*.webp|GIF images (*.gif)|*.gif|TIFF images (*.tif;*.tiff)|*.tif;*.tiff"),
                                  wxFD_OPEN, wxGetTopLevelParent(&editor()));
   if (!filename.empty()) {
     settings.default_image_dir = wxPathOnly(filename);
@@ -43,7 +43,8 @@ bool ImageValueEditor::onLeftDClick(const RealPoint&, wxMouseEvent&) {
       wxLogNull noLog;
       image = wxImage(filename);
     }
-    sliceImage(image, filename, cardname);
+    if (!image.Ok()) queue_message(MESSAGE_ERROR, _ERROR_("can't load image"));
+    else sliceImage(image, filename, cardname);
   }
   return true;
 }
