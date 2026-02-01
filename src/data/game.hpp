@@ -78,6 +78,7 @@ public:
   bool isMagic() const;
 
 protected:
+  void add_alt_name_or_warn(const String& alt_name, const String& field_name);
   void validate(Version) override;
   
   DECLARE_REFLECTION_OVERRIDE();

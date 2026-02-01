@@ -36,11 +36,11 @@ void PrintJob::measure_cards() {
   FOR_EACH(card, cards) {
     if (already_measured_cards.find(card) != already_measured_cards.end()) continue;
     already_measured_cards.emplace(card);
-    card_layouts.push_back(measure_card(card));
-    CardP other_face = card->getLinkedOtherFace(cards);
+    card_layouts.emplace_back(measure_card(card));
+    CardP other_face = card->getLinkedOtherFaceCard(cards);
     if (other_face && already_measured_cards.find(other_face) == already_measured_cards.end()) {
       already_measured_cards.emplace(other_face);
-      card_layouts.push_back(measure_card(other_face));
+      card_layouts.emplace_back(measure_card(other_face));
       int index = card_layouts.size()-1;
       card_layouts[index].other_face = index-1;
       card_layouts[index-1].other_face = index;

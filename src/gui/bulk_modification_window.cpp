@@ -204,7 +204,7 @@ void BulkModificationWindow::onOk(wxCommandEvent&) {
     return;
   }
   // get the new script values
-  vector<shared_ptr<Action>> actions;
+  vector<ActionP> actions;
   String field_name = field_type->GetString(field_type->GetSelection());
   // stylesheet, notes or id change
   if (field_name == _("stylesheet") || field_name == _("notes") || field_name == _("id")) {
@@ -226,15 +226,15 @@ void BulkModificationWindow::onOk(wxCommandEvent&) {
     if (field_name == _("stylesheet")) {
       for (int i = 0; i < count; ++i) {
         StyleSheetP stylesheet = StyleSheet::byGameAndName(*set->game, new_values[i]);
-        actions.push_back(make_shared<ChangeCardStyleAction>(cards[i], stylesheet));
+        actions.push_back(make_intrusive<ChangeCardStyleAction>(cards[i], stylesheet));
       }
     } else if (field_name == _("notes")) {
       for (int i = 0; i < count; ++i) {
-        actions.push_back(make_shared<ChangeCardNotesAction>(cards[i], new_values[i]));
+        actions.push_back(make_intrusive<ChangeCardNotesAction>(cards[i], new_values[i]));
       }
     } else if (field_name == _("id")) {
       for (int i = 0; i < count; ++i) {
-        actions.push_back(make_shared<ChangeCardUIDAction>(*set, cards[i], new_values[i]));
+        actions.push_back(make_intrusive<ChangeCardUIDAction>(*set, cards[i], new_values[i]));
       }
     }
   }
@@ -265,7 +265,7 @@ void BulkModificationWindow::onOk(wxCommandEvent&) {
         }
         TextValue* value = dynamic_cast<TextValue*>(values[i]);
         TextValue::ValueType new_value = new_values[i]->toString();
-        shared_ptr<SimpleValueAction<TextValue, false>> action = make_shared<SimpleValueAction<TextValue, false>>(value, new_value);
+        intrusive_ptr<SimpleValueAction<TextValue, false>> action = make_intrusive<SimpleValueAction<TextValue, false>>(value, new_value);
         action->setCard(cards[i]);
         actions.push_back(action);
       }
@@ -280,7 +280,7 @@ void BulkModificationWindow::onOk(wxCommandEvent&) {
         }
         MultipleChoiceValue* value = dynamic_cast<MultipleChoiceValue*>(values[i]);
         MultipleChoiceValue::ValueType new_value = { new_values[i]->toString(), _("") };
-        shared_ptr<SimpleValueAction<MultipleChoiceValue, false>> action = make_shared<SimpleValueAction<MultipleChoiceValue, false>>(value, new_value);
+        intrusive_ptr<SimpleValueAction<MultipleChoiceValue, false>> action = make_intrusive<SimpleValueAction<MultipleChoiceValue, false>>(value, new_value);
         action->setCard(cards[i]);
         actions.push_back(action);
       }
@@ -295,7 +295,7 @@ void BulkModificationWindow::onOk(wxCommandEvent&) {
         }
         ChoiceValue* value = dynamic_cast<ChoiceValue*>(values[i]);
         ChoiceValue::ValueType new_value = new_values[i]->toString();
-        shared_ptr<SimpleValueAction<ChoiceValue, false>> action = make_shared<SimpleValueAction<ChoiceValue, false>>(value, new_value);
+        intrusive_ptr<SimpleValueAction<ChoiceValue, false>> action = make_intrusive<SimpleValueAction<ChoiceValue, false>>(value, new_value);
         action->setCard(cards[i]);
         actions.push_back(action);
       }
@@ -310,7 +310,7 @@ void BulkModificationWindow::onOk(wxCommandEvent&) {
         }
         PackageChoiceValue* value = dynamic_cast<PackageChoiceValue*>(values[i]);
         PackageChoiceValue::ValueType new_value = new_values[i]->toString();
-        shared_ptr<SimpleValueAction<PackageChoiceValue, false>> action = make_shared<SimpleValueAction<PackageChoiceValue, false>>(value, new_value);
+        intrusive_ptr<SimpleValueAction<PackageChoiceValue, false>> action = make_intrusive<SimpleValueAction<PackageChoiceValue, false>>(value, new_value);
         action->setCard(cards[i]);
         actions.push_back(action);
       }
@@ -321,7 +321,7 @@ void BulkModificationWindow::onOk(wxCommandEvent&) {
         try {
           ColorValue::ValueType new_value = new_values[i]->toColor();
           ColorValue* value = dynamic_cast<ColorValue*>(values[i]);
-          shared_ptr<SimpleValueAction<ColorValue, false>> action = make_shared<SimpleValueAction<ColorValue, false>>(value, new_value);
+          intrusive_ptr<SimpleValueAction<ColorValue, false>> action = make_intrusive<SimpleValueAction<ColorValue, false>>(value, new_value);
           action->setCard(cards[i]);
           actions.push_back(action);
         }
@@ -338,7 +338,7 @@ void BulkModificationWindow::onOk(wxCommandEvent&) {
         if (ExternalImage* img = dynamic_cast<ExternalImage*>(new_values[i].get())) {
           ImageValue* value = dynamic_cast<ImageValue*>(values[i]);
           ImageValue::ValueType new_value = LocalFileName::fromReadString(img->toString(), "");
-          shared_ptr<SimpleValueAction<ImageValue, false>> action = make_shared<SimpleValueAction<ImageValue, false>>(value, new_value);
+          intrusive_ptr<SimpleValueAction<ImageValue, false>> action = make_intrusive<SimpleValueAction<ImageValue, false>>(value, new_value);
           action->setCard(cards[i]);
           actions.push_back(action);
         }
@@ -355,7 +355,7 @@ void BulkModificationWindow::onOk(wxCommandEvent&) {
         if (ExternalImage* img = dynamic_cast<ExternalImage*>(new_values[i].get())) {
           SymbolValue* value = dynamic_cast<SymbolValue*>(values[i]);
           SymbolValue::ValueType new_value = LocalFileName::fromReadString(img->toString(), "");
-          shared_ptr<SimpleValueAction<SymbolValue, false>> action = make_shared<SimpleValueAction<SymbolValue, false>>(value, new_value);
+          intrusive_ptr<SimpleValueAction<SymbolValue, false>> action = make_intrusive<SimpleValueAction<SymbolValue, false>>(value, new_value);
           action->setCard(cards[i]);
           actions.push_back(action);
         }

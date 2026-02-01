@@ -43,6 +43,7 @@ protected:
   SetP            set;
   CardP           selected_card;
   wxButton*       sel_none;
+  Window*         parent;
 
   void onRelationTypeChange(wxCommandEvent&);
 

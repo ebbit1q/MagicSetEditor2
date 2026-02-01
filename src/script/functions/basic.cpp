@@ -776,7 +776,7 @@ SCRIPT_FUNCTION(get_card_export_settings) {
 SCRIPT_FUNCTION(get_card_from_uid) {
   SCRIPT_PARAM_C(Set*, set);
   SCRIPT_PARAM_C(String, input);
-  SCRIPT_RETURN(Card::getCardFromUid(*set, input));
+  SCRIPT_RETURN(Card::getUIDCard(*set, input));
 }
 
 SCRIPT_FUNCTION(get_cards_from_link) {
@@ -787,7 +787,7 @@ SCRIPT_FUNCTION(get_cards_from_link) {
     input_card = ic->getValue();
   }
   else if (input->type() == SCRIPT_STRING) {
-    input_card = Card::getCardFromUid(*set, input->toString());
+    input_card = Card::getUIDCard(*set, input->toString());
   }
   if (!input_card) {
     queue_message(MESSAGE_ERROR, _ERROR_("could not find input"));
@@ -795,14 +795,14 @@ SCRIPT_FUNCTION(get_cards_from_link) {
   }
   SCRIPT_PARAM(String, linked_relation);
   ScriptCustomCollectionP ret(new ScriptCustomCollection());
-  vector<CardP> other_cards = input_card->getLinkedCardsFromLink(*set, linked_relation, true);
+  vector<CardP> other_cards = input_card->getLinkedRelationCards(*set, linked_relation);
   if (other_cards.size() > 0) {
     FOR_EACH(other_card, other_cards) {
       ret->value.push_back(to_script(other_card));
     }
   }
   else if (set->game->card_links_alt_names.find(linked_relation) != set->game->card_links_alt_names.end()) {
-    other_cards = input_card->getLinkedCardsFromLink(*set, set->game->card_links_alt_names[linked_relation], true);
+    other_cards = input_card->getLinkedRelationCards(*set, set->game->card_links_alt_names[linked_relation]);
     FOR_EACH(other_card, other_cards) {
       ret->value.push_back(to_script(other_card));
     }
@@ -818,13 +818,13 @@ SCRIPT_FUNCTION(get_front_face) {
     input_card = ic->getValue();
   }
   else if (input->type() == SCRIPT_STRING) {
-    input_card = Card::getCardFromUid(*set, input->toString());
+    input_card = Card::getUIDCard(*set, input->toString());
   }
   if (!input_card) {
     queue_message(MESSAGE_ERROR, _ERROR_("could not find input"));
     return script_nil;
   }
-  vector<CardP> other_cards = input_card->getLinkedCardsFromLink(*set, "Front Face", true);
+  vector<CardP> other_cards = input_card->getLinkedRelationCards(*set, "Front Face");
   if (other_cards.size() == 0) return script_nil;
   if (other_cards.size() > 1) queue_message(MESSAGE_WARNING, _ERROR_1_("multiple front faces", input_card->identification()));
   SCRIPT_RETURN(other_cards[0]);
@@ -838,13 +838,13 @@ SCRIPT_FUNCTION(get_back_face) {
     input_card = ic->getValue();
   }
   else if (input->type() == SCRIPT_STRING) {
-    input_card = Card::getCardFromUid(*set, input->toString());
+    input_card = Card::getUIDCard(*set, input->toString());
   }
   if (!input_card) {
     queue_message(MESSAGE_ERROR, _ERROR_("could not find input"));
     return script_nil;
   }
-  vector<CardP> other_cards = input_card->getLinkedCardsFromLink(*set, "Back Face", true);
+  vector<CardP> other_cards = input_card->getLinkedRelationCards(*set, "Back Face");
   if (other_cards.size() == 0) return script_nil;
   if (other_cards.size() > 1) queue_message(MESSAGE_WARNING, _ERROR_1_("multiple back faces", input_card->identification()));
   SCRIPT_RETURN(other_cards[0]);
@@ -858,7 +858,7 @@ SCRIPT_FUNCTION(add_link) {
     input_card = ic->getValue();
   }
   else if (input->type() == SCRIPT_STRING) {
-    input_card = Card::getCardFromUid(*set, input->toString());
+    input_card = Card::getUIDCard(*set, input->toString());
   }
   if (!input_card) {
     queue_message(MESSAGE_ERROR, _ERROR_("could not find input"));
@@ -870,7 +870,7 @@ SCRIPT_FUNCTION(add_link) {
     other_card = c->getValue();
   }
   else if (linked_card->type() == SCRIPT_STRING) {
-    other_card = Card::getCardFromUid(*set, linked_card->toString());
+    other_card = Card::getUIDCard(*set, linked_card->toString());
   }
   if (!other_card) {
     queue_message(MESSAGE_WARNING, _ERROR_("could not find linked"));
@@ -878,7 +878,7 @@ SCRIPT_FUNCTION(add_link) {
   }
   SCRIPT_PARAM(String, selected_relation);
   SCRIPT_PARAM(String, linked_relation);
-  input_card->link(*set, other_card, selected_relation, linked_relation);
+  input_card->addLink(*set, other_card, selected_relation, linked_relation);
   SCRIPT_RETURN(other_card);
 }
 
@@ -891,7 +891,7 @@ SCRIPT_FUNCTION(remove_links) {
     input_card = ic->getValue();
   }
   else if (input->type() == SCRIPT_STRING) {
-    input_card = Card::getCardFromUid(*set, input->toString());
+    input_card = Card::getUIDCard(*set, input->toString());
   }
   if (!input_card) {
     queue_message(MESSAGE_ERROR, _ERROR_("could not find input"));
@@ -905,7 +905,7 @@ SCRIPT_FUNCTION(remove_links) {
       other_card = c->getValue();
     }
     else if (linked_card->type() == SCRIPT_STRING) {
-      other_card = Card::getCardFromUid(*set, linked_card->toString());
+      other_card = Card::getUIDCard(*set, linked_card->toString());
     }
     if (!other_card) {
       queue_message(MESSAGE_WARNING, _ERROR_("could not find linked"));
@@ -915,12 +915,12 @@ SCRIPT_FUNCTION(remove_links) {
   SCRIPT_PARAM_DEFAULT(ScriptValueP, linked_relation, script_nil);
   if (linked_relation != script_nil) {
     if (linked_relation->type() == SCRIPT_STRING) {
-      vector<CardP> other_other_cards = input_card->getLinkedCardsFromLink(*set, linked_relation->toString(), true);
+      vector<CardP> other_other_cards = input_card->getLinkedRelationCards(*set, linked_relation->toString());
       other_cards.insert(other_cards.end(), other_other_cards.begin(), other_other_cards.end());
     }
   }
-  input_card->unlink(other_cards);
   FOR_EACH(other_card, other_cards) {
+    input_card->removeLink(other_card);
     ret->value.push_back(to_script(other_card));
   }
   return ret;

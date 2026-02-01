@@ -9,17 +9,19 @@
 #include <util/prec.hpp>
 #include <data/game.hpp>
 #include <data/card_link.hpp>
+#include <data/action/value.hpp>
 #include <gui/card_link_window.hpp>
 #include <gui/control/select_card_list.hpp>
 #include <util/window_id.hpp>
 #include <data/action/set.hpp>
 #include <wx/statline.h>
+#include <unordered_set>
 
 // ----------------------------------------------------------------------------- : ExportCardSelectionChoice
 
 CardLinkWindow::CardLinkWindow(Window* parent, const SetP& set, const CardP& selected_card, bool sizer)
-  : wxDialog(parent, wxID_ANY, _TITLE_("link cards"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
-  , set(set), selected_card(selected_card)
+  : wxDialog(parent, wxID_ANY, _TITLE_("link cards"), wxPoint(400,-1), wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
+  , set(set), parent(parent), selected_card(selected_card)
 {
   // init controls
   selected_relation = new wxTextCtrl(this, wxID_ANY, _(""));
@@ -39,7 +41,7 @@ CardLinkWindow::CardLinkWindow(Window* parent, const SetP& set, const CardP& sel
   // init sizers
   if (sizer) {
     wxSizer* s = new wxBoxSizer(wxVERTICAL);
-    s->Add(new wxStaticText(this, -1, _LABEL_("linked cards relation")), 0, wxALL, 8);
+    s->Add(new wxStaticText(this, -1, _LABEL_1_("linked cards relation", selected_card->identification())), 0, wxALL, 8);
     s->Add(relation_type, 0, wxEXPAND | (wxALL & ~wxTOP), 8);
     s->Add(new wxStaticText(this, -1, _("  ") + _LABEL_("selected card")), 0, wxALL, 4);
     s->Add(selected_relation, 0, wxEXPAND | (wxALL & ~wxTOP), 8);
@@ -95,19 +97,73 @@ void CardLinkWindow::onRelationTypeChange(wxCommandEvent&) {
 }
 
 void CardLinkWindow::onOk(wxCommandEvent&) {
+  wxBusyCursor wait;
+  // get the context
+  CardListBase* card_list_window = dynamic_cast<CardListBase*>(parent);
+  if (!card_list_window) {
+    queue_message(MESSAGE_ERROR, _("Bulk modification must be called from a card list window!"));
+    EndModal(wxID_ABORT);
+    return;
+  }
   // Perform the linking
   // The selected_card is the one selected on the main cards tab
   // The linked_cards are the ones selected in this dialogue window
   vector<CardP> linked_cards;
   getSelection(linked_cards);
+  // Check that we are not linking to self
+  if (std::find(linked_cards.begin(), linked_cards.end(), selected_card) != linked_cards.end()) {
+    queue_message(MESSAGE_WARNING, _ERROR_("cant link to self"));
+    linked_cards.erase(std::remove(linked_cards.begin(), linked_cards.end(), selected_card), linked_cards.end());
+  }
+  vector<String> linked_uids;
+  for (int i = 0; i < linked_cards.size(); ++i) {
+    linked_uids.push_back(linked_cards[i]->uid);
+  }
+  // Find free links
+  unordered_set<String> all_existing_uids;
+  FOR_EACH(card, set->cards) {
+    all_existing_uids.insert(card->uid);
+  }
+  vector<int> free_link_indexes = selected_card->findFreeLinks(linked_uids, all_existing_uids);
+  int free_link_count = 0;
+  for (int i = 0; i < free_link_indexes.size(); ++i) {
+    if (free_link_indexes[i] >= 0) free_link_count++;
+  }
+  if (free_link_count < linked_cards.size()) {
+    wxMessageDialog dial = wxMessageDialog(this, _ERROR_1_("missing free links", wxString::Format(wxT("%i"), free_link_count)));
+    dial.ShowModal();
+    return;
+  }
+  // Get the relations
+  String selected_relation_string;
+  String linked_relation_string;
   int index = relation_type->GetSelection();
   if (index >= set->game->card_links.size()) { // Custom type
-    set->actions.addAction(make_unique<LinkCardsAction>(*set, selected_card, linked_cards, selected_relation->GetValue(), linked_relation->GetValue()));
+    selected_relation_string = selected_relation->GetValue();
+    linked_relation_string = linked_relation->GetValue();
   }
   else {
     CardLinkP link = set->game->card_links[index];
-    set->actions.addAction(make_unique<LinkCardsAction>(*set, selected_card, linked_cards, link->selected.default_, link->linked.default_));
+    selected_relation_string = link->selected.default_;
+    linked_relation_string = link->linked.default_;
   }
+  // Make the actions
+  vector<ActionP> actions;
+  for (int i = 0; i < free_link_indexes.size(); ++i) {
+    if (free_link_indexes[i] >= 0) {
+      actions.push_back(make_intrusive<OneWayLinkCardsAction>(*set, selected_card, linked_uids[i], selected_relation_string, free_link_indexes[i]));
+    }
+  }
+  // Find reciprocal free slots and make actions
+  String& selected_uid = selected_card->uid;
+  for (int i = 0; i < linked_cards.size(); ++i) {
+    int free_link_index = linked_cards[i]->findFreeLink(selected_uid, all_existing_uids);
+    if (free_link_index >= 0) {
+      actions.push_back(make_intrusive<OneWayLinkCardsAction>(*set, linked_cards[i], selected_uid, linked_relation_string, free_link_index));
+    }
+  }
+  // Add action to set
+  set->actions.addAction(make_unique<BulkAction>(actions, set, card_list_window), false);
   // Done
   EndModal(wxID_OK);
 }

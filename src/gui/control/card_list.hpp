@@ -105,7 +105,7 @@ public:
   
   bool canLink()    const;
   bool doLink();
-  bool doUnlink(CardP unlinked_card);
+  bool doUnlink(CardP linked_card);
   
   // --------------------------------------------------- : Set actions
   

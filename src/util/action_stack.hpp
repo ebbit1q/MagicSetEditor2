@@ -12,13 +12,15 @@
 #include <util/string.hpp>
 #include <vector>
 
+DECLARE_POINTER_TYPE(Action);
+
 // ----------------------------------------------------------------------------- : Action
 
 /// Base class for actions that can be stored in an ActionStack.
 /** An action is something that can be done to modify an object.
  *  It must store the necessary information to also undo the action.
  */
-class Action {
+class Action : public IntrusivePtrVirtualBase, public IntrusiveFromThis<Action> {
 public:
   virtual ~Action() {};
   

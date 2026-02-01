@@ -65,203 +65,108 @@ bool Card::contains(QuickFilterPart const& query) const {
   return false;
 }
 
-void Card::link(const Set& set, const vector<CardP>& linked_cards, const String& selected_relation, const String& linked_relation)
-{
-  unlink(linked_cards);
+vector<int> Card::findFreeLinks(vector<String>& linked_uids, const unordered_set<String>& all_existing_uids) {
+  vector<int> freeIndexes;
+  int count = min(4, (int)linked_uids.size());
+  LINK_PAIRS(linked_pairs, this);
 
-  unordered_set<String> all_existing_uids;
-  FOR_EACH(card, set.cards) {
-    all_existing_uids.insert(card->uid);
+  for (int i = 0; i < count; ++i) {
+    String& linked_uid = linked_uids[i];
+    // Try to find an existing link
+    for (int j = 0; j < linked_pairs.size(); ++j) {
+      auto& linked_pair = linked_pairs[j];
+      if (linked_pair.first.get() == linked_uid &&
+          std::find(freeIndexes.begin(), freeIndexes.end(), j) != freeIndexes.end()
+      ) {
+        freeIndexes.push_back(j);
+        goto continue_outer;
+      }
+    }
+    // Try to find a free spot
+    for (int j = 0; j < linked_pairs.size(); ++j) {
+      auto& linked_pair = linked_pairs[j];
+      if (linked_pair.first.get().empty() &&
+          std::find(freeIndexes.begin(), freeIndexes.end(), j) != freeIndexes.end()
+      ) {
+        freeIndexes.push_back(j);
+        goto continue_outer;
+      }
+    }
+    // Try to find an erasable spot
+    for (int j = 0; j < linked_pairs.size(); ++j) {
+      auto& linked_pair = linked_pairs[j];
+      if (all_existing_uids.find(linked_pair.first.get()) == all_existing_uids.end() &&
+          std::find(freeIndexes.begin(), freeIndexes.end(), j) != freeIndexes.end()
+      ) {
+        freeIndexes.push_back(j);
+        goto continue_outer;
+      }
+    }
+    freeIndexes.push_back(-1);
+    continue_outer:;
   }
-  int free_link_count = 0;
-  THIS_LINKED_PAIRS(this_linked_pairs);
-  FOR_EACH(this_linked_pair, this_linked_pairs) {
-    String& this_linked_uid = this_linked_pair.first.get();
-    if (
-      this_linked_uid.empty() ||                                // Not a reference
-      all_existing_uids.find(this_linked_uid) == all_existing_uids.end() // Reference to nonexistent card
-      ) free_link_count++;
-  }
-  if (free_link_count < linked_cards.size()) {
-    queue_message(MESSAGE_WARNING, _ERROR_("not enough free links"));
-    return;
-  }
+  return freeIndexes;
+}
+int Card::findFreeLink(const String& linked_uid, const unordered_set<String>& all_existing_uids) {
+  vector<String> linked_uids { linked_uid };
+  return findFreeLinks(linked_uids, all_existing_uids)[0];
+}
 
-  vector<CardP> all_missed_cards;
-  FOR_EACH(linked_card, linked_cards) {
-    bool written = false;
-    // Try to write to a free spot
-    FOR_EACH(this_linked_pair, this_linked_pairs) {
-      String& this_linked_uid = this_linked_pair.first.get();
-      String& this_linked_relation = this_linked_pair.second.get();
-      if (this_linked_uid.empty()) {
-        this_linked_uid = linked_card->uid;
-        this_linked_relation = linked_relation;
-        written = true;
-        break;
-      }
-    }
-    // Try to write to an erasable spot
-    if (!written) {
-      FOR_EACH(this_linked_pair, this_linked_pairs) {
-        String& this_linked_uid = this_linked_pair.first.get();
-        String& this_linked_relation = this_linked_pair.second.get();
-        if (all_existing_uids.find(this_linked_uid) == all_existing_uids.end()) {
-          this_linked_uid = linked_card->uid;
-          this_linked_relation = linked_relation;
-          written = true;
-          break;
-        }
-      }
-    }
-    if (!written) {
-      // Should be impossible to end up here?
-    }
+int Card::findUIDLink(const String& linked_uid) {
+  if (linked_card_1 == linked_uid) return 0;
+  if (linked_card_2 == linked_uid) return 1;
+  if (linked_card_3 == linked_uid) return 2;
+  if (linked_card_4 == linked_uid) return 3;
+  return -1;
+}
 
-    OTHER_LINKED_PAIRS(linked_pairs, linked_card);
-    written = false;
-    // Try to write to a free spot
-    FOR_EACH(linked_pair, linked_pairs) {
-      String& linked_uid = linked_pair.first.get();
-      String& linked_relation = linked_pair.second.get();
-      if (linked_uid.empty()) {
-        linked_uid = uid;
-        linked_relation = selected_relation;
-        written = true;
-        break;
-      }
-    }
-    // Try to write to an erasable spot
-    if (!written) {
-      FOR_EACH(linked_pair, linked_pairs) {
-        String& linked_uid = linked_pair.first.get();
-        String& linked_relation = linked_pair.second.get();
-        if (all_existing_uids.find(linked_uid) == all_existing_uids.end()) {
-          linked_uid = uid;
-          linked_relation = selected_relation;
-          written = true;
-          break;
-        }
-      }
-    }
-    // Notify we couldn't write
-    if (!written) {
-      all_missed_cards.push_back(linked_card);
-    }
+vector<int> Card::findRelationLinks(const String& linked_relation) {
+  vector<int> indexes;
+  if (linked_relation_1 == linked_relation) indexes.push_back(0);
+  if (linked_relation_2 == linked_relation) indexes.push_back(1);
+  if (linked_relation_3 == linked_relation) indexes.push_back(2);
+  if (linked_relation_4 == linked_relation) indexes.push_back(3);
+  return indexes;
+}
+
+String& Card::getLinkedUID(int index) {
+  switch (index) {
+  case 3:  return linked_card_4;
+  case 2:  return linked_card_3;
+  case 1:  return linked_card_2;
+  default: return linked_card_1;
   }
-  if (all_missed_cards.size() > 0) {
-    std::stringstream ss;
-    ss << _ERROR_("could not link");
-    for (size_t pos = 0; pos < all_missed_cards.size(); ++pos) {
-      ss << all_missed_cards[pos]->identification();
-      if (pos < all_missed_cards.size() - 1) ss << ", ";
-    };
-    queue_message(MESSAGE_WARNING, wxString(ss.str().c_str()));
+}
+String& Card::getLinkedRelation(int index) {
+  switch (index) {
+  case 3:  return linked_relation_4;
+  case 2:  return linked_relation_3;
+  case 1:  return linked_relation_2;
+  default: return linked_relation_1;
   }
 }
 
-void Card::link(const Set& set, CardP& linked_card, const String& selected_relation, const String& linked_relation)
-{
-  vector<CardP> linked_cards { linked_card };
-  link(set, linked_cards, selected_relation, linked_relation);
+void Card::updateLinkedUID(const String& old_uid, const String& new_uid) {
+  int index = findUIDLink(old_uid);
+  if (index >= 0) getLinkedUID(index) = new_uid;
 }
 
-void Card::unlink(const vector<CardP>& unlinked_cards)
-{
-  for (size_t pos = 0; pos < unlinked_cards.size(); ++pos) {
-    CardP unlinked_card = unlinked_cards[pos];
-    unlink(unlinked_card);
+vector<CardP> Card::getLinkedRelationCards(const vector<CardP>& cards, const String& linked_relation, bool erase_if_no_card) {
+  vector<CardP> other_cards;
+  vector<int> indexes = findRelationLinks(linked_relation);
+  for (int i = 0; i < indexes.size(); ++i) {
+    String& linked_uid = getLinkedUID(indexes[i]);
+    CardP other_card = getUIDCard(cards, linked_uid);
+    if (other_card) other_cards.push_back(other_card);
+    else if (erase_if_no_card) {
+      linked_uid = _("");
+      getLinkedRelation(indexes[i]) = _("");
+    }
   }
+  return other_cards;
 }
-
-pair<String, String> Card::unlink(CardP& unlinked_card)
-{
-  String old_selected_relation = _("");
-  THIS_LINKED_PAIRS(this_linked_pairs);
-  FOR_EACH(this_linked_pair, this_linked_pairs) {
-    String& this_linked_uid = this_linked_pair.first.get();
-    String& this_linked_relation = this_linked_pair.second.get();
-    if (this_linked_uid == unlinked_card->uid) {
-      old_selected_relation = this_linked_relation;
-      this_linked_uid = _("");
-      this_linked_relation = _("");
-    }
-  }
-  String old_unlinked_relation = _("");
-  OTHER_LINKED_PAIRS(unlinked_pairs, unlinked_card);
-  FOR_EACH(unlinked_pair, unlinked_pairs) {
-    String& unlinked_uid = unlinked_pair.first.get();
-    String& unlinked_relation = unlinked_pair.second.get();
-    if (unlinked_uid == uid) {
-      old_unlinked_relation = unlinked_relation;
-      unlinked_uid = _("");
-      unlinked_relation = _("");
-    }
-  }
-  return make_pair(old_selected_relation, old_unlinked_relation);
-}
-
-void Card::copyLink(const Set& set, String old_uid, String new_uid) {
-  // Find what relation we need to copy
-  String relation_copy = _("");
-  THIS_LINKED_PAIRS(this_linked_pairs);
-  FOR_EACH(this_linked_pair, this_linked_pairs) {
-    String& this_linked_uid = this_linked_pair.first.get();
-    String& this_linked_relation = this_linked_pair.second.get();
-    if (this_linked_uid == old_uid) {
-      relation_copy = this_linked_relation;
-      break;
-    }
-  }
-  // Nothing to copy
-  if (relation_copy.empty()) {
-    return;
-  }
-
-  // Try to copy to a free spot
-  bool written = false;
-  FOR_EACH(this_linked_pair, this_linked_pairs) {
-    String& this_linked_uid = this_linked_pair.first.get();
-    String& this_linked_relation = this_linked_pair.second.get();
-    if (this_linked_uid.empty()) {
-      this_linked_uid = new_uid;
-      this_linked_relation = relation_copy;
-      written = true;
-      break;
-    }
-  }
-  // Try to copy to an erasable spot
-  if (!written) {
-    unordered_set<String> all_existing_uids;
-    FOR_EACH(card, set.cards) {
-      all_existing_uids.insert(card->uid);
-    }
-    FOR_EACH(this_linked_pair, this_linked_pairs) {
-      String& this_linked_uid = this_linked_pair.first.get();
-      String& this_linked_relation = this_linked_pair.second.get();
-      if (all_existing_uids.find(this_linked_uid) == all_existing_uids.end()) {
-        this_linked_uid = new_uid;
-        this_linked_relation = relation_copy;
-        written = true;
-        break;
-      }
-    }
-  }
-  // Notify we couldn't copy
-  if (!written) {
-    queue_message(MESSAGE_WARNING, _ERROR_("not enough free links for copy"));
-  }
-}
-
-void Card::updateLink(String old_uid, String new_uid) {
-  THIS_LINKED_PAIRS(this_linked_pairs);
-  FOR_EACH(this_linked_pair, this_linked_pairs) {
-    String& this_linked_uid = this_linked_pair.first.get();
-    if (this_linked_uid == old_uid) {
-      this_linked_uid = new_uid;
-      return;
-    }
-  }
+vector<CardP> Card::getLinkedRelationCards(const Set& set, const String& linked_relation, bool erase_if_no_card) {
+  return getLinkedRelationCards(set.cards, linked_relation, erase_if_no_card);
 }
 
 vector<pair<CardP, String>> Card::getLinkedCards(const vector<CardP>& cards) {
@@ -283,7 +188,7 @@ vector<pair<CardP, String>> Card::getLinkedCards(const Set& set) {
   return getLinkedCards(set.cards);
 }
 
-CardP Card::getLinkedOtherFace(const vector<CardP>& cards) {
+CardP Card::getLinkedOtherFaceCard(const vector<CardP>& cards) {
   unordered_set<String> faces;
   if (linked_relation_1 == _("Front Face") || linked_relation_1 == _("Back Face")) faces.emplace(linked_card_1);
   if (linked_relation_2 == _("Front Face") || linked_relation_2 == _("Back Face")) faces.emplace(linked_card_2);
@@ -294,39 +199,57 @@ CardP Card::getLinkedOtherFace(const vector<CardP>& cards) {
   }
   return nullptr;
 }
-CardP Card::getLinkedOtherFace(const Set& set) {
-  return getLinkedOtherFace(set.cards);
+CardP Card::getLinkedOtherFaceCard(const Set& set) {
+  return getLinkedOtherFaceCard(set.cards);
 }
 
-vector<CardP> Card::getLinkedCardsFromLink(const vector<CardP>& cards, const String& link, bool erase_if_no_card) {
-  vector<CardP> other_cards;
-  THIS_LINKED_PAIRS(this_linked_pairs);
-  FOR_EACH(this_linked_pair, this_linked_pairs) {
-    String& this_linked_uid = this_linked_pair.first.get();
-    String& this_linked_relation = this_linked_pair.second.get();
-    if (this_linked_relation == link) {
-      CardP other_card = getCardFromUid(cards, this_linked_uid);
-      if (other_card) other_cards.push_back(other_card);
-      else if (erase_if_no_card) {
-        this_linked_relation = _("");
-        this_linked_uid = _("");
-      }
-    }
+void Card::addLink(const Set& set, CardP& linked_card, const String& selected_relation, const String& linked_relation) {
+  unordered_set<String> all_existing_uids;
+  FOR_EACH(card, set.cards) {
+    all_existing_uids.insert(card->uid);
   }
-  return other_cards;
-}
-vector<CardP> Card::getLinkedCardsFromLink(const Set& set, const String& link, bool erase_if_no_card) {
-  return getLinkedCardsFromLink(set.cards, link, erase_if_no_card);
+
+  int index = findFreeLink(linked_card->uid, all_existing_uids);
+  if (index < 0) {
+    queue_message(MESSAGE_ERROR, _ERROR_1_("not enough free links", identification()));
+    return;
+  }
+  getLinkedUID(index) = linked_card->uid;
+  getLinkedRelation(index) = selected_relation;
+
+  index = linked_card->findFreeLink(uid, all_existing_uids);
+  if (index < 0) {
+    queue_message(MESSAGE_ERROR, _ERROR_1_("not enough free links", linked_card->identification()));
+  }
+  else {
+    linked_card->getLinkedUID(index) = uid;
+    linked_card->getLinkedRelation(index) = linked_relation;
+  }
 }
 
-CardP Card::getCardFromUid(const vector<CardP>& cards, const String& uid) {
+void Card::removeLink(const CardP& linked_card)
+{
+  int index = findUIDLink(linked_card->uid);
+  if (index >= 0) {
+    getLinkedUID(index) = _("");
+    getLinkedRelation(index) = _("");
+  }
+
+  index = linked_card->findUIDLink(uid);
+  if (index >= 0) {
+    linked_card->getLinkedUID(index) = _("");
+    linked_card->getLinkedRelation(index) = _("");
+  }
+}
+
+CardP Card::getUIDCard(const vector<CardP>& cards, const String& uid) {
   FOR_EACH(card, cards) {
     if (card->uid == uid) return card;
   }
   return nullptr;
 }
-CardP Card::getCardFromUid(const Set& set, const String& uid) {
-  return getCardFromUid(set.cards, uid);
+CardP Card::getUIDCard(const Set& set, const String& uid) {
+  return getUIDCard(set.cards, uid);
 }
 
 IndexMap<FieldP, ValueP>& Card::extraDataFor(const StyleSheet& stylesheet) {

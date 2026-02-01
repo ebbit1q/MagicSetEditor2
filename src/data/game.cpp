@@ -67,6 +67,19 @@ IMPLEMENT_REFLECTION(Game) {
   REFLECT_NO_SCRIPT(auto_replaces);
 }
 
+void Game::add_alt_name_or_warn(const String& alt_name, const String& field_name)
+{
+  String unified_name = unified_form(alt_name);
+  if (card_fields_alt_names.count(unified_name)) {
+    if (card_fields_alt_names[unified_name] != field_name) {
+      queue_message(MESSAGE_WARNING, _("Duplicate alt card field name ' ") + unified_name + _(" ' is both an alt for: ' ") + field_name + _(" ' and ' ") + card_fields_alt_names[unified_name] + _(" '."));
+    }
+  }
+  else {
+    card_fields_alt_names.emplace(unified_name, field_name);
+  }
+}
+
 void Game::validate(Version v) {
   // check that we have at least one card field
   if (card_fields.size() < 1) {
@@ -105,23 +118,12 @@ void Game::validate(Version v) {
   // alternate card field names map
   for (auto it = card_fields.begin(); it != card_fields.end(); ++it) {
     FieldP field = *it;
-    String unified_name = unified_form(field->name);
-    if (card_fields_alt_names.count(unified_name)) {
-      queue_message(MESSAGE_WARNING, _("Duplicate alternate card field name: ") + unified_name);
-    }
-    else {
-      card_fields_alt_names.emplace(unified_name, field->name);
-    }
-    //String column_name = field->card_list_name.get();
-    //card_fields_alt_names.emplace(unified_form(column_name), field->name);
+    String& field_name = field->name;
+    add_alt_name_or_warn(field_name, field_name);
+    add_alt_name_or_warn(field->card_list_name.default_, field_name);
+    add_alt_name_or_warn(field->card_list_name.get(), field_name);
     for (auto it2 = field->alt_names.begin(); it2 != field->alt_names.end(); ++it2) {
-      unified_name = unified_form(*it2);
-      if (card_fields_alt_names.count(unified_name)) {
-        queue_message(MESSAGE_WARNING, _("Duplicate alternate card field name: ") + unified_name);
-      }
-      else {
-        card_fields_alt_names.emplace(unified_name, field->name);
-      }
+      add_alt_name_or_warn(*it2, field_name);
     }
   }
   // front face/back face card link

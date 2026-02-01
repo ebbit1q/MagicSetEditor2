@@ -145,8 +145,8 @@ SCRIPT_FUNCTION(add_card_to_set) {
     Set& _set = *s->getValue();
     ScriptObject<CardP>* c = dynamic_cast<ScriptObject<CardP>*>(input.get());
     if (c) {
-      CardP _card = c->getValue();
-      _set.actions.addAction(make_unique<AddCardAction>(ADD, _set, _card));
+      vector<CardP> _cards { c->getValue() };
+      _set.actions.addAction(make_unique<AddCardAction>(ADD, _set, _cards));
       SCRIPT_RETURN(true);
     }
     if (input->type() == SCRIPT_COLLECTION) {

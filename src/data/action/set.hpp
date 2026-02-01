@@ -41,13 +41,13 @@ class AddCardAction : public CardListAction {
 public:
   /// Add a newly allocated card
   AddCardAction(Set& set);
-  AddCardAction(AddingOrRemoving, Set& set, const CardP& card);
   AddCardAction(AddingOrRemoving, Set& set, const vector<CardP>& cards);
   
   String getName(bool to_undo) const override;
   void perform(bool to_undo) override;
   
   const GenericAddAction<CardP> action;
+  vector<ActionP> card_link_actions;
 };
 
 // ----------------------------------------------------------------------------- : Reorder cards
@@ -67,32 +67,19 @@ public:
 // ----------------------------------------------------------------------------- : Link cards
 
 /// Add a link between two or more cards
-class LinkCardsAction : public CardListAction {
+class OneWayLinkCardsAction : public CardListAction {
 public:
-  LinkCardsAction(Set& set, const CardP& selected_card, vector<CardP>& linked_cards, const String& selected_relation, const String& linked_relation);
-  
+  OneWayLinkCardsAction(Set& set, CardP& card, const String& uid, const String& relation, int index);
+
   String getName(bool to_undo) const override;
   void perform(bool to_undo) override;
-  
+
   //private:
-  CardP         selected_card;     ///< The card currently selected in the cards tab
-  vector<CardP> linked_cards;      ///< The cards that will be linked to the selected card
-  String        selected_relation; ///< The nature of the relation of the selected card
-  String        linked_relation;   ///< The nature of the relation of the linked cards
-};
-/// Remove a link between two cards
-class UnlinkCardsAction : public CardListAction {
-public:
-    UnlinkCardsAction(Set& set, const CardP& selected_card, CardP& unlinked_card);
-  
-  String getName(bool to_undo) const override;
-  void perform(bool to_undo) override;
-  
-  //private:
-  CardP         selected_card;     ///< The card currently selected in the cards tab
-  CardP         unlinked_card;     ///< The card that will be unlinked from the selected card
-  String        selected_relation; ///< The nature of the relation of the selected card
-  String        unlinked_relation; ///< The nature of the relation of the unlinked card
+  CardP   card;            ///< The card we change the link of. We hold a reference so it doesn't get destroyed before this.
+  String* linked_uid;      ///< The uid slot we need to change
+  String* linked_relation; ///< The relation slot we need to change
+  String  uid;             ///< The uid we have to change the link to
+  String  relation;        ///< The relation we have to change the link to
 };
 
 // ----------------------------------------------------------------------------- : Change stylesheet

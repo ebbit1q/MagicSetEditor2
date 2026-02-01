@@ -27,10 +27,10 @@ protected:
   wxStaticText*   modification_description, *modification_errors, *predicate_description, *predicate_errors;
   wxTextCtrl*     modification, *predicate;
   bool            modification_parsed, predicate_parsed;
+  ScriptP         modification_script, predicate_script;
   wxButton*       ok_button;
   SetP            set;
   Window*         parent;
-  ScriptP         modification_script, predicate_script;
 
   void onSelectionChange(wxCommandEvent&);
   void changeSelection();

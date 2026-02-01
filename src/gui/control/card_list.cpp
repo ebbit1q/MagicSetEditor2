@@ -450,8 +450,12 @@ bool CardListBase::doLink() {
   }
   return false;
 }
-bool CardListBase::doUnlink(CardP unlinked_card) {
-  set->actions.addAction(make_unique<UnlinkCardsAction>(*set, getCard(), unlinked_card));
+bool CardListBase::doUnlink(CardP linked_card) {
+  CardP selected_card = getCard();
+  vector<ActionP> actions;
+  actions.emplace_back(make_intrusive<OneWayLinkCardsAction>(*set, selected_card, _(""), _(""), selected_card->findUIDLink(linked_card->uid)));
+  actions.emplace_back(make_intrusive<OneWayLinkCardsAction>(*set, linked_card,   _(""), _(""), linked_card->findUIDLink(selected_card->uid)));
+  set->actions.addAction(make_unique<BulkAction>(actions, set, this), false);
   return true;
 }
 
