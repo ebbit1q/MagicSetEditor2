@@ -78,10 +78,13 @@ menu:
 
 	# format menu
 	format:								F&ormat
+	font:								Sélecteur de police...
 	bold:								&Gras	Ctrl+B
 	italic:								&Italique	Ctrl+I
 	underline:							Souligné	Ctrl+U
 	strikethrough:						Barré
+	color text:							Sélecteur de couleur...
+	bullet point:						Puce
 	symbols:							&Symboles	Ctrl+M
 	reminder text:						&Texte de rappel	Ctrl+R
 	insert symbol:						I&nsérer un Symbole
@@ -218,8 +221,11 @@ help:
 	italic:								Mettre le texte sélectionné en italique
 	underline:							Souligner le texte sélectionné
 	strikethrough:						Barrer le texte sélectionné
+	color text:							Modifier la couleur du texte sélectionné
+	bullet point:						Ajouter une puce au début du texte sélectionné
 	symbols:							Mettre le texte selectionné en symboles
 	reminder text:						Afficher le texte de rappel pour le Mot-clef sélectionné
+	font:								Ouvrir une boîte de dialogue de sélection de police pour modifier le texte sélectionné
 
 	# spelling
 	no spelling suggestions:			Il n'y a pas de suggestions pour corriger cette faute
@@ -362,6 +368,8 @@ tool:
 
 	# cards toolbar
 	search cards:						Rechercher des cartes (Ctrl+K)
+	stats card counts 1:				%s Au total
+	stats card counts 2:				%s Dans le filtre, %s Au total
 	card counts 2:						%s Dans la sélection, %s Au total
 	card counts 3:						%s Dans la sélection, %s Dans le filtre, %s Au total
 
@@ -449,8 +457,11 @@ tooltip:
 	italic:								Italique
 	underline:							Souligné
 	strikethrough:						Barré
+	color text:							Couleur
+	bullet point:						Puce
 	symbols:							Symboles
 	reminder text:						Texte de rappel
+	font:								Police
 
 	# graph toolbar
 	pie:								Circulaire
@@ -531,7 +542,7 @@ label:
 	custom link selected:				Générateur, Face Avant, Composant d'Assimilation, etc...
 	custom link linked:					Jeton, Face Arrière, Résultat d'Assimilation, etc...
 	custom link undefined:				Non Défini
-	linked cards relation:				Choisissez le type de relation entre la carte sélectionnée et les cartes liées:
+	linked cards relation:				Choisissez le type de relation entre la carte sélectionnée ('%s') et les cartes liées:
 	selected card:						Carte sélectionnée:
 	linked cards:						Cartes liées:
 	select linked cards:				Choisissez jusqu’à 4 cartes liées:
@@ -896,7 +907,7 @@ action:
 	paste:								Coller
 	auto replace:						Remplacement auto
 	correct:							Correction orthographique
-	bulk:								en masse
+	bulk:								%s en masse
 
 	# choice/color editors
 	change:								Changer %s
@@ -1010,6 +1021,7 @@ error:
 	images used for blending must have the same size:	Les images utilisées pour le mélange doivent avoir la même taille
 	negative image width:				Image de largeur nulle ou négative créée par la fonction '%s'
 	negative image height:				Image de hauteur nulle ou négative créée par la fonction '%s'
+	can't load image:					Échec du chargement de l'image. Assurez-vous que le format réel de l'image corresponde à son extension enregistrée.
 
 	# error from files
 	no card fields:						Le jeu '%s' ne contient aucun champ de carte. Définissez au moins un champ de carte.
@@ -1040,12 +1052,14 @@ error:
 	no updates:							Il n'y a pas de mises à jour disponibles.
 
 	# card linking
-	not enough free links:				La carte n'a pas assez de liens disponibles. Vous pouvez former au maximum 4 liens.
-	not enough free links for copy:		La carte n'a pas assez de liens disponibles pour copier. Vous pouvez former au maximum 4 liens.
+	not enough free links:				La carte '%s' n'a pas assez de liens disponibles. Vous pouvez former au maximum 4 liens par carte.
+	not enough free links for copy:		La carte '%s' n'a pas assez de liens disponibles pour copier. Vous pouvez former au maximum 4 liens par carte.
 	could not link:						Les cartes suivantes n'ont pas pu être liées, elles ont déjà 4 liens:
+	missing free links:					La carte ne contient que %s liens libres. Sélectionnez moins de cartes.
 	link duplicate:						Nom de lien localisé dupliqué. '%s' correspond à la fois à '%s' et à '%s'.
 	multiple front faces:				La carte '%s' contient plusieurs cartes liées comme face avant.
 	multiple back faces:				La carte '%s' contient plusieurs cartes liées comme face arrière.
+	cant link to self:					Impossible de lier une carte à elle-même. (Cet assignation sera ignorée.)
 	could not find input:				Carte d'input introuvable.
 	could not find linked:				Carte liée (linked_card) introuvable.
 

@@ -78,10 +78,13 @@ menu:
 
 	# format menu
 	format:								F&ormato
+	font:								Selettore font...
 	bold:								&Grassetto	Ctrl+B
 	italic:								&Corsivo	Ctrl+I
 	underline:							&Sottolineato	Ctrl+U
 	strikethrough:						Barrato
+	color text:							Selettore colore...
+	bullet point:						Punto elenco
 	symbols:							&Simboli	Ctrl+M
 	reminder text:						&Promemoria	Ctrl+R
 	insert symbol:						I&nserisci Simbolo
@@ -218,8 +221,11 @@ help:
 	italic:								Imposta il testo selezionato in corsivo
 	underline:							Imposta il testo selezionato sottolineato
 	strikethrough:						Imposta il testo selezionato barrato
+	color text:							Cambia il colore del testo selezionato
+	bullet point:						Aggiungi un punto elenco all'inizio del testo selezionato
 	symbols:							Trasforma il testo selezionato in simboli
 	reminder text:						Mostra promemoria per la parola-chiave selezionata
+	font:								Apri una finestra di dialogo per la selezione del font per modificare il testo selezionato
 
 	# spelling
 	no spelling suggestions:			Nessun suggerimento di correzione
@@ -362,6 +368,8 @@ tool:
 
 	# cards toolbar
 	search cards:						Cerca carte (Ctrl+K)
+	stats card counts 1:				%s Totale
+	stats card counts 2:				%s Filtrate, %s Totale
 	card counts 2:						%s Selezionate, %s Totale
 	card counts 3:						%s Selezionate, %s Filtrate, %s Totale
 
@@ -449,8 +457,11 @@ tooltip:
 	italic:								Corsivo
 	underline:							Sottolineato
 	strikethrough:						Barrato
+	color text:							Colore
+	bullet point:						Punto elenco
 	symbols:							Simboli
 	reminder text:						Promemoria
+	font:								Font
 
 	# graph toolbar
 	pie:								Grafico a torta
@@ -531,7 +542,7 @@ label:
 	custom link selected:				Creatore, Faccia Anteriore, Componente di Combinazione, ecc...
 	custom link linked:					Pedina, Faccia Posteriore, Risultato di Combinazione, ecc...
 	custom link undefined:				Non Definito
-	linked cards relation:				Scegli il tipo di relazione tra la carta selezionata e le carte collegate:
+	linked cards relation:				Scegli il tipo di relazione tra la carta selezionata ('%s') e le carte collegate:
 	selected card:						Carta selezionata:
 	linked cards:						Carte collegate:
 	select linked cards:				Scegli fino a 4 carte da collegare:
@@ -896,7 +907,7 @@ action:
 	paste:								Incolla
 	auto replace:						Rimpiazza automaticamente
 	correct:							Correzione ortografica
-	bulk:								in blocco
+	bulk:								%s in blocco
 
 	# choice/color editors
 	change:								Cambia %s
@@ -1010,6 +1021,7 @@ error:
 	images used for blending must have the same size:	Le immagini sovrapposte devono avere le stesse misure
 	negative image width:				Immagine con larghezza zero o negativa creata nella funzione '%s'
 	negative image height:				Immagine con altezza zero o negativa creata nella funzione '%s'
+	can't load image:					Impossibile caricare l'immagine. Assicurarsi che il formato effettivo dell'immagine corrisponda all'estensione salvata.
 
 	# error from files
 	no card fields:						Il gioco '%s' non ha campi carta. Definisci almeno un campo carta.
@@ -1040,12 +1052,14 @@ error:
 	no updates:							Non ci sono aggiornamenti disponibili.
 
 	# card linking
-	not enough free links:				La carta non ha abbastanza collegamenti disponibili. È possibile collegare solo fino a 4 carte.
-	not enough free links for copy:		La carta non ha abbastanza collegamenti disponibili per la copia. È possibile collegare solo fino a 4 carte.
+	not enough free links:				La carta '%s' non ha abbastanza collegamenti disponibili. È possibile collegare solo fino a 4 carte.
+	not enough free links for copy:		La carta '%s' non ha abbastanza collegamenti disponibili per la copia. È possibile collegare solo fino a 4 carte.
 	could not link:						Le seguenti carte non possono essere collegate, poiché hanno già 4 collegamenti:
+	missing free links:					La carta ha solo %s link gratuiti disponibili. Seleziona meno carte.
 	link duplicate:						Nome del collegamento localizzato duplicato. '%s' corrisponde sia a '%s' che a '%s'.
 	multiple front faces:				La carta '%s' ha più carte collegate come lati anteriori
 	multiple back faces:				La carta '%s' ha più carte collegate come lati posteriori
+	cant link to self:					Impossibile collegare una carta a se stessa. (Questa assegnazione verrà ignorata.)
 	could not find input:				Impossibile trovare la carta di input
 	could not find linked:				Impossibile trovare la carta collegata (linked_card)
 
@@ -1057,9 +1071,9 @@ error:
 	bulk modify mod is not image:		La modifica deve essere valutata come immagine, ma il risultato è %s. Utilizza le funzioni import_image/download_image per impostare i campi immagine.
 	bulk modify mod is nil:				La modifica è stata valutata come nil per la carta '%s', non verrà applicata.
 	bulk modify no cards:				Nessuna carta da modificare.
-	bulk modify no cards verify:		Nessuna scheda verifica i criteri.
-	bulk modify nothing:				Nessuna scheda è stata modificata.
-	bulk modify success:				Numero di schede modificate correttamente: %s.
+	bulk modify no cards verify:		Nessuna carta verifica i criteri.
+	bulk modify nothing:				Nessuna carta è stata modificata.
+	bulk modify success:				Numero di carte modificate correttamente: %s.
 
 	# web request
 	web request failed:					Richiesta Web non riuscita
