@@ -151,12 +151,15 @@ CardsPanel::CardsPanel(Window* parent, int id)
     add_menu_item_tr(menuCard, ID_SELECT_COLUMNS, nullptr, "card_list_columns");
   
   menuFormat = new wxMenu();
-    add_menu_item_tr(menuFormat, ID_FORMAT_BOLD, settings.darkModePrefix() + "bold", "bold", wxITEM_CHECK);
-    add_menu_item_tr(menuFormat, ID_FORMAT_ITALIC, settings.darkModePrefix() + "italic", "italic", wxITEM_CHECK);
-    add_menu_item_tr(menuFormat, ID_FORMAT_UNDERLINE, settings.darkModePrefix() + "underline", "underline", wxITEM_CHECK);
+    add_menu_item_tr(menuFormat, ID_FORMAT_FONT,          settings.darkModePrefix() + "font",          "font",          wxITEM_CHECK);
+    add_menu_item_tr(menuFormat, ID_FORMAT_BOLD,          settings.darkModePrefix() + "bold",          "bold",          wxITEM_CHECK);
+    add_menu_item_tr(menuFormat, ID_FORMAT_ITALIC,        settings.darkModePrefix() + "italic",        "italic",        wxITEM_CHECK);
+    add_menu_item_tr(menuFormat, ID_FORMAT_UNDERLINE,     settings.darkModePrefix() + "underline",     "underline",     wxITEM_CHECK);
     add_menu_item_tr(menuFormat, ID_FORMAT_STRIKETHROUGH, settings.darkModePrefix() + "strikethrough", "strikethrough", wxITEM_CHECK);
-    add_menu_item_tr(menuFormat, ID_FORMAT_SYMBOL, settings.darkModePrefix() + "symbol", "symbols", wxITEM_CHECK);
-    add_menu_item_tr(menuFormat, ID_FORMAT_REMINDER, settings.darkModePrefix() + "reminder", "reminder_text", wxITEM_CHECK);
+    add_menu_item_tr(menuFormat, ID_FORMAT_COLOR,                                     "color_text",    "color_text",    wxITEM_CHECK);
+    add_menu_item_tr(menuFormat, ID_FORMAT_BULLETPOINT,   settings.darkModePrefix() + "bullet_point",  "bullet_point",  wxITEM_CHECK);
+    add_menu_item_tr(menuFormat, ID_FORMAT_SYMBOL,        settings.darkModePrefix() + "symbol",        "symbols",       wxITEM_CHECK);
+    add_menu_item_tr(menuFormat, ID_FORMAT_REMINDER,      settings.darkModePrefix() + "reminder",      "reminder_text", wxITEM_CHECK);
     menuFormat->AppendSeparator();
     insertSymbolMenu = new wxMenuItem(menuFormat, ID_INSERT_SYMBOL, _MENU_("insert symbol"));
     menuFormat->Append(insertSymbolMenu);
@@ -285,12 +288,15 @@ wxMenu* CardsPanel::makeAddCardsSubmenu(bool add_single_card_option) {
 
 void CardsPanel::initUI(wxToolBar* tb, wxMenuBar* mb) {
   // Toolbar
-  add_tool_tr(tb, ID_FORMAT_BOLD, settings.darkModePrefix() + "bold", "bold", false, wxITEM_CHECK);
-  add_tool_tr(tb, ID_FORMAT_ITALIC, settings.darkModePrefix() + "italic", "italic", false, wxITEM_CHECK);
-  add_tool_tr(tb, ID_FORMAT_UNDERLINE, settings.darkModePrefix() + "underline", "underline", false, wxITEM_CHECK);
+  add_tool_tr(tb, ID_FORMAT_FONT,          settings.darkModePrefix() + "font",          "font",          false, wxITEM_CHECK);
+  add_tool_tr(tb, ID_FORMAT_BOLD,          settings.darkModePrefix() + "bold",          "bold",          false, wxITEM_CHECK);
+  add_tool_tr(tb, ID_FORMAT_ITALIC,        settings.darkModePrefix() + "italic",        "italic",        false, wxITEM_CHECK);
+  add_tool_tr(tb, ID_FORMAT_UNDERLINE,     settings.darkModePrefix() + "underline",     "underline",     false, wxITEM_CHECK);
   add_tool_tr(tb, ID_FORMAT_STRIKETHROUGH, settings.darkModePrefix() + "strikethrough", "strikethrough", false, wxITEM_CHECK);
-  add_tool_tr(tb, ID_FORMAT_SYMBOL, settings.darkModePrefix() + "symbol", "symbols", false, wxITEM_CHECK);
-  add_tool_tr(tb, ID_FORMAT_REMINDER, settings.darkModePrefix() + "reminder", "reminder_text", false, wxITEM_CHECK);
+  add_tool_tr(tb, ID_FORMAT_COLOR,                                     "color_text",    "color_text",    false, wxITEM_CHECK);
+  add_tool_tr(tb, ID_FORMAT_BULLETPOINT,   settings.darkModePrefix() + "bullet_point",  "bullet_point",  false, wxITEM_CHECK);
+  add_tool_tr(tb, ID_FORMAT_SYMBOL,        settings.darkModePrefix() + "symbol",        "symbols",       false, wxITEM_CHECK);
+  add_tool_tr(tb, ID_FORMAT_REMINDER,      settings.darkModePrefix() + "reminder",      "reminder_text", false, wxITEM_CHECK);
   tb->AddSeparator();
   toolAddCard = add_tool_tr(tb, ID_CARD_ADD, "card_add", "add_card", false, wxITEM_DROPDOWN);
   tb->SetDropdownMenu(ID_CARD_ADD, makeAddCardsSubmenu(true));
@@ -321,10 +327,13 @@ void CardsPanel::initUI(wxToolBar* tb, wxMenuBar* mb) {
 
 void CardsPanel::destroyUI(wxToolBar* tb, wxMenuBar* mb) {
   // Toolbar
+  tb->DeleteTool(ID_FORMAT_FONT);
   tb->DeleteTool(ID_FORMAT_BOLD);
   tb->DeleteTool(ID_FORMAT_ITALIC);
   tb->DeleteTool(ID_FORMAT_UNDERLINE);
   tb->DeleteTool(ID_FORMAT_STRIKETHROUGH);
+  tb->DeleteTool(ID_FORMAT_COLOR);
+  tb->DeleteTool(ID_FORMAT_BULLETPOINT);
   tb->DeleteTool(ID_FORMAT_SYMBOL);
   tb->DeleteTool(ID_FORMAT_REMINDER);
   tb->DeleteTool(ID_CARD_ADD);
@@ -367,7 +376,8 @@ void CardsPanel::onUpdateUI(wxUpdateUIEvent& ev) {
     case ID_CARD_REMOVE:        ev.Enable(card_list->canDelete());      break;
     case ID_CARD_LINK:          ev.Enable(card_list->canLink());        break;
     case ID_CARD_AND_LINK_COPY: ev.Enable(card_list->canCopy());        break;
-    case ID_FORMAT_BOLD: case ID_FORMAT_ITALIC: case ID_FORMAT_UNDERLINE: case ID_FORMAT_STRIKETHROUGH: case ID_FORMAT_SYMBOL: case ID_FORMAT_REMINDER: {
+    case ID_FORMAT_FONT: case ID_FORMAT_BOLD: case ID_FORMAT_ITALIC: case ID_FORMAT_UNDERLINE: case ID_FORMAT_STRIKETHROUGH:
+    case ID_FORMAT_COLOR: case ID_FORMAT_BULLETPOINT: case ID_FORMAT_SYMBOL: case ID_FORMAT_REMINDER: {
       if (focused_control(this) == ID_EDITOR) {
         ev.Enable(editor->canFormat(ev.GetId()));
         ev.Check (editor->hasFormat(ev.GetId()));
@@ -474,8 +484,10 @@ void CardsPanel::onCommand(int id) {
     }
     case ID_SELECT_COLUMNS: {
       card_list->selectColumns();
+      break;
     }
-    case ID_FORMAT_BOLD: case ID_FORMAT_ITALIC: case ID_FORMAT_UNDERLINE: case ID_FORMAT_STRIKETHROUGH: case ID_FORMAT_SYMBOL: case ID_FORMAT_REMINDER: {
+    case ID_FORMAT_FONT: case ID_FORMAT_BOLD: case ID_FORMAT_ITALIC: case ID_FORMAT_UNDERLINE: case ID_FORMAT_STRIKETHROUGH:
+    case ID_FORMAT_COLOR: case ID_FORMAT_BULLETPOINT: case ID_FORMAT_SYMBOL: case ID_FORMAT_REMINDER: {
       if (focused_control(this) == ID_EDITOR) {
         editor->doFormat(id);
       }

@@ -74,7 +74,11 @@ String fix_old_tags(const String&);
 
 /// Does a string contain a tag at the given location?
 /** Only matches if the tag ends one of ">-: " */
-[[nodiscard]] bool is_tag(const String& str, size_t pos, const String& tag);
+[[nodiscard]] bool is_tag(const String& str, size_t pos, const String& tag, bool strict = false);
+
+/// Does a string contain a tag at the given location?
+/** Matches <b <i <u <strike <font <size <color <sym or their anti tags */
+[[nodiscard]] bool is_formatting_tag(const String& str, size_t pos);
 
 /// Is the given range entirely contained in a given tagged block?
 /** If so: return the start position of that tag, otherwise returns String::npos
@@ -83,9 +87,9 @@ String fix_old_tags(const String&);
  *          <tag><tag></tag>x</tag>
  *        the x is in_tag
  */
-[[nodiscard]] size_t in_tag(const String& str, const String& tag, size_t start, size_t end);
+[[nodiscard]] size_t in_tag(const String& str, const String& tag, size_t start, size_t end, bool strict = false);
 /// Boolean returning version of the above
-bool is_in_tag(const String& str, const String& tag, size_t start, size_t end);
+bool is_in_tag(const String& str, const String& tag, size_t start, size_t end, bool strict = false);
 
 /// Return the tag at the given position (without the <>)
 String tag_at(const String& str, size_t pos);
@@ -120,16 +124,25 @@ String anti_tag(const String& tag);
 [[nodiscard]] String::const_iterator find_close_tag(String::const_iterator it, String::const_iterator end);
 
 /// Does a string contain a tag at the given location?
-/** Only matches if the tag in the text ends one of ">-: "
+/** Only matches if the tag in the text ends with one of ">-: "
+ *  If strict is set to true then it must end with exactly ">"
  *  tag should be "<tag" or "</tag"
  */
-[[nodiscard]] bool is_tag(String::const_iterator it, String::const_iterator end, const char* tag);
+[[nodiscard]] bool is_tag(String::const_iterator it, String::const_iterator end, const char* tag, bool strict = false);
 
 // Length of a string when not counting tags
 // For example: untagged_length("<b>abc</b>",_) = 3
 [[nodiscard]] size_t untagged_length(String::const_iterator it, String::const_iterator end);
 
 // ----------------------------------------------------------------------------- : Cursor position
+
+/// Take a tagged string and a position inside it,
+/// return the position if the string was untagged.
+size_t to_untagged_pos(const String& str, size_t pos);
+
+/// Take a tagged string and a position inside the untagged version,
+/// return the position in the tagged version.
+size_t to_tagged_pos(const String& str, size_t pos, bool after_open=false, bool after_close=false);
 
 /// Directions of cursor movement
 enum Movement
@@ -158,6 +171,7 @@ size_t cursor_to_index(const String& str, size_t cursor, Movement dir = MOVE_MID
 const Char UNTAG_ATOM       = _('\2');
 const Char UNTAG_SEP        = _('\3');
 const Char UNTAG_ATOM_KWPPH = _('\4');
+const Char UNTAG_BULLET     = _('\5');
 
 /// Untag a string for use with cursors, <atom>...</atom> becomes a single character.
 /** This string should only be used for cursor position calculations. */
@@ -179,6 +193,11 @@ size_t untagged_to_index(const String& str, size_t pos, bool inside, size_t star
 size_t index_to_untagged(const String& str, size_t index);
 
 // ----------------------------------------------------------------------------- : Global operations
+
+/// Add a tag and its close tag around a string. Tag must be complete.
+String wrap_tag(const String& str, const String& tag);
+/// Add a tag and its close tag around a string but in the opposite order.
+String anti_wrap_tag(const String& str, const String& tag);
 
 /// Remove all instances of a tag and its close tag, but keep the contents.
 /** tag doesn't have to be a complete tag, for example remove_tag(str, "<kw-")
@@ -244,7 +263,9 @@ String simplify_tagged(const String& str);
 /// Simplify a tagged string by merging adjecent open/close tags
 /** e.g. "<tag></tag>" --> ""
  *
- * @param all Merge all tags, if false only merges b,i,sym, and <tag></tag> pairs. But not </tag><tag>.
+ * @param all Merge all tags, if false only merges b,i,u,strike,color,size,font,sym, and <tag></tag> pairs.
+ * But not </tag><tag>, as this could lead to structural changes. For example, merging </li><li> would
+ * fuse two bullet points together.
  */
 String simplify_tagged_merge(const String& str, bool all = false);
 

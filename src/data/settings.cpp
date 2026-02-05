@@ -124,6 +124,7 @@ IMPLEMENT_REFLECTION_NO_SCRIPT(GameSettings) {
   REFLECT(pack_amounts);
   REFLECT(pack_seed_random);
   REFLECT(pack_seed);
+  REFLECT(custom_colors);
 }
 
 

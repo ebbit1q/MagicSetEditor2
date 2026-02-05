@@ -172,12 +172,24 @@ private:
           fromString(e->children, text, pos, end_tag);
           elements.push_back(e);
           pos = skip_tag(text, end_tag);
-        } else if (is_tag(text, tag_start, _("</bullet"))) {
-          // end of bullet point, set margin here
+        } else if (is_tag(text, tag_start, _("<bullet"))) {
+          // start of bullet point, set margin before bullet here, but only once
+          // subsequent times will align to this one
+          if (paragraphs.back().margin_before_bullet == paragraphs.back().start) {
+            paragraphs.back().margin_before_bullet = tag_start;
+          }
           if (li <= 0) {
             queue_message(MESSAGE_WARNING, _("<bullet> outside <li> tag"));
           }
-          paragraphs.back().margin_end_char = pos;
+        } else if (is_tag(text, tag_start, _("</bullet"))) {
+          // end of bullet point, set margin after bullet here, but only once
+          // subsequent times will align to this one
+          if (paragraphs.back().margin_after_bullet == paragraphs.back().start) {
+            paragraphs.back().margin_after_bullet = pos;
+          }
+          if (li <= 0) {
+            queue_message(MESSAGE_WARNING, _("<bullet> outside <li> tag"));
+          }
         } else if (is_tag(text, tag_start, _("<margin"))) {
           size_t colon = text.find_first_of(_(">:"), tag_start);
           if (colon < pos - 1 && text.GetChar(colon) == _(':')) {
@@ -282,7 +294,8 @@ private:
         paragraphs.back().end = i + 1;
         paragraphs.emplace_back();
         paragraphs.back().start = i + 1;
-        paragraphs.back().margin_end_char = i + 1;
+        paragraphs.back().margin_before_bullet = i + 1;
+        paragraphs.back().margin_after_bullet = i + 1;
         if (!margins.empty()) {
           paragraphs.back().margin_left  = margins.back().left;
           paragraphs.back().margin_right = margins.back().right;
@@ -303,7 +316,8 @@ private:
       (kwpph       > 0 ? FONT_SOFT        : FONT_NORMAL) |
       (code        > 0 ? FONT_CODE        : FONT_NORMAL) |
       (code_kw     > 0 ? FONT_CODE_KW     : FONT_NORMAL) |
-      (code_string > 0 ? FONT_CODE_STRING : FONT_NORMAL),
+      (code_string > 0 ? FONT_CODE_STRING : FONT_NORMAL) |
+      (!fonts.empty()  ? FONT_FROM_TAG    : FONT_NORMAL),
       underline > 0,
       strikethrough > 0,
       fonts.empty() ? nullptr : &fonts.back(),

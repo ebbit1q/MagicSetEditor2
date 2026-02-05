@@ -48,7 +48,8 @@ void FontTextElement::getCharInfo(RotatedDC& dc, double scale, vector<CharInfo>&
       out.push_back(CharInfo(
                        RealSize(s.width - prev_width, s.height),
                        c == _(' ') ? LineBreak::SPACE : LineBreak::MAYBE,
-                       draw_as == DRAW_ACTIVE // from <soft> tag
+                       draw_as == DRAW_ACTIVE, // from <soft> tag
+                       c == _('•')
                    ));
       prev_width = s.width;
     }

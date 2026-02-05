@@ -183,7 +183,7 @@ wxFont Font::toWxFont(double scale) const {
     font.SetPointSize(size > 1 ? size_i : int(scale * font.GetPointSize()));
     if (strikethrough()) font.MakeStrikethrough();
     return font;
-  } else if (flags & FONT_ITALIC && !italic_name().empty()) {
+  } else if (!(flags & FONT_FROM_TAG) && (flags & FONT_ITALIC) && !italic_name().empty()) {
     font = wxFont(size_i, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, weight_i, underline(), italic_name());
   } else {
     String familyName = name();

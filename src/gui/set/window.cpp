@@ -58,17 +58,17 @@ SetWindow::SetWindow(Window* parent, const SetP& set)
     add_menu_item_tr(menuFile, ID_FILE_NEW, "new", "new_set");
     add_menu_item_tr(menuFile, ID_FILE_OPEN, "open", "open_set");
     add_menu_item_tr(menuFile, ID_FILE_SAVE, "save", "save_set");
-    add_menu_item_tr(menuFile, ID_FILE_SAVE_AS, nullptr, "save_set_as");
-    add_menu_item_tr(menuFile, ID_FILE_SAVE_AS_DIRECTORY, nullptr, "save_set_as_directory");
+    add_menu_item_tr(menuFile, ID_FILE_SAVE_AS, "save", "save_set_as");
+    add_menu_item_tr(menuFile, ID_FILE_SAVE_AS_DIRECTORY, "save", "save_set_as_directory");
     add_menu_item_tr(menuFile, wxID_ANY, "export", "export", wxITEM_NORMAL, makeExportMenu());
     menuFile->AppendSeparator();
-    add_menu_item_tr(menuFile, ID_FILE_CHECK_UPDATES, nullptr, "check_updates");
+    add_menu_item_tr(menuFile, ID_FILE_CHECK_UPDATES, settings.darkModePrefix() + "check_updates", "check_updates");
     #if USE_SCRIPT_PROFILING
     add_menu_item_tr(menuFile, ID_FILE_PROFILER, nullptr, "show_profiler");
     #endif
 //    menuFile->Append(ID_FILE_INSPECT,          _("Inspect Internal Data..."),  _("Shows a the data in the set using a tree structure"));
 //    menuFile->AppendSeparator();
-    add_menu_item_tr(menuFile, ID_FILE_RELOAD, nullptr, "reload_data");
+    add_menu_item_tr(menuFile, ID_FILE_RELOAD, settings.darkModePrefix() + "reload_data", "reload_data");
     menuFile->AppendSeparator();
     add_menu_item_tr(menuFile, ID_FILE_PRINT_PREVIEW, "print_preview", "print_preview");
     add_menu_item_tr(menuFile, ID_FILE_PRINT, "print", "print");
@@ -88,12 +88,12 @@ SetWindow::SetWindow(Window* parent, const SetP& set)
     menuEdit->AppendSeparator();
     add_menu_item_tr(menuEdit, ID_EDIT_SELECT_ALL, nullptr, "select_all");
     menuEdit->AppendSeparator();
-    add_menu_item_tr(menuEdit, ID_EDIT_FIND, settings.darkModePrefix() + "find", "find");
-    add_menu_item_tr(menuEdit, ID_EDIT_FIND_NEXT, settings.darkModePrefix() + "find", "find_next");
-    add_menu_item_tr(menuEdit, ID_EDIT_REPLACE, nullptr, "replace");
-    add_menu_item_tr(menuEdit, ID_EDIT_AUTO_REPLACE, nullptr, "auto_replace");
+    add_menu_item_tr(menuEdit, ID_EDIT_FIND,         settings.darkModePrefix() + "find", "find");
+    add_menu_item_tr(menuEdit, ID_EDIT_FIND_NEXT,    settings.darkModePrefix() + "find", "find_next");
+    add_menu_item_tr(menuEdit, ID_EDIT_REPLACE,      settings.darkModePrefix() + "find", "replace");
+    add_menu_item_tr(menuEdit, ID_EDIT_AUTO_REPLACE, settings.darkModePrefix() + "find", "auto_replace");
     menuEdit->AppendSeparator();
-    add_menu_item_tr(menuEdit, ID_EDIT_PREFERENCES, nullptr, "preferences");
+    add_menu_item_tr(menuEdit, ID_EDIT_PREFERENCES, settings.darkModePrefix() + "preferences", "preferences");
   menuBar->Append(menuEdit, _MENU_("edit"));
   
   auto menuWindow = new wxMenu();

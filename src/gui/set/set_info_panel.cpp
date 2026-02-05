@@ -34,21 +34,27 @@ void SetInfoPanel::onChangeSet() {
 
 void SetInfoPanel::initUI(wxToolBar* tb, wxMenuBar* mb) {
   // Toolbar
-  add_tool_tr(tb, ID_FORMAT_BOLD, settings.darkModePrefix() + "bold", "bold", false, wxITEM_CHECK);
-  add_tool_tr(tb, ID_FORMAT_ITALIC, settings.darkModePrefix() + "italic", "italic", false, wxITEM_CHECK);
-  add_tool_tr(tb, ID_FORMAT_UNDERLINE, settings.darkModePrefix() + "underline", "underline", false, wxITEM_CHECK);
+  add_tool_tr(tb, ID_FORMAT_FONT,          settings.darkModePrefix() + "font",          "font",          false, wxITEM_CHECK);
+  add_tool_tr(tb, ID_FORMAT_BOLD,          settings.darkModePrefix() + "bold",          "bold",          false, wxITEM_CHECK);
+  add_tool_tr(tb, ID_FORMAT_ITALIC,        settings.darkModePrefix() + "italic",        "italic",        false, wxITEM_CHECK);
+  add_tool_tr(tb, ID_FORMAT_UNDERLINE,     settings.darkModePrefix() + "underline",     "underline",     false, wxITEM_CHECK);
   add_tool_tr(tb, ID_FORMAT_STRIKETHROUGH, settings.darkModePrefix() + "strikethrough", "strikethrough", false, wxITEM_CHECK);
-  add_tool_tr(tb, ID_FORMAT_SYMBOL, settings.darkModePrefix() + "symbol", "symbols", false, wxITEM_CHECK);
-  add_tool_tr(tb, ID_FORMAT_REMINDER, settings.darkModePrefix() + "reminder", "reminder_text", false, wxITEM_CHECK);
+  add_tool_tr(tb, ID_FORMAT_COLOR,                                     "color_text",    "color_text",    false, wxITEM_CHECK);
+  add_tool_tr(tb, ID_FORMAT_BULLETPOINT,   settings.darkModePrefix() + "bullet_point",  "bullet_point",  false, wxITEM_CHECK);
+  add_tool_tr(tb, ID_FORMAT_SYMBOL,        settings.darkModePrefix() + "symbol",        "symbols",       false, wxITEM_CHECK);
+  add_tool_tr(tb, ID_FORMAT_REMINDER,      settings.darkModePrefix() + "reminder",      "reminder_text", false, wxITEM_CHECK);
   tb->Realize();
   // Menus
   auto menuFormat = new wxMenu();
-    add_menu_item_tr(menuFormat, ID_FORMAT_BOLD, settings.darkModePrefix() + "bold", "bold", wxITEM_CHECK);
-    add_menu_item_tr(menuFormat, ID_FORMAT_ITALIC, settings.darkModePrefix() + "italic", "italic", wxITEM_CHECK);
-    add_menu_item_tr(menuFormat, ID_FORMAT_UNDERLINE, settings.darkModePrefix() + "underline", "underline", wxITEM_CHECK);
+    add_menu_item_tr(menuFormat, ID_FORMAT_FONT,          settings.darkModePrefix() + "font",          "font",          wxITEM_CHECK);
+    add_menu_item_tr(menuFormat, ID_FORMAT_BOLD,          settings.darkModePrefix() + "bold",          "bold",          wxITEM_CHECK);
+    add_menu_item_tr(menuFormat, ID_FORMAT_ITALIC,        settings.darkModePrefix() + "italic",        "italic",        wxITEM_CHECK);
+    add_menu_item_tr(menuFormat, ID_FORMAT_UNDERLINE,     settings.darkModePrefix() + "underline",     "underline",     wxITEM_CHECK);
     add_menu_item_tr(menuFormat, ID_FORMAT_STRIKETHROUGH, settings.darkModePrefix() + "strikethrough", "strikethrough", wxITEM_CHECK);
-    add_menu_item_tr(menuFormat, ID_FORMAT_SYMBOL, settings.darkModePrefix() + "symbol", "symbols", wxITEM_CHECK);
-    add_menu_item_tr(menuFormat, ID_FORMAT_REMINDER, settings.darkModePrefix() + "reminder", "reminder_text", wxITEM_CHECK);
+    add_menu_item_tr(menuFormat, ID_FORMAT_COLOR,                                     "color_text",    "color_text",    wxITEM_CHECK);
+    add_menu_item_tr(menuFormat, ID_FORMAT_BULLETPOINT,   settings.darkModePrefix() + "bullet_point",  "bullet_point",  wxITEM_CHECK);
+    add_menu_item_tr(menuFormat, ID_FORMAT_SYMBOL,        settings.darkModePrefix() + "symbol",        "symbols",       wxITEM_CHECK);
+    add_menu_item_tr(menuFormat, ID_FORMAT_REMINDER,      settings.darkModePrefix() + "reminder",      "reminder_text", wxITEM_CHECK);
   mb->Insert(2, menuFormat, _MENU_("format"));
   // focus on editor
   editor->SetFocus();
@@ -56,10 +62,13 @@ void SetInfoPanel::initUI(wxToolBar* tb, wxMenuBar* mb) {
 
 void SetInfoPanel::destroyUI(wxToolBar* tb, wxMenuBar* mb) {
   // Toolbar
+  tb->DeleteTool(ID_FORMAT_FONT);
   tb->DeleteTool(ID_FORMAT_BOLD);
   tb->DeleteTool(ID_FORMAT_ITALIC);
   tb->DeleteTool(ID_FORMAT_UNDERLINE);
   tb->DeleteTool(ID_FORMAT_STRIKETHROUGH);
+  tb->DeleteTool(ID_FORMAT_COLOR);
+  tb->DeleteTool(ID_FORMAT_BULLETPOINT);
   tb->DeleteTool(ID_FORMAT_SYMBOL);
   tb->DeleteTool(ID_FORMAT_REMINDER);
   // Menus
@@ -68,7 +77,8 @@ void SetInfoPanel::destroyUI(wxToolBar* tb, wxMenuBar* mb) {
 
 void SetInfoPanel::onUpdateUI(wxUpdateUIEvent& ev) {
   switch (ev.GetId()) {
-    case ID_FORMAT_BOLD: case ID_FORMAT_ITALIC: case ID_FORMAT_UNDERLINE: case ID_FORMAT_STRIKETHROUGH: case ID_FORMAT_SYMBOL: case ID_FORMAT_REMINDER: {
+    case ID_FORMAT_FONT: case ID_FORMAT_BOLD: case ID_FORMAT_ITALIC: case ID_FORMAT_UNDERLINE: case ID_FORMAT_STRIKETHROUGH:
+    case ID_FORMAT_COLOR: case ID_FORMAT_BULLETPOINT: case ID_FORMAT_SYMBOL: case ID_FORMAT_REMINDER: {
       ev.Enable(editor->canFormat(ev.GetId()));
       ev.Check (editor->hasFormat(ev.GetId()));
       break;
@@ -78,7 +88,8 @@ void SetInfoPanel::onUpdateUI(wxUpdateUIEvent& ev) {
 
 void SetInfoPanel::onCommand(int id) {
   switch (id) {
-    case ID_FORMAT_BOLD: case ID_FORMAT_ITALIC: case ID_FORMAT_UNDERLINE: case ID_FORMAT_STRIKETHROUGH: case ID_FORMAT_SYMBOL: case ID_FORMAT_REMINDER: {
+    case ID_FORMAT_FONT: case ID_FORMAT_BOLD: case ID_FORMAT_ITALIC: case ID_FORMAT_UNDERLINE: case ID_FORMAT_STRIKETHROUGH:
+    case ID_FORMAT_COLOR: case ID_FORMAT_BULLETPOINT: case ID_FORMAT_SYMBOL: case ID_FORMAT_REMINDER: {
       editor->doFormat(id);
       break;
     }

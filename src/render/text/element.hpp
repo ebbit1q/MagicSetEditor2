@@ -37,12 +37,13 @@ struct CharInfo {
   RealSize  size;             ///< Size of this character
   LineBreak break_after : 16; ///< How/when to break after it?
   bool      soft : 1;         ///< Is this a 'soft' character? soft characters are ignored for alignment
+  bool      bullet : 1;       ///< Is this a bullet point?
   
   explicit CharInfo()
-    : break_after(LineBreak::NO), soft(true)
+    : break_after(LineBreak::NO), soft(true), bullet(false)
   {}
-  inline CharInfo(RealSize size, LineBreak break_after, bool soft = false)
-    : size(size), break_after(break_after), soft(soft)
+  inline CharInfo(RealSize size, LineBreak break_after, bool soft = false, bool bullet = false)
+    : size(size), break_after(break_after), soft(soft), bullet(bullet)
   {}
 };
 
@@ -151,7 +152,8 @@ public:
   double margin_left = 0., margin_right = 0.;
   double margin_top = 0.; //, margin_bottom = 0.; // TODO: more margin options?
   size_t start = String::npos, end = String::npos;
-  size_t margin_end_char = 0; // end position of characters that are added to the margin (i.e. bullet points)
+  size_t margin_before_bullet = 0; // position of the bullet tag
+  size_t margin_after_bullet = 0; // position of the first character after the bullet tag
 };
 
 /// A list of text elements extracted from a string

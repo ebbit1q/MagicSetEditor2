@@ -127,8 +127,16 @@ private:
   String name;
 };
 
-/// Action for toggling some formating tag on or off in some range
-unique_ptr<TextValueAction> toggle_format_action(const TextValueP& value, const String& tag, size_t start_i, size_t end_i, size_t start, size_t end, const String& action_name);
+/// Action for toggling some formating tag(s) on or off in some range.
+unique_ptr<TextValueAction> toggle_format_action(const TextValueP& value, vector<String>& tags, size_t start_i, size_t end_i, size_t start, size_t end, const String& action_name);
+unique_ptr<TextValueAction> toggle_format_action(const TextValueP& value, const String& tag,    size_t start_i, size_t end_i, size_t start, size_t end, const String& action_name);
+
+/// New value obtained by toggling a simple tag (<b>, <i>, etc...)
+String compute_new_simple_value(const String& str, const String& tag, size_t start_i, size_t end_i);
+/// New value obtained by toggling a tag that has variations (<color:#000000>, <color:#FFFFFF>, etc...)
+String compute_new_variable_value(const String& str, const String& tag, size_t start_i, size_t end_i);
+/// New value obtained by toggling a bullet point tag (<li>)
+String compute_new_bullet_value(const String& str, int& offset, size_t start_i, size_t end_i);
 
 /// Typing in a TextValue, replace the selection [start...end) with replacement
 /** start and end are cursor positions, start_i and end_i are indices*/

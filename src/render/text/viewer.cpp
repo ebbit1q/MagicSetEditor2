@@ -13,20 +13,22 @@
 // ----------------------------------------------------------------------------- : Line
 
 struct TextViewer::Line {
-  size_t         start;       ///< Index of the first character in this line
-  size_t         end_or_soft; ///< Index just beyond the last non-soft character
-  vector<double> positions;   ///< x position of each character in this line, gives the number of characters + 1, never empty
-  double         top;         ///< y position of (the top of) this line
-  double         line_height; ///< The height of this line in pixels
-  LineBreak      break_after; ///< Is there a saparator after this line?
-  optional<Alignment> alignment; ///< Alignment of this line
-  bool           justifying;  ///< Is the text justified? Only true when *really* justifying.
-  double         margin_left; ///< Left margin
-  double         margin_right;///< Rightmargin
+  size_t         start;                     ///< Index of the first character in this line
+  size_t         end_or_soft;               ///< Index just beyond the last non-soft character
+  vector<double> positions;                 ///< x position of each character in this line, gives the number of characters + 1, never empty
+  double         top;                       ///< y position of (the top of) this line
+  double         line_height;               ///< The height of this line in pixels
+  LineBreak      break_after;               ///< Is there a saparator after this line?
+  optional<Alignment> alignment;            ///< Alignment of this line
+  bool           justifying;                ///< Is the text justified? Only true when *really* justifying.
+  double         margin_left;               ///< Left margin including the margin tag and bullet point
+  double         margin_left_before_bullet; ///< Left margin but just before the bullet point
+  double         margin_right;              ///< Rightmargin
+  bool           bullet;                    ///< Does this line start with a bullet point?
   
   Line()
     : start(0), end_or_soft(0), top(0), line_height(0)
-    , break_after(LineBreak::NO), justifying(false)
+    , break_after(LineBreak::NO), justifying(false), bullet(false)
   {}
   
   /// The position (just beyond) the bottom of this line
@@ -545,11 +547,12 @@ void TextViewer::prepareLinesTryScales(RotatedDC& dc, const String& text, const 
 
 // Try to fit a blank line in the masked image, move down until it fits
 RealSize TextViewer::fitLineWidth(Line& line, RotatedDC& dc, const TextStyle& style) const {
-  RealSize line_size(line.margin_left + lineLeft(dc, style, line.top), 0);
+  double margin_left = line.bullet ? line.margin_left_before_bullet : line.margin_left;
+  RealSize line_size(margin_left + lineLeft(dc, style, line.top), 0);
   while (line.top < dc.getHeight() && line_size.width + 1 >= dc.getWidth() - style.padding_right - line.margin_right) {
     // nothing fits on this line, move down one pixel
     line.top += 1;
-    line_size.width = line.margin_left + lineLeft(dc, style, line.top);
+    line_size.width = margin_left + lineLeft(dc, style, line.top);
   }
   return line_size;
 }
@@ -565,7 +568,8 @@ bool TextViewer::prepareLinesAtScale(RotatedDC& dc, const vector<CharInfo>& char
   // first line
   Line line;
   line.top = style.padding_top;
-  line.margin_left  = elements.paragraphs[0].margin_left;
+  line.margin_left = elements.paragraphs[0].margin_left;
+  line.margin_left_before_bullet = elements.paragraphs[0].margin_left;
   line.margin_right = elements.paragraphs[0].margin_right;
   line.alignment = elements.paragraphs[0].alignment;
   // size of the line so far
@@ -574,7 +578,7 @@ bool TextViewer::prepareLinesAtScale(RotatedDC& dc, const vector<CharInfo>& char
 
   // The word we are currently reading
   RealSize       word_size;
-  vector<double> positions_word; // positios for this word
+  vector<double> positions_word; // positions for this word
   size_t         word_end_or_soft = 0;
   size_t         word_start = 0;
   // For each character ...
@@ -608,8 +612,11 @@ bool TextViewer::prepareLinesAtScale(RotatedDC& dc, const vector<CharInfo>& char
     }
     positions_word.push_back(word_size.width);
     if (!c.soft) word_end_or_soft = i + 1;
-    if (i < elements.paragraphs[i_para].margin_end_char) {
+    if (i < elements.paragraphs[i_para].margin_after_bullet) {
       line.margin_left += c.size.width; // character in left margin
+      if (i < elements.paragraphs[i_para].margin_before_bullet) {
+        line.margin_left_before_bullet += c.size.width;
+      }
     }
     // Did the word become too long?
     if (!break_now) {
@@ -690,11 +697,20 @@ bool TextViewer::prepareLinesAtScale(RotatedDC& dc, const vector<CharInfo>& char
         if (i_para+1 < elements.paragraphs.size()) ++i_para;
         assert(elements.paragraphs[i_para].start == i + 1);
         line.margin_left = elements.paragraphs[i_para].margin_left;
+        line.margin_left_before_bullet = elements.paragraphs[i_para].margin_left;
         line.margin_right = elements.paragraphs[i_para].margin_right;
         line.top += elements.paragraphs[i_para].margin_top;
         line.alignment = elements.paragraphs[i_para].alignment;
       }
       line.break_after = LineBreak::NO;
+      // is the first visible character of the line a bullet point?
+      line.bullet = false;
+      for (size_t j = line.start ; j < chars.size() ; ++j) {
+        if (!chars[j].soft) {
+          line.bullet = chars[j].bullet;
+          break;
+        }
+      }
       // reset line_size
       line_size = fitLineWidth(line, dc, style);
       line.positions.push_back(line_size.width); // start position
@@ -831,8 +847,9 @@ void TextViewer::alignParagraph(size_t start_line, size_t end_line, const vector
 }
 
 void TextViewer::Line::alignHorizontal(const vector<CharInfo>& chars, const TextStyle& style, const RealRect& s) {
-  double width = this->width() - margin_left;
-  double target_width = s.width - margin_left - margin_right;
+  double margin_bullet = bullet ? margin_left_before_bullet : margin_left;
+  double width = this->width() - margin_bullet;
+  double target_width = s.width - margin_bullet - margin_right;
   Alignment alignment = this->alignment.value_or(style.alignment);
   bool should_fill = (alignment & ALIGN_IF_OVERFLOW  ? width > target_width : true)
                   && (alignment & ALIGN_IF_SOFTBREAK ? break_after == LineBreak::SOFT || !style.field().multi_line : true);

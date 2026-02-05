@@ -27,6 +27,7 @@ enum FontFlags
 ,  FONT_CODE_STRING = 0x20 // syntax highlighting
 ,  FONT_CODE_NUMBER = 0x40 // syntax highlighting
 ,  FONT_CODE_OPER   = 0x80 // syntax highlighting
+,  FONT_FROM_TAG    = 0x100 // this font is defined by a markup tag
 };
 
 /// A reference to a font for rendering text

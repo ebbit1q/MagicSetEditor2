@@ -180,6 +180,9 @@ void queue_message(MessageType type, String const& msg) {
   // Only show errors in the main thread
   message_queue.push_front(make_pair(type,msg));
 }
+void qm(String const& msg) {
+  queue_message(MESSAGE_ERROR, msg);
+}
 
 void handle_error(const Error& e) {
   queue_message(e.is_fatal() ? MESSAGE_FATAL_ERROR : MESSAGE_ERROR, e.what());

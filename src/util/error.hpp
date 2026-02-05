@@ -154,6 +154,7 @@ enum MessageType
 /** If the message is a MESSAGE_FATAL_ERROR, and show_message_box_for_fatal_errors==true, then a popup is shown
  */
 void queue_message(MessageType type, String const& msg);
+void qm(String const& msg);
 /// Handle an error by queuing a message
 void handle_error(const Error& e);
 /// Handle an error by showing a message box
