@@ -15,6 +15,7 @@
 
 #include <util/prec.hpp>
 #include <data/format/image_to_symbol.hpp>
+#include <gfx/gfx.hpp>
 #include <gfx/bezier.hpp>
 #include <util/error.hpp>
 #include <util/platform.hpp>
@@ -206,10 +207,12 @@ SymbolShapeP read_symbol_shape(const ImageData& data) {
 
 SymbolP image_to_symbol(Image& img) {
   int w = img.GetWidth(), h = img.GetHeight();
-  // 1. threshold the image
+  // get rid of alpha channel
+  fill_alpha(img, w, h);
+  // threshold the image
   greyscale(img);
   threshold(img.GetData(), w, h);
-  // 2. read as many symbol shapes as we can
+  // read as many symbol shapes as we can
   ImageData data = {w,h,img.GetData()};
   SymbolP symbol(new Symbol);
   while (true) {
@@ -219,6 +222,30 @@ SymbolP image_to_symbol(Image& img) {
   }
   reverse(symbol->parts.begin(), symbol->parts.end());
   return symbol;
+}
+
+void fill_alpha(Image& img, int w, int h) {
+  if (!img.HasAlpha() || w <= 0 || h <= 0) return;
+  Byte* alpha = img.GetAlpha();
+  for (int i = 0; i < w*h ; ++i) {
+    if (alpha[i] < 255) {
+      Byte* pixels = img.GetData();
+      Byte first_pixel = pixels[0];
+      for (int j = 1; j < 3 * w * h; ++j) {
+        if (pixels[j] != first_pixel) {
+          wxMessageDialog dial = wxMessageDialog(nullptr, _ERROR_("symbol image has alpha"));
+          dial.ShowModal();
+          break;
+        }
+      }
+      Image copy = img.Copy();
+      memset(copy.GetData(), 255, 3 * w * h);
+      memset(pixels,         0,   3 * w * h);
+      memset(alpha,          255,     w * h);
+      img.Paste(copy, 0, 0, wxIMAGE_ALPHA_BLEND_COMPOSE);
+      return;
+    }
+  }
 }
 
 SymbolP import_symbol(Image& img) {

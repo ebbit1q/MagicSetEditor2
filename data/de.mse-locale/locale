@@ -1021,6 +1021,7 @@ error:
 	negative image width:				Bild mit Breite Null oder negativer Breite, erstellt in der Funktion '%s'
 	negative image height:				Bild mit Höhe Null oder negativer Höhe, erstellt in der Funktion '%s'
 	can't load image:					Bild konnte nicht geladen werden. Stelle sicher, dass das tatsächliche Format des Bildes mit der gespeicherten Dateiendung übereinstimmt.
+	symbol image has alpha:				Für optimale Ergebnisse sollte das Bild schwarzweiß und ohne Transparenz sein.
 
 	# error from files
 	no card fields:						Das Spiel '%s' hat keine Kartenfelder. Definieren Sie mindestens ein Kartenfeld.

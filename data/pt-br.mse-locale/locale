@@ -1023,6 +1023,7 @@ error:
 	negative image width:				Imagem com largura zero ou negativa criada na função '%s'
 	negative image height:				Imagem com altura zero ou negativa criada na função '%s'
 	can't load image:					Falha ao carregar a imagem. Verifique se o formato real da imagem corresponde à extensão salva.
+	symbol image has alpha:				Para obter melhores resultados, a imagem deve ser em preto e branco, sem transparência.
 
 	# error from files
 	no card fields:						O jogo '%s' não possui campos de Card. Defina pelo menos um campo de Card.

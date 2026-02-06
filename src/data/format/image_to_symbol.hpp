@@ -24,6 +24,9 @@ bool is_mse1_symbol(const Image& img);
 /// Convert an image to a symbol, destroys the image in the process
 SymbolP image_to_symbol(Image& img);
 
+/// If an image has alpha, try to save it if it has only one color
+void fill_alpha(Image& img, int w, int h);
+
 // ----------------------------------------------------------------------------- : Simplify symbol
 
 /// Simplify a symbol

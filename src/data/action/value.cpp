@@ -194,10 +194,11 @@ String compute_new_variable_value(const String& str, const String& tag, size_t s
   }
   while (end_i < str.size() &&
          is_formatting_tag(str, end_i)) {
-    end_i = str.find_first_of(">", end_i) + 1;
+    end_i = str.find_first_of(">", end_i);
+    if (end_i != String::npos) end_i++;
   }
   String prefix(substr(str, 0, start_i));
-  String suffix(substr(str, end_i));
+  String suffix = end_i == String::npos ? String() : substr(str, end_i);
   String selection(substr(str, start_i, end_i - start_i));
 
   // tally open tags that are variants of this tag

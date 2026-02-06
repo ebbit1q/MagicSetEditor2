@@ -1092,6 +1092,8 @@ error:
 	negative image height:				Image with zero or negative height created in function '%s'
 	#TODO: Localize
 	can't load image:					Failed to load image. Ensure the image's actual format matches its saved extension.
+	#TODO: Localize
+	symbol image has alpha:				For best results, image should be black and white with no transparency.
 
 	# error from files
 	#TODO: Localize

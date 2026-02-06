@@ -1023,6 +1023,7 @@ error:
 	negative image width:				Image with zero or negative width created in function '%s'
 	negative image height:				Image with zero or negative height created in function '%s'
 	can't load image:					Failed to load image. Ensure the image's actual format matches its saved extension.
+	symbol image has alpha:				For best results, image should be black and white with no transparency.
 
 	# error from files
 	no card fields:						Game '%s' does not have any card fields. Define at least one card field.
