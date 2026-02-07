@@ -73,7 +73,7 @@ public:
   TextStyle(const TextFieldP&);
   DECLARE_STYLE_TYPE(Text);
   
-  Font font;                                  ///< Font to use for the text
+  FontRef font;                               ///< Font to use for the text
   SymbolFontRef symbol_font;                  ///< Symbol font for symbols in the text
   bool always_symbol;                         ///< Should everything be drawn as symbols?
   bool allow_formating;                       ///< Is formating (bold/italic/..) allowed?

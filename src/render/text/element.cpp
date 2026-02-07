@@ -261,7 +261,7 @@ private:
         // mixed symbols/text, autodetected by symbol font
         size_t text_pos = 0;
         size_t pos = 0;
-        FontP font;
+        FontRefP font;
         while (pos < end-start) {
           if (size_t n = style.symbol_font.font->recognizePrefix(content,pos)) {
             // at 'pos' there are n symbol font characters
@@ -308,7 +308,7 @@ private:
     }
   }
   
-  FontP makeFont(const TextStyle& style) {
+  FontRefP makeFont(const TextStyle& style) {
     return style.font.make(
       (bold        > 0 ? FONT_BOLD        : FONT_NORMAL) |
       (italic      > 0 ? FONT_ITALIC      : FONT_NORMAL) |

@@ -44,7 +44,7 @@ public:
   PackageChoiceStyle(const PackageChoiceFieldP& field);
   DECLARE_STYLE_TYPE(PackageChoice);
   
-  Font font;  ///< Font to use for the text
+  FontRef font;  ///< Font to use for the text
   
   int update(Context&) override;
 };

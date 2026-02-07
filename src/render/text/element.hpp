@@ -73,7 +73,7 @@ public:
 /// A text element that uses a normal font
 class FontTextElement : public TextElement {
 public:
-  FontTextElement(const String& content, size_t start, size_t end, const FontP& font, DrawWhat draw_as, LineBreak break_style)
+  FontTextElement(const String& content, size_t start, size_t end, const FontRefP& font, DrawWhat draw_as, LineBreak break_style)
     : TextElement(start, end), content(content)
     , font(font), draw_as(draw_as), break_style(break_style)
   {}
@@ -84,7 +84,7 @@ public:
   double scaleStep() const override;
 private:
   String    content;  ///< Text to show
-  FontP     font;
+  FontRefP  font;
   DrawWhat  draw_as;
   LineBreak break_style;
 };

@@ -108,7 +108,7 @@ void draw_choice_viewer(RotatedDC& dc, ValueViewer& viewer, ChoiceStyle& style, 
     if (style.render_style & RENDER_IMAGE) {
       text_align = ALIGN_MIDDLE_LEFT; // can't align both text and image in the same way
     }
-    Font& font = style.font;
+    FontRef& font = style.font;
     Color font_color = font.color;
     if (viewer.nativeLook()) {
       font.color = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT);

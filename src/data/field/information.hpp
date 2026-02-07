@@ -41,7 +41,7 @@ public:
   InfoStyle(const InfoFieldP&);
   DECLARE_STYLE_TYPE(Info);
   
-  Font font;                           ///< Font to use for the text
+  FontRef font;                        ///< Font to use for the text
   Alignment alignment;                 ///< Alignment inside the box
   double padding_left, padding_right;  ///< Padding
   double padding_top, padding_bottom;

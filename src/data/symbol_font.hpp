@@ -15,7 +15,7 @@
 #include <data/font.hpp>
 #include <wx/regex.h>
 
-DECLARE_POINTER_TYPE(Font);
+DECLARE_POINTER_TYPE(FontRef);
 DECLARE_POINTER_TYPE(SymbolFont);
 DECLARE_POINTER_TYPE(SymbolInFont);
 DECLARE_POINTER_TYPE(InsertSymbolMenu);

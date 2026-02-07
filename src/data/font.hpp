@@ -13,11 +13,11 @@
 #include <script/scriptable.hpp>
 #include <gfx/color.hpp>
 
-DECLARE_POINTER_TYPE(Font);
+DECLARE_POINTER_TYPE(FontRef);
 
 // ----------------------------------------------------------------------------- : Font
 
-enum FontFlags
+enum FontRefFlags
 {  FONT_NORMAL      = 0
 ,  FONT_BOLD        = 0x01
 ,  FONT_ITALIC      = 0x02
@@ -32,7 +32,7 @@ enum FontFlags
 
 /// A reference to a font for rendering text
 /** Contains additional information about scaling, color and shadow */
-class Font : public IntrusivePtrBase<Font> {
+class FontRef : public IntrusivePtrBase<FontRef> {
 public:
   Scriptable<String> name;                 ///< Name of the referenced font
   Scriptable<String> italic_name;          ///< Font name for italic text (optional)
@@ -53,7 +53,7 @@ public:
   Color              separator_color;      ///< Color for <sep> text
   int                flags;                ///< FontFlags for this font
 
-  Font();
+  FontRef();
  
   /// Load fonts (.ttf or .otf) from all directories in the app directory that contain "fonts" in their names,
   /// and optionaly their subdirectories, returns true if there were errors
@@ -76,7 +76,7 @@ public:
   }
 
   /// Add style, and optionally change the font family, color and size
-  FontP make(int add_flags, bool add_underline, bool add_strikethrough, String const* other_family, Color const* other_color, double const* other_size) const;
+  FontRefP make(int add_flags, bool add_underline, bool add_strikethrough, String const* other_family, Color const* other_color, double const* other_size) const;
   
   /// Convert this font reference to a wxFont
   wxFont toWxFont(double scale) const;

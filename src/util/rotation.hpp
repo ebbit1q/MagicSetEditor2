@@ -12,7 +12,7 @@
 #include <util/real_point.hpp>
 #include <gfx/gfx.hpp>
 
-class Font;
+class FontRef;
 
 // ----------------------------------------------------------------------------- : Rotation
 
@@ -160,7 +160,7 @@ public:
   void DrawText  (const String& text, const RealPoint& pos,              int blur_radius = 0, Color stroke_color = Color(0,0,0), int stroke_radius = 0, double stretch = 1.0);
   void DrawText  (const String& text, const RealPoint& pos, Color color, int blur_radius = 0, Color stroke_color = Color(0,0,0), int stroke_radius = 0, double stretch = 1.0);
   /// Draw text with a shadow or stroke, and color settings of the given font
-  void DrawTextWithShadowOrStroke(const String& text, const Font& font, const RealPoint& pos, double scale = 1.0, double stretch = 1.0);
+  void DrawTextWithShadowOrStroke(const String& text, const FontRef& font, const RealPoint& pos, double scale = 1.0, double stretch = 1.0);
   /// Draw abitmap, it must already be zoomed!
   void DrawBitmap(const Bitmap& bitmap, const RealPoint& pos);
   /// Draw an image using the given combining mode, the image must already be zoomed!
@@ -194,7 +194,7 @@ public:
   void SetFont(const wxFont& font);
   /// Set the font, scales for zoom and high_quality
   /** The font size will be multiplied by 'scale' */
-  void SetFont(const Font& font, double scale);
+  void SetFont(const FontRef& font, double scale);
   /// Steps to use when decrementing font size
   double getFontSizeStep() const;
   

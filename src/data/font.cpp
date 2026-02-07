@@ -14,7 +14,7 @@
 
 // ----------------------------------------------------------------------------- : Font
 
-Font::Font()
+FontRef::FontRef()
   : name()
   , size(1)
   , underline(false)
@@ -33,7 +33,7 @@ Font::Font()
   , flags(FONT_NORMAL)
 {}
 
-bool Font::PreloadResourceFonts(bool recursive) {
+bool FontRef::PreloadResourceFonts(bool recursive) {
 #if wxUSE_PRIVATE_FONTS
   String pathSeparator(wxFileName::GetPathSeparator());
   String appPath(wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath());
@@ -68,7 +68,7 @@ bool Font::PreloadResourceFonts(bool recursive) {
   return false;
 }
 
-void Font::TallyResourceFonts(String fontsDirectoryPath, vector<String>& fontFilePaths, bool recursive) {
+void FontRef::TallyResourceFonts(String fontsDirectoryPath, vector<String>& fontFilePaths, bool recursive) {
   wxDir fontsDirectory(fontsDirectoryPath);
   String fontFileName = _("");
   bool hasNext = fontsDirectory.GetFirst(&fontFileName);
@@ -86,7 +86,7 @@ void Font::TallyResourceFonts(String fontsDirectoryPath, vector<String>& fontFil
   }
 }
 
-bool Font::update(Context& ctx) {
+bool FontRef::update(Context& ctx) {
   bool changes = false;
   changes |= name                 .update(ctx);
   changes |= italic_name          .update(ctx);
@@ -108,7 +108,7 @@ bool Font::update(Context& ctx) {
         | (style()  == _("italic") ? FONT_ITALIC : FONT_NORMAL);
   return changes;
 }
-void Font::initDependencies(Context& ctx, const Dependency& dep) const {
+void FontRef::initDependencies(Context& ctx, const Dependency& dep) const {
   name                 .initDependencies(ctx, dep);
   italic_name          .initDependencies(ctx, dep);
   size                 .initDependencies(ctx, dep);
@@ -126,8 +126,8 @@ void Font::initDependencies(Context& ctx, const Dependency& dep) const {
   stroke_radius        .initDependencies(ctx, dep);
 }
 
-FontP Font::make(int add_flags, bool add_underline, bool add_strikethrough, String const* other_family, Color const* other_color, double const* other_size) const {
-  FontP f(new Font(*this));
+FontRefP FontRef::make(int add_flags, bool add_underline, bool add_strikethrough, String const* other_family, Color const* other_color, double const* other_size) const {
+  FontRefP f(new FontRef(*this));
   f->flags |= add_flags;
   if (add_flags & FONT_CODE_STRING) {
     f->color = Color(0,0,100);
@@ -163,7 +163,7 @@ FontP Font::make(int add_flags, bool add_underline, bool add_strikethrough, Stri
 }
 
 static const String BOLD_STRING   = _(" Bold");
-wxFont Font::toWxFont(double scale) const {
+wxFont FontRef::toWxFont(double scale) const {
   int size_i = to_int(scale * size);
   wxFontWeight weight_i = flags & FONT_BOLD   ? wxFONTWEIGHT_BOLD  : wxFONTWEIGHT_NORMAL;
   wxFontStyle style_i  = flags & FONT_ITALIC ? wxFONTSTYLE_ITALIC : wxFONTSTYLE_NORMAL;
@@ -203,7 +203,7 @@ wxFont Font::toWxFont(double scale) const {
   return font;
 }
 
-IMPLEMENT_REFLECTION_NO_SCRIPT(Font) {
+IMPLEMENT_REFLECTION_NO_SCRIPT(FontRef) {
   REFLECT(name);
   REFLECT(size);
   REFLECT(weight);

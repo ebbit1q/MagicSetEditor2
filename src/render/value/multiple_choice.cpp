@@ -77,7 +77,7 @@ void MultipleChoiceValueViewer::drawChoice(RotatedDC& dc, RealPoint& pos, const 
   }
   if (style().render_style & RENDER_TEXT) {
     // draw text
-    Font& font = style().font;
+    FontRef& font = style().font;
     Color font_color = font.color;
     RealSize margin(0, 0);
     if (nativeLook()) {

@@ -68,7 +68,7 @@ void PackageChoiceValueViewer::draw(RotatedDC& dc) {
     dc.DrawBitmap(image, RealPoint(0,0));
   }
   // draw text
-  Font& font = style().font;
+  FontRef& font = style().font;
   Color font_color = font.color;
   RealSize margin(0, 0);
   if (nativeLook()) {
