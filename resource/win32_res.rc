@@ -11,6 +11,7 @@
 
 icon/app ICON "icon/app.ico" // has to come first in alphabet!!
 icon/installer ICON "icon/installer.ico"
+icon/updater ICON "icon/updater.ico"
 icon/set ICON "icon/set.ico"
 icon/symbol ICON "icon/symbol.ico"
 
@@ -28,9 +29,7 @@ tool/export_images IMAGE "tool/export_images.png"
 tool/export_mws IMAGE "tool/export_mws.png"
 tool/export_apprentice IMAGE "tool/export_apprentice.png"
 tool/reload_data IMAGE "tool/reload_data.png"
-tool/dark_reload_data IMAGE "tool/dark_reload_data.png"
 tool/check_updates IMAGE "tool/check_updates.png"
-tool/dark_check_updates IMAGE "tool/dark_check_updates.png"
 tool/print IMAGE "tool/print.png"
 tool/print_preview IMAGE "tool/print_preview.png"
 

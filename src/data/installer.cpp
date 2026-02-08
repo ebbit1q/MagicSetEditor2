@@ -20,6 +20,7 @@
 #include <wx/wfstream.h>
 #include <wx/zipstrm.h>
 #include <wx/stdpaths.h>
+#include <unordered_set>
 
 // Don't do this check for now, because we can't bless packages
 #define USE_MODIFIED_CHECK 0
@@ -36,17 +37,17 @@ IMPLEMENT_REFLECTION(Installer) {
 
 void Installer::validate(Version file_app_version) {
   Packaged::validate(file_app_version);
-  // load icons where possible
+  // load icons if it's a disk path
   FOR_EACH(p,packages) {
-    String url = p->icon_url;
+    String filename = p->icon_url;
     if (settings.darkMode() && !p->dark_icon_url.empty()) {
-      url = p->dark_icon_url;
+      filename = p->dark_icon_url;
     }
-    if (!url.empty() && !starts_with(url,_("http:"))) {
+    if (!filename.empty() && !starts_with(filename,_("http"))) {
       // TODO: support absolute icon names
       try{
-        String filename = p->name + _("/") + url;
-        auto img_stream = openIn(p->name + _("/") + url);
+        String filepath = p->name + _("/") + filename;
+        auto img_stream = openIn(filepath);
         image_load_file(p->icon, *img_stream);
       } catch (...) {
         // ignore errors, it's just an image
@@ -251,7 +252,7 @@ IMPLEMENT_REFLECTION_NO_SCRIPT(PackageDescription) {
 }
 
 void PackageDescription::merge(const PackageDescription& p2) {
-  if (!icon.Ok() && !icon_url) icon = p2.icon;
+  if (!icon.Ok()) icon = p2.icon;
   if (installer_group.empty()) installer_group = p2.installer_group;
   if (short_name.empty()) short_name = p2.short_name;
   if (full_name.empty()) full_name = p2.full_name;
@@ -505,33 +506,44 @@ void remove_package_dependency(InstallablePackages& packages, Dep dep, PackageAc
 
 // ----------------------------------------------------------------------------- : Installable package : dependency stuff (OLD)
 
-bool add_package_dependency(InstallablePackages& packages, const PackageDependency& dep, PackageAction where, bool set) {
+bool add_package_dependency(InstallablePackages& packages, const InstallablePackageP& package, const PackageDependency& dep, PackageAction where, bool set, unordered_set<String>& already_checked) {
   FOR_EACH(p, packages) {
     if (p->description->name == dep.package) {
-      // Some package depends on this package, so install it if needed
+      if (already_checked.find(p->description->name) != already_checked.end()) return true;
+      already_checked.insert(p->description->name);
+      // package depends on p, so install p if needed
       // Mark the installation as "automatically needed for X packages"
-      // if !set then instead the dependency is no longer needed because we are not installing the package
+      // if !set then instead the dependency is no longer needed because we are no longer installing package
       if (!p->installed || p->installed->version < dep.version) {
-        bool change = false;
         if (p->action & PACKAGE_ACT_INSTALL) {
-          // this package is already scheduled for installation
+          // p is already scheduled for installation
           if (p->automatic) {
-            // we are already automatically depending on this package
+            // we are already automatically depending on p
             p->automatic += set ? +1 : -1;
             if (p->automatic == 0) {
-              // no one needs this package anymore
+              // no one needs p anymore
               p->action = PACKAGE_ACT_NOTHING;
-              change = true;
+            }
+          }
+          // handle circular dependencies
+          if (!set) {
+            FOR_EACH(pdep, p->description->dependencies) {
+              if (package->description->name == pdep->package && (!package->installed || package->installed->version < pdep->version)) {
+                // p depends on package, so we can no longer install p
+                // because it depends on a version of package that we are no longer installing
+                p->automatic = 0;
+                p->action = PACKAGE_ACT_NOTHING;
+                break;
+              }
             }
           }
         } else if (set) {
           p->action = where | PACKAGE_ACT_INSTALL;
           p->automatic = 1;
-          change = true;
         }
         // recursively add/remove dependencies
         FOR_EACH(dep, p->description->dependencies) {
-          if (!add_package_dependency(packages, *dep, where, set)) {
+          if (!add_package_dependency(packages, p, *dep, where, set, already_checked)) {
             return false; // failed
           }
         }
@@ -574,8 +586,9 @@ bool set_package_action_unsafe(InstallablePackages& packages, const InstallableP
     package->automatic = 0;
     package->action    = action;
     // check dependencies
+    unordered_set<String> already_checked;
     FOR_EACH(dep, package->description->dependencies) {
-      if (!add_package_dependency(packages, *dep, where, !(action & PACKAGE_ACT_NOTHING))) return false;
+      if (!add_package_dependency(packages, package, *dep, where, !(action & PACKAGE_ACT_NOTHING), already_checked)) return false;
     }
     return true;
   } else if ((action & PACKAGE_ACT_REMOVE) || ((action & PACKAGE_ACT_NOTHING) && !package->has(PACKAGE_INSTALLED))) {
@@ -608,7 +621,7 @@ bool set_package_action(InstallablePackages& packages, const InstallablePackageP
 
 // ----------------------------------------------------------------------------- : MSE package
 
-String mse_package = _("magicseteditor.exe");
+String mse_package = _("Magic Set Editor");
 
 InstallablePackageP mse_installable_package() {
   PackageVersionP mse_version(new PackageVersion(
@@ -618,11 +631,10 @@ InstallablePackageP mse_installable_package() {
   mse_version->name    = mse_package;
   mse_version->version = app_version;
   PackageDescriptionP mse_description(new PackageDescription);
-  mse_description->name          = mse_package;
-  mse_description->short_name    = mse_description->full_name = mse_description->installer_group
-          = _TITLE_("magic set editor");
-  mse_description->position_hint = -100;
-  mse_description->icon          = load_resource_image(_("installer_program"));
+  mse_description->name            = mse_description->installer_group = mse_package;
+  mse_description->short_name      = mse_description->full_name = _TITLE_("magic set editor");
+  mse_description->position_hint   = -100;
+  mse_description->icon            = load_resource_image(_("installer_program"));
   //mse_description->description   = _LABEL_("magic set editor package");
   return make_intrusive<InstallablePackage>(mse_description, mse_version);
 }

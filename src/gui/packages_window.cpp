@@ -9,91 +9,24 @@
 #include <util/prec.hpp>
 #include <gui/packages_window.hpp>
 #include <gui/package_update_list.hpp>
+#include <gui/downloadable_installers.hpp>
 #include <gui/util.hpp>
 #include <util/io/package_manager.hpp>
 #include <util/window_id.hpp>
 #include <data/installer.hpp>
+#include <data/updater.hpp>
 #include <data/settings.hpp>
 #include <gfx/gfx.hpp>
 #include <wx/wfstream.h>
-#include <wx/html/htmlwin.h>
-#include <wx/dialup.h>
-#include <wx/url.h>
+#include <wx/webrequest.h>
 #include <wx/dcbuffer.h>
 #include <wx/progdlg.h>
 #include <wx/tglbtn.h>
+#include <wx/stdpaths.h>
 
 DECLARE_POINTER_TYPE(Installer);
 
-// ----------------------------------------------------------------------------- : TODO: MOVE
-
-/*
-// A HTML control that opens all pages in an actual browser
-struct HtmlWindowToBrowser : public wxHtmlWindow {
-  HtmlWindowToBrowser(Window* parent, int id, const wxPoint& pos, const wxSize& size, long flags)
-    : wxHtmlWindow(parent, id, pos, size, flags)
-  {}
-    
-  virtual void OnLinkClicked(const wxHtmlLinkInfo& info) {
-    wxLaunchDefaultBrowser( info.GetHref() );
-  }
-};
-*/
-
-// ----------------------------------------------------------------------------- : DownloadableInstallers
-
-/// Handle downloading of installers
-class DownloadableInstallerList {
-public:
-  DownloadableInstallerList() : status(NONE) {}
-  
-  /// start downloading, return true if we are done
-  bool download();
-  
-  vector<DownloadableInstallerP> installers;
-  
-private:
-  enum Status { NONE, DOWNLOADING, DONE } status;
-  wxMutex lock;
-  
-  struct Thread : public wxThread {
-    ExitCode Entry() override;
-  };
-};
-
-/// The global installer downloader
 DownloadableInstallerList downloadable_installers;
-
-bool DownloadableInstallerList::download() {
-  if (status == DONE) return true;
-  if (status == NONE) {
-    status = DOWNLOADING;
-    Thread* thread = new Thread();
-    thread->Create();
-    thread->Run();
-  }
-  return false;
-}
-
-wxThread::ExitCode DownloadableInstallerList::Thread::Entry() {
-  // open url
-  wxURL url(settings.installer_list_url);
-  unique_ptr<wxInputStream> stream(url.GetInputStream());
-  if (!stream) {
-    wxMutexLocker l(downloadable_installers.lock);
-    downloadable_installers.status = DONE;
-    return 0;
-  }
-  // Read installer list
-  Reader reader(*stream, nullptr, _("installers"), true);
-  vector<DownloadableInstallerP> installers;
-  reader.handle(_("installers"),installers);
-  // done
-  wxMutexLocker l(downloadable_installers.lock);
-  swap(installers, downloadable_installers.installers);
-  downloadable_installers.status = DONE;
-  return 0;
-}
 
 // ----------------------------------------------------------------------------- : PackageInfoPanel
 
@@ -237,7 +170,9 @@ void PackagesWindow::init(Window* parent, bool show_only_installable) {
   SetIcon(wxIcon());
   package_list = new PackageUpdateList(this, installable_packages, show_only_installable, ID_PACKAGE_LIST);
   package_info = new PackageInfoPanel(this);
-  
+
+  waiting_info = new wxStaticText(this, wxID_ANY, waiting_for_list ? _LABEL_("awaiting package list") : _(""));
+
   wxToggleButton* keep_button    = new wxToggleButton(this, ID_KEEP,    _BUTTON_("keep package"));
   wxToggleButton* install_button = new wxToggleButton(this, ID_INSTALL, _BUTTON_("install package"));
   wxToggleButton* remove_button  = new wxToggleButton(this, ID_REMOVE,  _BUTTON_("remove package"));
@@ -262,8 +197,13 @@ void PackagesWindow::init(Window* parent, bool show_only_installable) {
         v2->Add(remove_button,  0, wxEXPAND | wxBOTTOM, 0);
       h->Add(v2);
     v->Add(h, 0, wxEXPAND | (wxALL & ~wxTOP), 8);
-    v->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | (wxALL & ~wxTOP), 8);
-  SetSizer(v);
+    wxBoxSizer* h2 = new wxBoxSizer(wxHORIZONTAL);
+      h2->Add(waiting_info, 0, wxEXPAND | (wxALL & ~wxTOP), 8);
+      h2->AddStretchSpacer();
+      h2->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | (wxALL & ~wxTOP), 8);
+    v->Add(h2, 0, wxEXPAND);
+  v->SetMinSize(800,600);
+  SetSizerAndFit(v);
   
   wxUpdateUIEvent::SetMode(wxUPDATE_UI_PROCESS_SPECIFIED);
   UpdateWindowUI(wxUPDATE_UI_RECURSE);
@@ -293,13 +233,17 @@ void PackagesWindow::onActionChange(wxCommandEvent& ev) {
 }
 
 void PackagesWindow::onOk(wxCommandEvent& ev) {
-  // Do we need a new version of MSE first?
   // count number of packages to change
+  bool app_change = false;
   int to_change   = 0;
   int to_download = 0;
   int to_remove   = 0;
   int with_modifications = 0;
   FOR_EACH(ip, installable_packages) {
+    if (ip->description->name == mse_package) {
+      if (ip->has(PACKAGE_ACT_INSTALL)) app_change = true;
+      continue;
+    } 
     if (!ip->has(PACKAGE_ACT_NOTHING)) ++to_change;
     if (ip->has(PACKAGE_ACT_INSTALL) && ip->installer && !ip->installer->installer) ++to_download;
     if (ip->has(PACKAGE_ACT_REMOVE)) {
@@ -322,27 +266,29 @@ void PackagesWindow::onOk(wxCommandEvent& ev) {
   }
   // progress dialog
   wxProgressDialog progress(
-      _TITLE_("installing updates"),
-      String::Format(_ERROR_("downloading updates"), 0, to_download),
-      to_change + to_download,
-      this,
-      wxPD_AUTO_HIDE | wxPD_APP_MODAL | wxPD_CAN_ABORT | wxPD_SMOOTH
-    );
+    _TITLE_("installing updates"),
+    String::Format(_ERROR_("downloading updates"), 0, to_download),
+    to_change + to_download,
+    this,
+    wxPD_AUTO_HIDE | wxPD_APP_MODAL | wxPD_CAN_ABORT | wxPD_SMOOTH | wxSTAY_ON_TOP
+  );
   // Clear package list
   package_manager.reset();
   // Download installers
   int package_pos = 0, step = 0;
   FOR_EACH(ip, installable_packages) {
+    if (ip->description->name == mse_package) continue;
     if (ip->has(PACKAGE_ACT_INSTALL) && ip->installer && !ip->installer->installer) {
       if (!progress.Update(step++, String::Format(_ERROR_("downloading updates"), ++package_pos, to_download))) {
         return; // aborted
       }
       // download installer
-      wxURL url(ip->installer->installer_url);
-      unique_ptr<wxInputStream> is(url.GetInputStream());
-      if (!is) {
+      wxWebRequestSync request = wxWebSessionSync::GetDefault().CreateRequest(ip->installer->installer_url);
+      auto const result = request.Execute();
+      if (!result) {
         throw Error(_ERROR_2_("can't download installer", ip->description->name, ip->installer->installer_url));
-      }
+      } 
+      wxInputStream* is(request.GetResponse().GetStream());
       ip->installer->installer_file = wxFileName::CreateTempFileName(_("mse-installer"));
       wxFileOutputStream os(ip->installer->installer_file);
       os.Write(*is);
@@ -356,6 +302,7 @@ void PackagesWindow::onOk(wxCommandEvent& ev) {
   package_pos = 0;
   int success = 0, install = 0, remove = 0;
   FOR_EACH(ip, installable_packages) {
+    if (ip->description->name == mse_package) continue; // app, we'll do that last
     if (ip->has(PACKAGE_ACT_NOTHING)) continue; // package unchanged
     if (!progress.Update(step++, String::Format(_ERROR_("installing updates"), ++package_pos, to_change))) {
       // don't allow abort.
@@ -367,13 +314,52 @@ void PackagesWindow::onOk(wxCommandEvent& ev) {
       success += 1;
     }
   }
-  // Done
+  // Report on package status
   progress.Update(step++);
-  wxMessageBox(
-    install == success ? _ERROR_1_("install packages successful",String()<<success):
-    remove  == success ? _ERROR_1_("remove packages successful", String()<<success):
-                         _ERROR_1_("change packages successful", String()<<success),
-    _TITLE_("packages window"), wxICON_INFORMATION | wxOK);
+  String report_message = install == success ? _ERROR_1_("install packages successful",String()<<success):
+                          remove  == success ? _ERROR_1_("remove packages successful", String()<<success):
+                                               _ERROR_1_("change packages successful", String()<<success);
+  wxMessageDialog report = wxMessageDialog(this, report_message, _TITLE_("packages window"), wxICON_INFORMATION | wxOK | wxSTAY_ON_TOP);
+  report.ShowModal();
+  // Launch exe updater if necessary
+  if (app_change) {
+    // Hard code the only updater, for now
+    PackagedP updater_package = package_manager.openAny(_("github-zip-extractor.mse-updater"));
+    if (updater_package) {
+      Updater* updater = dynamic_cast<Updater*>(updater_package.get());
+      if (updater) {
+        String darkmode = String("darkmode") << settings.darkMode();
+        String locale   = String("locale")   << settings.locale;
+        locale.Replace("-", "");
+        updater->updateApplication(darkmode + _(" ") + locale);
+      }
+      else {
+        queue_message(MESSAGE_ERROR, _("Failed to load updater package 'github-zip-extractor.mse-updater'."));
+      }
+    }
+    else {
+      queue_message(MESSAGE_ERROR, _("Failed to load updater package 'github-zip-extractor.mse-updater'."));
+    }
+    
+    // Check for any updater, for later (very slow)
+    //vector<InstallablePackageP> installed_packages;
+    //package_manager.findAllInstalledPackages(installed_packages);
+    //FOR_EACH(p, installed_packages) {
+    //  if (!p->description->name.EndsWith(".mse-updater")) continue;
+    //  PackagedP updater_package = package_manager.openAny(p->description->name);
+    //  Updater* updater = dynamic_cast<Updater*>(updater_package.get());
+    //  if (updater) {
+    //    String darkmode = String("darkmode") << settings.darkMode();
+    //    String locale   = String("locale")   << settings.locale;
+    //    locale.Replace("-", "");
+    //    updater->updateApplication(darkmode + _(" ") + locale);
+    //    break;
+    //  }
+    //  else {
+    //    queue_message(MESSAGE_ERROR, _("Failed to load updater package '" + p->description->name + "'."));
+    //  }
+    //}
+  }
   // Continue event propagation into the dialog window so that it closes.
   ev.Skip();
   //%% TODO: will we delete packages?
@@ -393,9 +379,9 @@ void PackagesWindow::onUpdateUI(wxUpdateUIEvent& ev) {
     case ID_INSTALL:
       w->SetValue(package && package->has(PACKAGE_ACT_INSTALL | where));
       w->Enable  (package && package->can(PACKAGE_ACT_INSTALL | where));
-      w->SetLabel( !package || !package->installed ? _BUTTON_("install package")
-                 :  package->has(PACKAGE_UPDATES)  ? _BUTTON_("upgrade package")
-                 :                                   _BUTTON_("reinstall package"));
+      w->SetLabel(!(package && package->installed)            ? _BUTTON_("install package")
+                 : (package && package->has(PACKAGE_UPDATES)) ? _BUTTON_("upgrade package")
+                 :                                              _BUTTON_("reinstall package"));
       break;
     case ID_REMOVE:
       w->SetValue(package && package->has(PACKAGE_ACT_REMOVE  | where));
@@ -408,6 +394,7 @@ void PackagesWindow::onUpdateUI(wxUpdateUIEvent& ev) {
 
 void PackagesWindow::onIdle(wxIdleEvent& ev) {
   ev.RequestMore(!checkInstallerList());
+  if (waiting_info && !waiting_for_list) waiting_info->SetLabel(_(""));
 }
 
 bool PackagesWindow::checkInstallerList(bool refresh) {
@@ -429,12 +416,12 @@ bool PackagesWindow::checkInstallerList(bool refresh) {
 }
 
 BEGIN_EVENT_TABLE(PackagesWindow, wxDialog)
-  EVT_LISTBOX(ID_PACKAGE_LIST, PackagesWindow::onPackageSelect)
-  EVT_TOGGLEBUTTON(ID_KEEP,     PackagesWindow::onActionChange)
-  EVT_TOGGLEBUTTON(ID_INSTALL,  PackagesWindow::onActionChange)
-  EVT_TOGGLEBUTTON(ID_REMOVE,   PackagesWindow::onActionChange)
-  EVT_TOGGLEBUTTON(ID_UPGRADE,  PackagesWindow::onActionChange)
-  EVT_BUTTON(wxID_OK,     PackagesWindow::onOk)
-  EVT_UPDATE_UI(wxID_ANY, PackagesWindow::onUpdateUI)
-  EVT_IDLE  (             PackagesWindow::onIdle)
+  EVT_LISTBOX     (ID_PACKAGE_LIST, PackagesWindow::onPackageSelect)
+  EVT_TOGGLEBUTTON(ID_KEEP,         PackagesWindow::onActionChange)
+  EVT_TOGGLEBUTTON(ID_INSTALL,      PackagesWindow::onActionChange)
+  EVT_TOGGLEBUTTON(ID_REMOVE,       PackagesWindow::onActionChange)
+  EVT_TOGGLEBUTTON(ID_UPGRADE,      PackagesWindow::onActionChange)
+  EVT_BUTTON      (wxID_OK,         PackagesWindow::onOk)
+  EVT_UPDATE_UI   (wxID_ANY,        PackagesWindow::onUpdateUI)
+  EVT_IDLE        (                 PackagesWindow::onIdle)
 END_EVENT_TABLE()

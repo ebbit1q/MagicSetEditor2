@@ -45,7 +45,7 @@ public:
     UInt   lines;    // lines in front of this item (bit set)
   };
   typedef intrusive_ptr<Item> ItemP;
-  
+
 protected:
   
   /// The items in the tree list
@@ -68,7 +68,7 @@ protected:
   virtual int    columnWidth(size_t column) const = 0;
   
   int    item_height;
-  static const int header_height = 17;
+  static const int header_height = 21;
   static const int level_width   = 17;
   
 private:

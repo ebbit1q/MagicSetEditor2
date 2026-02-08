@@ -19,8 +19,7 @@
 #include <cli/cli_main.hpp>
 #include <cli/text_io_handler.hpp>
 #include <gui/welcome_window.hpp>
-#include <gui/update_checker.hpp>
-#include <gui/packages_window.hpp>
+#include <gui/downloadable_installers.hpp>
 #include <gui/set/window.hpp>
 #include <gui/symbol/window.hpp>
 #include <gui/thumbnail_thread.hpp>
@@ -99,7 +98,8 @@ int MSE::OnRun() {
     SetAppearance((Appearance)settings.dark_mode_type);
     the_locale = Locale::byName(settings.locale);
     nag_about_ascii_version();
-    
+    downloadable_installers.check_updates();
+
     // interpret command line
     {
       // ingnore the --color argument, it is handled by cli.init()
@@ -287,7 +287,6 @@ int MSE::OnRun() {
 }
 
 int MSE::runGUI() {
-  //check_updates(); // FIXME: Disable update checking on startup. Likely want to either replace the Update Checker or remove it entirely.
   return wxApp::OnRun();
 }
 

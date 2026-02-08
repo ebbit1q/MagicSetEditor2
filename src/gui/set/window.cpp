@@ -20,8 +20,8 @@
 #include <gui/control/card_viewer.hpp>
 #include <gui/control/gallery_list.hpp>
 #include <gui/about_window.hpp>
-#include <gui/update_checker.hpp>
 #include <gui/packages_window.hpp>
+#include <gui/downloadable_installers.hpp>
 #include <gui/new_window.hpp>
 #include <gui/preferences_window.hpp>
 #include <gui/print_window.hpp>
@@ -62,13 +62,13 @@ SetWindow::SetWindow(Window* parent, const SetP& set)
     add_menu_item_tr(menuFile, ID_FILE_SAVE_AS_DIRECTORY, "save", "save_set_as_directory");
     add_menu_item_tr(menuFile, wxID_ANY, "export", "export", wxITEM_NORMAL, makeExportMenu());
     menuFile->AppendSeparator();
-    add_menu_item_tr(menuFile, ID_FILE_CHECK_UPDATES, settings.darkModePrefix() + "check_updates", "check_updates");
+    add_menu_item_tr(menuFile, ID_FILE_CHECK_UPDATES, "check_updates", "check_updates");
     #if USE_SCRIPT_PROFILING
     add_menu_item_tr(menuFile, ID_FILE_PROFILER, nullptr, "show_profiler");
     #endif
 //    menuFile->Append(ID_FILE_INSPECT,          _("Inspect Internal Data..."),  _("Shows a the data in the set using a tree structure"));
 //    menuFile->AppendSeparator();
-    add_menu_item_tr(menuFile, ID_FILE_RELOAD, settings.darkModePrefix() + "reload_data", "reload_data");
+    add_menu_item_tr(menuFile, ID_FILE_RELOAD, "reload_data", "reload_data");
     menuFile->AppendSeparator();
     add_menu_item_tr(menuFile, ID_FILE_PRINT_PREVIEW, "print_preview", "print_preview");
     add_menu_item_tr(menuFile, ID_FILE_PRINT, "print", "print");
@@ -854,7 +854,7 @@ void SetWindow::onMenuOpen(wxMenuEvent& ev) {
 
 void SetWindow::onIdle(wxIdleEvent& ev) {
   // Stuff that must be done in the main thread
-  show_update_dialog(this);
+  downloadable_installers.show_update_dialog(this);
 }
 
 // ----------------------------------------------------------------------------- : Event table

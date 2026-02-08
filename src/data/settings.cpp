@@ -26,9 +26,16 @@
 // ----------------------------------------------------------------------------- : Extra types
 
 IMPLEMENT_REFLECTION_ENUM(CheckUpdates) {
-  VALUE_N("if connected", CHECK_IF_CONNECTED); //default
-  VALUE_N("always",       CHECK_ALWAYS);
-  VALUE_N("never",        CHECK_NEVER);
+  VALUE_N("always",   CHECK_ALWAYS);
+  VALUE_N("every 5",  CHECK_5); //default
+  VALUE_N("every 10", CHECK_10);
+  VALUE_N("never",    CHECK_NEVER);
+}
+
+IMPLEMENT_REFLECTION_ENUM(CheckUpdatesTargets) {
+  VALUE_N("update app",        CHECK_APP);
+  VALUE_N("update games",      CHECK_GAMES);
+  VALUE_N("update everything", CHECK_EVERYTHING); //default
 }
 
 IMPLEMENT_REFLECTION_ENUM(InstallType) {
@@ -203,13 +210,10 @@ Settings::Settings()
   , dark_mode_type           (DARKMODE_SYSTEM)
   , import_scale_selection   (0)
   , allow_image_download     (true)
-  #if USE_OLD_STYLE_UPDATE_CHECKER
-  , updates_url              (_("https://magicseteditor.boards.net/page/downloads"))
-  #endif
-  , package_versions_url     (_("https://magicseteditor.boards.net/page/downloads"))
-  , installer_list_url       (_("https://magicseteditor.boards.net/page/downloads"))
-  , check_updates            (CHECK_IF_CONNECTED)
-  , check_updates_all        (true)
+  , installer_list_url       (_("https://raw.githubusercontent.com/MagicSetEditorPacks/Installer-Pack/refs/heads/main/packages.txt"))
+  , check_updates_what       (CHECK_EVERYTHING)
+  , check_updates_when       (CHECK_5)
+  , check_updates_counter    (0)
   , website_url              (_("https://magicseteditor.boards.net/"))
   , documentation_url        (_("https://mseverse.miraheze.org/wiki/Dev:Documentation#Topics"))
   , install_type             (INSTALL_DEFAULT)
@@ -344,15 +348,9 @@ IMPLEMENT_REFLECTION_NO_SCRIPT(Settings) {
   REFLECT(apprentice_location);
   REFLECT(import_scale_selection);
   REFLECT(allow_image_download);
-  #if USE_OLD_STYLE_UPDATE_CHECKER
-    REFLECT(updates_url);
-  #else
-    REFLECT_COMPAT_IGNORE(<306,"updates_url",String);
-  #endif
-  REFLECT(package_versions_url);
-  REFLECT(installer_list_url);
-  REFLECT(check_updates);
-  REFLECT(check_updates_all);
+  REFLECT(check_updates_what);
+  REFLECT(check_updates_when);
+  REFLECT(check_updates_counter);
   REFLECT(install_type);
   REFLECT(website_url);
   REFLECT(documentation_url);

@@ -8,10 +8,11 @@
 
 #include <util/prec.hpp>
 #include <gui/preferences_window.hpp>
-#include <gui/update_checker.hpp>
 #include <data/settings.hpp>
 #include <util/window_id.hpp>
 #include <util/io/package_manager.hpp>
+#include <gui/packages_window.hpp>
+#include <gui/downloadable_installers.hpp>
 #include <wx/spinctrl.h>
 #include <wx/filename.h>
 #include <wx/notebook.h>
@@ -97,9 +98,10 @@ public:
   
 private:
   DECLARE_EVENT_TABLE();
-  
-  wxChoice* check_at_startup;
-  
+
+  wxChoice* check_what;
+  wxChoice* check_when;
+
   // check for updates
   void onCheckUpdatesNow(wxCommandEvent&);
 };
@@ -401,37 +403,51 @@ UpdatePreferencesPage::UpdatePreferencesPage(Window* parent)
   : PreferencesPage(parent)
 {
   // init controls
-  check_at_startup    = new wxChoice(this, wxID_ANY);
+  check_what          = new wxChoice(this, wxID_ANY);
+  check_when          = new wxChoice(this, wxID_ANY);
   wxButton* check_now = new wxButton(this, ID_CHECK_UPDATES_NOW, _BUTTON_("check now"));
   // set values
-  check_at_startup->Append(_BUTTON_("always"));                        // 0
-  check_at_startup->Append(_BUTTON_("if internet connection exists")); // 1
-  check_at_startup->Append(_BUTTON_("never"));                         // 2
-  check_at_startup->SetSelection(settings.check_updates);
+  check_when->Append(_BUTTON_("always"));            // 0
+  check_when->Append(_BUTTON_("every 5 startups"));  // 1
+  check_when->Append(_BUTTON_("every 10 startups")); // 2
+  check_when->Append(_BUTTON_("never"));             // 3
+  check_when->SetSelection(settings.check_updates_when);
+  check_what->Append(_BUTTON_("check app"));         // 0
+  check_what->Append(_BUTTON_("check games"));       // 1
+  check_what->Append(_BUTTON_("check everything"));  // 2
+  check_what->SetSelection(settings.check_updates_what);
   // init sizer
   wxSizer* s = new wxBoxSizer(wxVERTICAL);
-    s->Add(new wxStaticText(this, wxID_ANY, _LABEL_("check at startup")), 0, wxALL, 8);
-    s->Add(check_at_startup, 0, wxALL & ~wxTOP, 8);
-    s->Add(check_now,        0, wxALL & ~wxTOP, 8);
-    s->Add(new wxStaticText(this, wxID_ANY, _LABEL_("checking requires internet")), 0, wxALL & ~wxTOP, 8);
+    s->Add(new wxStaticText(this, wxID_ANY, _LABEL_("check at startup")),           0, wxALL, 8);
+    s->Add(check_when,                                                              0, wxALL & ~wxTOP, 8);
+    s->Add(check_now,                                                               0, wxALL & ~wxTOP, 8);
+    s->Add(new wxStaticText(this, wxID_ANY, _LABEL_("check what targets")),         0, wxALL, 8);
+    s->Add(check_what,                                                              0, wxALL & ~wxTOP, 8);
+    s->Add(new wxStaticText(this, wxID_ANY, _LABEL_("checking requires internet")), 0, wxALL, 8);
   SetSizer(s);
 }
 
 void UpdatePreferencesPage::store() {
-  int sel = check_at_startup->GetSelection();
-  if      (sel == 0) settings.check_updates = CHECK_ALWAYS;
-  else if (sel == 1) settings.check_updates = CHECK_IF_CONNECTED;
-  else               settings.check_updates = CHECK_NEVER;
+  int sel1 = check_when->GetSelection();
+  if      (sel1 == 0) settings.check_updates_when = CHECK_ALWAYS;
+  else if (sel1 == 1) settings.check_updates_when = CHECK_5;
+  else if (sel1 == 2) settings.check_updates_when = CHECK_10;
+  else                settings.check_updates_when = CHECK_NEVER;
+
+  int sel2 = check_what->GetSelection();
+  if      (sel2 == 0) settings.check_updates_what = CHECK_APP;
+  else if (sel2 == 1) settings.check_updates_what = CHECK_GAMES;
+  else                settings.check_updates_what = CHECK_EVERYTHING;
 }
 
 void UpdatePreferencesPage::onCheckUpdatesNow(wxCommandEvent&) {
-  check_updates_now(false);
-  if (!update_data_found()) {
+  downloadable_installers.check_updates_now(false);
+  if (downloadable_installers.check_status == DownloadableInstallerList::CheckStatus::FAILED) {
     wxMessageBox(_ERROR_("checking updates failed"), _TITLE_("update check"), wxICON_ERROR | wxOK);
-  } else if (!update_available()) {
+  } else if (downloadable_installers.check_status == DownloadableInstallerList::CheckStatus::NOT_FOUND) {
     wxMessageBox(_ERROR_("no updates"),              _TITLE_("update check"), wxICON_INFORMATION | wxOK);
   } else {
-    show_update_dialog(GetParent());
+    (new PackagesWindow(GetParent()))->Show();
   }
 }
 

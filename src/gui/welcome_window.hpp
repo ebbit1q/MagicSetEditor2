@@ -43,7 +43,6 @@ private:
   void onOpenSet     (wxCommandEvent&);
   void onNewSet      (wxCommandEvent&);
   void onOpenLast    (wxCommandEvent&);
-  void onCheckUpdates(wxCommandEvent&);
   void onSelectLanguage(wxCommandEvent&);
 //  void onIdle    (wxIdleEvent& ev);
   

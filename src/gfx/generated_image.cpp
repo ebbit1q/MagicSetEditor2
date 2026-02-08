@@ -111,9 +111,9 @@ ImageCombine LinearBlendImage::combine() const {
 bool LinearBlendImage::operator == (const GeneratedImage& that) const {
   const LinearBlendImage* that2 = dynamic_cast<const LinearBlendImage*>(&that);
   return that2 && *image1 == *that2->image1
-               && *image2 == *that2->image2
-               && x1 == that2->x1 && y1 == that2->y1
-               && x2 == that2->x2 && y2 == that2->y2;
+    && *image2 == *that2->image2
+    && x1 == that2->x1 && y1 == that2->y1
+    && x2 == that2->x2 && y2 == that2->y2;
 }
 
 // ----------------------------------------------------------------------------- : MaskedBlendImage
@@ -129,8 +129,8 @@ ImageCombine MaskedBlendImage::combine() const {
 bool MaskedBlendImage::operator == (const GeneratedImage& that) const {
   const MaskedBlendImage* that2 = dynamic_cast<const MaskedBlendImage*>(&that);
   return that2 && *light == *that2->light
-               && *dark  == *that2->dark
-               && *mask  == *that2->mask;
+    && *dark  == *that2->dark
+    && *mask  == *that2->mask;
 }
 
 // ----------------------------------------------------------------------------- : CombineBlendImage
@@ -146,8 +146,8 @@ ImageCombine CombineBlendImage::combine() const {
 bool CombineBlendImage::operator == (const GeneratedImage& that) const {
   const CombineBlendImage* that2 = dynamic_cast<const CombineBlendImage*>(&that);
   return that2 && *image1 == *that2->image1
-               && *image2 == *that2->image2
-               && image_combine == that2->image_combine;
+    && *image2 == *that2->image2
+    && image_combine == that2->image_combine;
 }
 
 // ----------------------------------------------------------------------------- : SetMaskImage
@@ -160,7 +160,7 @@ Image SetMaskImage::generate(const Options& opt) {
 bool SetMaskImage::operator == (const GeneratedImage& that) const {
   const SetMaskImage* that2 = dynamic_cast<const SetMaskImage*>(&that);
   return that2 && *image == *that2->image
-               && *mask  == *that2->mask;
+    && *mask  == *that2->mask;
 }
 
 Image SetAlphaImage::generate(const Options& opt) {
@@ -171,7 +171,7 @@ Image SetAlphaImage::generate(const Options& opt) {
 bool SetAlphaImage::operator == (const GeneratedImage& that) const {
   const SetAlphaImage* that2 = dynamic_cast<const SetAlphaImage*>(&that);
   return that2 && *image == *that2->image
-               && alpha  == that2->alpha;
+    && alpha  == that2->alpha;
 }
 
 // ----------------------------------------------------------------------------- : SetCombineImage
@@ -185,7 +185,7 @@ ImageCombine SetCombineImage::combine() const {
 bool SetCombineImage::operator == (const GeneratedImage& that) const {
   const SetCombineImage* that2 = dynamic_cast<const SetCombineImage*>(&that);
   return that2 && *image == *that2->image
-               && image_combine == that2->image_combine;
+    && image_combine == that2->image_combine;
 }
 
 // ----------------------------------------------------------------------------- : SaturateImage
@@ -198,7 +198,7 @@ Image SaturateImage::generate(const Options& opt) {
 bool SaturateImage::operator == (const GeneratedImage& that) const {
   const SaturateImage* that2 = dynamic_cast<const SaturateImage*>(&that);
   return that2 && *image == *that2->image
-               && amount == that2->amount;
+    && amount == that2->amount;
 }
 
 // ----------------------------------------------------------------------------- : InvertImage
@@ -223,7 +223,7 @@ Image RecolorImage::generate(const Options& opt) {
 bool RecolorImage::operator == (const GeneratedImage& that) const {
   const RecolorImage* that2 = dynamic_cast<const RecolorImage*>(&that);
   return that2 && *image == *that2->image
-               && color == that2->color;
+    && color == that2->color;
 }
 
 Image RecolorImage2::generate(const Options& opt) {
@@ -234,10 +234,10 @@ Image RecolorImage2::generate(const Options& opt) {
 bool RecolorImage2::operator == (const GeneratedImage& that) const {
   const RecolorImage2* that2 = dynamic_cast<const RecolorImage2*>(&that);
   return that2 && *image == *that2->image
-               && red == that2->red
-               && green == that2->green
-               && blue == that2->blue
-               && white == that2->white;
+    && red == that2->red
+    && green == that2->green
+    && blue == that2->blue
+    && white == that2->white;
 }
 
 // ----------------------------------------------------------------------------- : FlipImage
@@ -267,7 +267,7 @@ Image RotateImage::generate(const Options& opt) {
 bool RotateImage::operator == (const GeneratedImage& that) const {
   const RotateImage* that2 = dynamic_cast<const RotateImage*>(&that);
   return that2 && *image == *that2->image
-               && angle == that2->angle;
+    && angle == that2->angle;
 }
 
 // ----------------------------------------------------------------------------- : EnlargeImage
@@ -275,7 +275,7 @@ bool RotateImage::operator == (const GeneratedImage& that) const {
 Image EnlargeImage::generate(const Options& opt) {
   // generate 'sub' image
   Options sub_opt
-    ( int(opt.width  * (border_size < 0.5 ? 1 - 2 * border_size : 0))
+  ( int(opt.width  * (border_size < 0.5 ? 1 - 2 * border_size : 0))
     , int(opt.height * (border_size < 0.5 ? 1 - 2 * border_size : 0))
     , opt.package
     , opt.local_package
@@ -310,7 +310,7 @@ Image EnlargeImage::generate(const Options& opt) {
 bool EnlargeImage::operator == (const GeneratedImage& that) const {
   const EnlargeImage* that2 = dynamic_cast<const EnlargeImage*>(&that);
   return that2 && *image      == *that2->image
-               && border_size == that2->border_size;
+    && border_size == that2->border_size;
 }
 
 // ----------------------------------------------------------------------------- : ResizeImage
@@ -510,25 +510,8 @@ bool InsertedImage::operator == (const GeneratedImage& that) const {
 Image CropImage::generate(const Options& opt) {
   if (width <= 0) throw ScriptError(_ERROR_1_("negative image width", "crop_image"));
   if (height <= 0) throw ScriptError(_ERROR_1_("negative image height", "crop_image"));
-  UInt size = width * height;
-  Image img = wxImage(width, height, false);
-  img.InitAlpha();
-  Byte* data = img.GetData();
-  Byte* alpha = img.GetAlpha();
-  Byte r = background_color.Red();
-  Byte g = background_color.Green();
-  Byte b = background_color.Blue();
-  Byte a = background_color.Alpha();
-  for (UInt i = 0; i < size; ++i) {
-    data[0] = r;
-    data[1] = g;
-    data[2] = b;
-    data += 3;
-    alpha[0] = a;
-    alpha += 1;
-  }
   Image base_img = image->generate(opt);
-  img.Paste(base_img, -(int)offset_x, -(int)offset_y, wxIMAGE_ALPHA_BLEND_COMPOSE);
+  Image img = base_img.Size(wxSize((int)width, (int)height), wxPoint(-(int)offset_x, -(int)offset_y)); //Image img = base_img.Size(wxSize((int)width, (int)height), wxPoint(-(int)offset_x, -(int)offset_y), background_color.Red(), background_color.Green(), background_color.Blue());
   // transfer metadata
   if (base_img.HasOption(wxIMAGE_OPTION_PNG_DESCRIPTION)) {
     String metadata = transformAllEncodedRects(base_img.GetOption(wxIMAGE_OPTION_PNG_DESCRIPTION), RealRect::translate, -offset_x, -offset_y);
@@ -556,9 +539,9 @@ Image CropImage::generate(const Options& opt) {
 bool CropImage::operator == (const GeneratedImage& that) const {
   const CropImage* that2 = dynamic_cast<const CropImage*>(&that);
   return that2 && *image      == *that2->image
-               && width    == that2->width    && height   == that2->height
-               && offset_x == that2->offset_x && offset_y == that2->offset_y
-               && background_color == that2->background_color;
+    && width    == that2->width    && height   == that2->height
+    && offset_x == that2->offset_x && offset_y == that2->offset_y
+    && background_color == that2->background_color;
 }
 
 // ----------------------------------------------------------------------------- : DropShadowImage
@@ -648,9 +631,9 @@ Image DropShadowImage::generate(const Options& opt) {
 bool DropShadowImage::operator == (const GeneratedImage& that) const {
   const DropShadowImage* that2 = dynamic_cast<const DropShadowImage*>(&that);
   return that2 && *image   == *that2->image
-               && offset_x == that2->offset_x && offset_y == that2->offset_y
-               && shadow_alpha == that2->shadow_alpha && shadow_blur_radius == that2->shadow_blur_radius
-               && shadow_color == that2->shadow_color;
+    && offset_x == that2->offset_x && offset_y == that2->offset_y
+    && shadow_alpha == that2->shadow_alpha && shadow_blur_radius == that2->shadow_blur_radius
+    && shadow_color == that2->shadow_color;
 }
 
 // ----------------------------------------------------------------------------- : PackagedImage
@@ -728,11 +711,11 @@ Image SymbolToImage::generate(const Options& opt) {
 bool SymbolToImage::operator == (const GeneratedImage& that) const {
   const SymbolToImage* that2 = dynamic_cast<const SymbolToImage*>(&that);
   return that2 && is_local  == that2->is_local
-               && filename  == that2->filename
-               && age       == that2->age
-               && (variation == that2->variation ||
-                   *variation == *that2->variation // custom variation
-                  );
+    && filename  == that2->filename
+    && age       == that2->age
+    && (variation == that2->variation ||
+      *variation == *that2->variation // custom variation
+      );
 }
 
 // ----------------------------------------------------------------------------- : ImageValueToImage
@@ -758,7 +741,7 @@ Image ImageValueToImage::generate(const Options& opt) {
 bool ImageValueToImage::operator == (const GeneratedImage& that) const {
   const ImageValueToImage* that2 = dynamic_cast<const ImageValueToImage*>(&that);
   return that2 && filename == that2->filename
-               && age      == that2->age;
+    && age      == that2->age;
 }
 
 // ----------------------------------------------------------------------------- : SetMetadataImage
@@ -771,7 +754,7 @@ Image SetMetadataImage::generate(const Options& opt) {
 bool SetMetadataImage::operator == (const GeneratedImage& that) const {
   const SetMetadataImage* that2 = dynamic_cast<const SetMetadataImage*>(&that);
   return that2 && *image == *that2->image
-             && metadata  == that2->metadata;
+    && metadata  == that2->metadata;
 }
 
 // ----------------------------------------------------------------------------- : ImportedImage

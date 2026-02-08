@@ -29,7 +29,7 @@ endif()
 
 # You will most likely get a message about being unable to open hunspell-1.7.lib because pkgconf forgets to add the actual path to
 # HUNSPELL_LIBRARIES. If so, uncomment the below line and point it to the correct vcpkg root folder/library.
-#set(HUNSPELL_LIBRARIES "C:\\PATH\\TO\\ROOT\\vcpkg\\installed\\${VCPKG_TARGET_TRIPLET}\\lib\\hunspell-1.7.lib")
+set(HUNSPELL_LIBRARIES "C:\\src\\vcpkg\\installed\\${VCPKG_TARGET_TRIPLET}\\lib\\hunspell-1.7.lib")
 message("-- Does this have a full path? If not, and it's just a file name, it's broken: Found Hunspell at ${HUNSPELL_LIBRARIES}")
 
 include_directories("${PROJECT_BINARY_DIR}/src")
@@ -109,6 +109,11 @@ if(WIN32)
   )
 endif()
 
+# Magic Set Editor Updater executable
+
+add_executable(magicseteditor-updater WIN32)
+target_link_libraries(magicseteditor-updater PRIVATE wxWidgets::wxWidgets)
+target_sources(magicseteditor-updater PRIVATE src_updater/main.cpp src_updater/win32_res.rc src_updater/updater.ico)
 
 # warnings
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)

@@ -17,6 +17,7 @@
 template <typename T> class Defaultable;
 template <typename T> class Scriptable;
 DECLARE_POINTER_TYPE(Game);
+DECLARE_POINTER_TYPE(Updater);
 DECLARE_POINTER_TYPE(StyleSheet);
 class Packaged;
 pair<unique_ptr<wxInputStream>, Packaged*> openFileFromPackage(Packaged* package, const String& name);
@@ -109,6 +110,7 @@ public:
   template <typename T> void handle(Scriptable<T>&);
   // special behaviour
   void handle(GameP&);
+  void handle(UpdaterP&);
   void handle(StyleSheetP&);
   
   /// Indicate that the last value from getValue() was not handled, allowing it to be handled again

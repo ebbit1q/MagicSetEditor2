@@ -352,9 +352,9 @@ wxIcon load_resource_icon(const String& name) {
     return wxIcon(_("icon/") + name);
   #else
     static String path = wxStandardPaths::Get().GetDataDir() + _("/resource/icon/");
-        static String local_path = wxStandardPaths::Get().GetUserDataDir() + _("/resource/icon/");
-        if (wxFileExists(path + name + _(".ico"))) return wxIcon(path + name + _(".ico"), wxBITMAP_TYPE_ICO);
-        else return wxIcon(local_path + name + _(".ico"), wxBITMAP_TYPE_ICO);
+    static String local_path = wxStandardPaths::Get().GetUserDataDir() + _("/resource/icon/");
+    if (wxFileExists(path + name + _(".ico"))) return wxIcon(path + name + _(".ico"), wxBITMAP_TYPE_ICO);
+    else return wxIcon(local_path + name + _(".ico"), wxBITMAP_TYPE_ICO);
   #endif
 }
 

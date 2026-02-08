@@ -11,6 +11,7 @@
 #include <util/error.hpp>
 #include <util/file_utils.hpp>
 #include <data/game.hpp>
+#include <data/updater.hpp>
 #include <data/stylesheet.hpp>
 #include <data/symbol_font.hpp>
 #include <data/locale.hpp>
@@ -61,12 +62,15 @@ PackagedP PackageManager::openAny(const String& name_, bool just_header) {
   if (!p) {
     // load with the right type, based on extension
     wxFileName fn(filename);
-    if      (fn.GetExt() == _("mse-game"))            p = make_intrusive<Game>();
-    else if (fn.GetExt() == _("mse-style"))           p = make_intrusive<StyleSheet>();
-    else if (fn.GetExt() == _("mse-locale"))          p = make_intrusive<Locale>();
-    else if (fn.GetExt() == _("mse-include"))         p = make_intrusive<IncludePackage>();
-    else if (fn.GetExt() == _("mse-symbol-font"))     p = make_intrusive<SymbolFont>();
-    else if (fn.GetExt() == _("mse-export-template")) p = make_intrusive<ExportTemplate>();
+    String ext = fn.GetExt();
+    if      (ext == _("mse-style"))           p = make_intrusive<StyleSheet>();
+    else if (ext == _("mse-symbol-font"))     p = make_intrusive<SymbolFont>();
+    else if (ext == _("mse-include"))         p = make_intrusive<IncludePackage>();
+    else if (ext == _("mse-game"))            p = make_intrusive<Game>();
+    else if (ext == _("mse-locale"))          p = make_intrusive<Locale>();
+    else if (ext == _("mse-export-template")) p = make_intrusive<ExportTemplate>();
+    //else if (ext == _("mse-import-template")) p = make_intrusive<ImportTemplate>();
+    else if (ext == _("mse-updater"))         p = make_intrusive<Updater>();
     else {
       throw PackageError(_("Unrecognized package type: '") + fn.GetExt() + _("'\nwhile trying to open: ") + name);
     }

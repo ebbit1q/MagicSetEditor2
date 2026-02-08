@@ -191,7 +191,7 @@ bool set_package_action(InstallablePackages& packages, const InstallablePackageP
 
 // ----------------------------------------------------------------------------- : Program package
 
-/// The "magicseteditor.exe" package is special, it refers to the program
+/// The "Magic Set Editor" package is special, it refers to the program
 extern String mse_package;
 
 InstallablePackageP mse_installable_package();

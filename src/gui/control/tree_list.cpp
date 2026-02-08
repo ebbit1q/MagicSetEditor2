@@ -138,7 +138,7 @@ TreeList::TreeList(Window* parent, int id, long style)
 void TreeList::onPaint(wxPaintEvent& ev) {
   wxBufferedPaintDC dc(this);
   size_t cols = columnCount();
-  wxRendererNative& rn = wxRendererNative::GetDefault();
+  //wxRendererNative& rn = wxRendererNative::GetDefault();
   // clear background
   wxSize cs = GetClientSize();
   dc.SetPen(*wxTRANSPARENT_PEN);
@@ -149,11 +149,13 @@ void TreeList::onPaint(wxPaintEvent& ev) {
   // draw header
   dc.SetFont(*wxNORMAL_FONT);
   dc.SetTextForeground(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNTEXT));
+  dc.SetPen(lerp(wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW),
+                 wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT),0.4));
   int x = 0, y = 0;
   for (size_t j = 0 ; j < cols ; ++j) {
     int w = columnWidth(j);
     wxRect rect(x,0,w-1,header_height-1);
-    rn.DrawHeaderButton(this, dc, rect);
+    if (j>0) dc.DrawLine(x-1,2,x-1,header_height-2); //rn.DrawHeaderButton(this, dc, rect);
     dc.DrawText(columnText(j),x+3,2);
     x += w;
   }
@@ -184,8 +186,15 @@ void TreeList::onPaint(wxPaintEvent& ev) {
     }
     // draw expand button
     if (hasChildren(i)) {
-      wxRect rect(x - 13, y + (item_height - 9)/2, 9, 9);
-      rn.DrawTreeItemButton(this, dc, rect, item.expanded ? wxCONTROL_EXPANDED : 0);
+      int left = x - 13, top = y + (item_height - 9)/2;
+      wxRect rect(left, top, 9, 9);
+      dc.SetPen(lerp(wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW),
+                     wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT),0.4));
+      dc.SetBrush(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
+      dc.DrawRectangle(rect);
+      dc.DrawLine(left+2,top+4,left+7,top+4);
+      if (!item.expanded) dc.DrawLine(left+4,top+2,left+4,top+7);
+      //rn.DrawTreeItemButton(this, dc, rect, item.expanded ? wxCONTROL_EXPANDED : 0);
     }
     if (selection == i) {
       dc.SetPen(*wxTRANSPARENT_PEN);

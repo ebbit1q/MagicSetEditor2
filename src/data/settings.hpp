@@ -24,16 +24,21 @@ DECLARE_POINTER_TYPE(Field);
 DECLARE_POINTER_TYPE(Value);
 DECLARE_POINTER_TYPE(AutoReplace);
 
-// For now, use the old style update checker
-#define USE_OLD_STYLE_UPDATE_CHECKER 1
-
 // ----------------------------------------------------------------------------- : Extra data structures
 
 /// When to check for updates?
 enum CheckUpdates
 {  CHECK_ALWAYS
-,  CHECK_IF_CONNECTED
+,  CHECK_5
+,  CHECK_10
 ,  CHECK_NEVER
+};
+
+/// What to check for updates?
+enum CheckUpdatesTargets
+{  CHECK_APP
+,  CHECK_GAMES
+,  CHECK_EVERYTHING
 };
 
 /// Where to install to?
@@ -236,13 +241,13 @@ public:
 
   // --------------------------------------------------- : Update checking
 
-  #if USE_OLD_STYLE_UPDATE_CHECKER
-    String updates_url;
-  #endif
-  String package_versions_url; ///< latest package versions
   String installer_list_url;   ///< available installers
-  CheckUpdates check_updates;
-  bool   check_updates_all; ///< Check updates of all packages, not just the program
+  CheckUpdatesTargets check_updates_what;
+  CheckUpdates check_updates_when;
+  int check_updates_counter;
+
+  // --------------------------------------------------- : Help links
+
   String website_url;
   String documentation_url;
   

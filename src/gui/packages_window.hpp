@@ -28,6 +28,7 @@ public:
 private:
   PackageUpdateList* package_list; ///< List of available packages
   PackageInfoPanel*  package_info; ///< Description of the selected package
+  wxStaticText*      waiting_info; ///< Did we get the list of installers?
   
   /// List of the packages shown in this window
   InstallablePackages installable_packages;

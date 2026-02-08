@@ -13,7 +13,6 @@
 #include <gui/control/text_ctrl.hpp>
 #include <gui/control/filter_ctrl.hpp>
 #include <gui/about_window.hpp> // for HoverButton
-#include <gui/update_checker.hpp>
 #include <gui/util.hpp>
 #include <data/set.hpp>
 #include <data/game.hpp>

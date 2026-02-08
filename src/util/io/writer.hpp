@@ -17,6 +17,7 @@
 template <typename T> class Defaultable;
 template <typename T> class Scriptable;
 DECLARE_POINTER_TYPE(Game);
+DECLARE_POINTER_TYPE(Updater);
 DECLARE_POINTER_TYPE(StyleSheet);
 
 // ----------------------------------------------------------------------------- : Writer
@@ -72,6 +73,7 @@ public:
   template <typename T> void handle(const Scriptable<T>&);
   // special behaviour
   void handle(const GameP&);
+  void handle(const UpdaterP&);
   void handle(const StyleSheetP&);
   
   /// Indentation of the current block
