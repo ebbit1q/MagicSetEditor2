@@ -1,7 +1,7 @@
 ﻿mse version: 2.5.8
-installer group: translations/français
+installer group: Magic Set Editor/translations/french
 full name: Français (French)
-version: 2025-06-18
+version: 2026-02-28
 icon: fr.png
 
 #By GenevensiS
@@ -608,12 +608,12 @@ label:
 		Taille à laquelle stocker les images en interne.
 		Changer cette valeur peut modifer l'apparence des images utilisant le filtre de netteté.
 		Ne s'applique pas rétroactivement aux images déjà stockées.
-	check at startup:					Vérifier les mises à jour au démarrage
+	check at startup:					Chercher des mises à jour au démarrage
+	check what targets:					Chercher des mises à jour pour les éléments suivants
 	checking requires internet:
-		Vous avez besoin d'une connexion internet pour vérifier les mises à jour.
-		Il n'y a aucune vérification si vous n'êtes pas connecté à internet.
+		Aucune recherche n'est effectuée si vous n'êtes pas connecté à internet.
 		
-		Aucune information n'est collectée lors de la vérification des mises à jour.
+		Aucune information n'est collectée lors de la recherche des mises à jour.
 
 	# column select dialog
 	select columns:						Sélectionnez les colonnes à afficher
@@ -690,6 +690,7 @@ label:
 	package name:						Package
 	package status:						État
 	package action:						Action
+	awaiting package list:				(En attente de la liste des paquets depuis Internet)
 
 	package conflicts:					modifications en conflit
 	package modified:					modifications locales
@@ -700,6 +701,9 @@ label:
 	reinstall package:					réinstaller
 	upgrade package:					upgrader
 	remove package:						supprimer
+	updates found:
+		Des mises à jour ont été trouvées.
+		Souhaitez-vous ouvrir le gestionnaire de paquets?
 
 	installed version:					Version installée:
 	installable version:				Dernière version:
@@ -774,8 +778,13 @@ button:
 	spellcheck enabled:					Afficher les fautes d'orthographe sur les cartes
 	check now:							&Vérifier maintenant
 	always:								Toujours
+	every 5 startups:					Tous les 5 démarrages
+	every 10 startups:					Tous les 10 démarrages
 	if internet connection exists:		Si il y a une connexion internet
 	never:								Jamais
+	check app:							Application uniquement
+	check games:						Application, jeux et styles
+	check everything:					Tout
 	internal image extension:			Stocker les images avec une extension en interne
 	allow image download:
 		Autoriser le téléchargement des images.
@@ -826,6 +835,7 @@ button:
 title:
 	# window titles
 	magic set editor:					Magic Set Editor
+	magic set editor updater:			Updater
 	%s - magic set editor:				%s - Magic Set Editor
 	untitled:							Sans Titre
 	about:								À propos de Magic Set Editor
@@ -890,8 +900,27 @@ title:
 	installing updates:					Installation des mises à jours
 	cannot create file:					Impossible de créer le fichier
 
+	# misc
+	info:								Info
+	warning:							Avertissement
+	error:								Erreur
+
 ############################################################## Action (undo/redo) names
 action:
+	# cards
+	reorder cards:						Réorganiser les cartes
+	change link:						Modifier le lien
+	change notes:						Modifier les notes
+	change id:							Modifier l'ID
+	change style:						Modifier le style
+	change all styles:					Modifier le style (toutes les cartes)
+	use custom style:					Utiliser un style personnalisé
+	show reminder text:					Afficher le texte de rappel
+	hide reminder text:					Masquer le texte de rappel
+
+	# keywords
+	keyword mode:						Mode du mot-clé
+
 	# list boxes
 	add item:							Ajouter %s
 	remove item:						Supprimer %s
@@ -1061,6 +1090,7 @@ error:
 	multiple front faces:				La carte '%s' contient plusieurs cartes liées comme face avant.
 	multiple back faces:				La carte '%s' contient plusieurs cartes liées comme face arrière.
 	cant link to self:					Impossible de lier une carte à elle-même. (Cet assignation sera ignorée.)
+	no cards selected:					Aucune carte sélectionnée. Sélectionnez jusqu'à 4 cartes à lier.
 	could not find input:				Carte d'input introuvable.
 	could not find linked:				Carte liée (linked_card) introuvable.
 

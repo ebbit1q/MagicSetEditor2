@@ -334,7 +334,7 @@ TextToggleReminderAction::TextToggleReminderAction(const TextValueP& value, size
   old = enable ? _('1') : _('0');
 }
 String TextToggleReminderAction::getName(bool to_undo) const {
-  return enable ? _("Show reminder text") : _("Hide reminder text");
+  return enable ? _ACTION_("show reminder text") : _ACTION_("hide reminder text");
 }
 
 void TextToggleReminderAction::perform(bool to_undo) {
@@ -375,12 +375,18 @@ void ScriptStyleEvent::perform(bool) {
 
 // ----------------------------------------------------------------------------- : Bulk action
 
-BulkAction::BulkAction(const vector<ActionP>& actions, const SetP& set, CardListBase* card_list_window)
+BulkAction::BulkAction(const vector<ActionP>& actions, const SetP& set, CardListBase* card_list_window, bool change_name)
   : actions(actions), set(set), card_list_window(card_list_window)
 {
   if (actions.empty()) throw ScriptError(_("BulkAction created with no actions"));
-  name_do = _ACTION_1_("bulk", actions.front()->getName(false));
-  name_undo = _ACTION_1_("bulk", actions.front()->getName(true));
+  if (change_name) {
+    name_do = _ACTION_1_("bulk", actions.front()->getName(false));
+    name_undo = _ACTION_1_("bulk", actions.front()->getName(true));
+  }
+  else {
+    name_do = actions.front()->getName(false);
+    name_undo = actions.front()->getName(true);
+  }
 }
 BulkAction::~BulkAction() {}
 

@@ -1,7 +1,7 @@
 mse version: 2.5.8
-installer group: translations/russian
+installer group: Magic Set Editor/translations/russian
 full name: Русский (Russian)
-version: 2025-06-18
+version: 2026-02-28
 icon: ru.png
 
 
@@ -684,6 +684,8 @@ label:
 		Changing this may impact how Sharpening looks.
 		Does not retroactively apply to existing images.
 	check at startup:					Проверять наличие новых версий при запуске
+	#TODO: Localize
+	check what targets:					Check for new versions of the following
 	checking requires internet:
 		Для проверки обновлений необходимо подключение к интернету.
 		При отсутствии подключения к интернету проверка обновлений не происходит.
@@ -775,6 +777,8 @@ label:
 	package name:						Пакет модификации
 	package status:						Статус
 	package action:						Состояние
+	#TODO: Localize
+	awaiting package list:				(Waiting for package list from internet)
 
 	package conflicts:					Конфликт модификаций
 	package modified:					Локальные модификации
@@ -785,6 +789,10 @@ label:
 	reinstall package:					Переустановить
 	upgrade package:					Апдейт
 	remove package:						Удалить
+	#TODO: Localize
+	updates found:
+		Updates have been found.
+		Would you like to open the package manager?
 
 	installed version:					Установленная версия:
 	installable version:				Последняя версия:
@@ -868,8 +876,18 @@ button:
 	spellcheck enabled:					Показать орфографические ошибки в картах
 	check now:							Проверить сейчас
 	always:								Всегда
+	#TODO: Localize
+	every 5 startups:					Every 5 startups
+	#TODO: Localize
+	every 10 startups:					Every 10 startups
 	if internet connection exists:		При наличии подключения к интернету
 	never:								Никогда
+	#TODO: Localize
+	check app:							Application only
+	#TODO: Localize
+	check games:						Application, games and styles
+	#TODO: Localize
+	check everything:					Everything
 	#TODO: Localize
 	internal image extension:			Store images internally with file extension
 	#TODO: Localize
@@ -922,6 +940,8 @@ button:
 title:
 	# window titles
 	magic set editor:					Magic Set Editor
+	#TODO: Localize
+	magic set editor updater:			Updater
 	%s - magic set editor:				%s - Magic Set Editor
 	untitled:							Без названия
 	about:								О Magic Set Editor
@@ -994,8 +1014,30 @@ title:
 	installing updates:					Установка обновлений
 	cannot create file:					Невозможно создать файл
 
+	# misc
+	#TODO: Localize Section
+	info:								Information
+	warning:							Warning
+	error:								Error
+
 ############################################################## Action (undo/redo) names
 action:
+	# cards
+	#TODO: Localize Section
+	reorder cards:						Reorder cards
+	change link:						Change link
+	change notes:						Change notes
+	change id:							Change ID
+	change style:						Change style
+	change all styles:					Change style (all cards)
+	use custom style:					Use custom style
+	show reminder text:					Show reminder text
+	hide reminder text:					Hide reminder text
+
+	# keywords
+	#TODO: Localize
+	keyword mode:						Keyword mode
+
 	# list boxes
 	add item:							Добавить %s
 	remove item:						Удалить %s
@@ -1194,6 +1236,8 @@ error:
 	multiple back faces:				Card '%s' has multiple cards linked as back faces.
 	#TODO: Localize
 	cant link to self:					Cannot link a card to itself. (This assignment will be ignored.)
+	#TODO: Localize
+	no cards selected:					No cards selected. Select up to 4 cards to link.
 	could not find input:				Could not find input card.
 	could not find linked:				Could not find linked card.
 

@@ -1,7 +1,7 @@
 ﻿mse version: 2.5.8
-installer group: translations/dansk
+installer group: Magic Set Editor/translations/danish
 full name: Dansk (Danish)
-version: 2025-06-18
+version: 2026-02-28
 icon: dk.png
 
 #By lord_joakim
@@ -662,6 +662,8 @@ label:
 		Ændring af dette kan påvirke, hvordan Sharpening ser ud.
 		Gælder ikke med tilbagevirkende kraft for eksisterende billeder.
 	check at startup:					Tjek efter nye versioner ved startup
+	#TODO: Localize
+	check what targets:					Check for new versions of the following
 	checking requires internet:
 		Dette kræver netforbindelse.
 		Når der ikke er forbindelse, bliver der ikke ledt efter opdateringer.
@@ -751,6 +753,8 @@ label:
 	#TODO: Localize
 	package status:						Status
 	package action:						Handling
+	#TODO: Localize
+	awaiting package list:				(Waiting for package list from internet)
 
 	package conflicts:					konfliktmodifikationer
 	package modified:					lokale modifikationer
@@ -761,6 +765,10 @@ label:
 	reinstall package:					geninstallér
 	upgrade package:					opdater
 	remove package:						fjern
+	#TODO: Localize
+	updates found:
+		Updates have been found.
+		Would you like to open the package manager?
 
 	installed version:					Installeret version:
 	installable version:				seneste version:
@@ -843,8 +851,18 @@ button:
 	spellcheck enabled:					Vis stavefejl på kort
 	check now:							Tjek &Nu!
 	always:								Altid
+	#TODO: Localize
+	every 5 startups:					Every 5 startups
+	#TODO: Localize
+	every 10 startups:					Every 10 startups
 	if internet connection exists:		Hvis internetforbindelse findes
 	never:								Aldrig
+	#TODO: Localize
+	check app:							Application only
+	#TODO: Localize
+	check games:						Application, games and styles
+	#TODO: Localize
+	check everything:					Everything
 	internal image extension:			Gem billeder internt med filtypenavn
 	#TODO: Localize
 	allow image download:
@@ -896,6 +914,8 @@ button:
 title:
 	# window titles
 	magic set editor:					Magic Set Editor
+	#TODO: Localize
+	magic set editor updater:			Updater
 	%s - magic set editor:				%s - Magic Set Editor
 	untitled:							Unavngivet
 	about:								Om Magic Set Editor
@@ -968,8 +988,30 @@ title:
 	installing updates:					Installerer opdateringer
 	cannot create file:					Kan ikke skabe fil
 
+	# misc
+	#TODO: Localize Section
+	info:								Information
+	warning:							Warning
+	error:								Error
+
 ############################################################## Action (undo/redo) names
 action:
+	# cards
+	#TODO: Localize Section
+	reorder cards:						Reorder cards
+	change link:						Change link
+	change notes:						Change notes
+	change id:							Change ID
+	change style:						Change style
+	change all styles:					Change style (all cards)
+	use custom style:					Use custom style
+	show reminder text:					Show reminder text
+	hide reminder text:					Hide reminder text
+
+	# keywords
+	#TODO: Localize
+	keyword mode:						Keyword mode
+
 	# list boxes
 	add item:							Tilføj %s
 	remove item:						Fjern %s
@@ -1166,6 +1208,8 @@ error:
 	multiple back faces:				Card '%s' has multiple cards linked as back faces.
 	#TODO: Localize
 	cant link to self:					Cannot link a card to itself. (This assignment will be ignored.)
+	#TODO: Localize
+	no cards selected:					No cards selected. Select up to 4 cards to link.
 	could not find input:				Could not find input card.
 	could not find linked:				Could not find linked card.
 

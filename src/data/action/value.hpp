@@ -214,7 +214,7 @@ public:
 // An action that's just a list of other actions
 class BulkAction : public Action {
 public:
-  BulkAction(const vector<ActionP>& actions, const SetP& set, CardListBase* card_list_window);
+  BulkAction(const vector<ActionP>& actions, const SetP& set, CardListBase* card_list_window, bool change_name);
   ~BulkAction() override;
 
   String getName(bool to_undo) const override;

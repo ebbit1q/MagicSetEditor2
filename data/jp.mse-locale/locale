@@ -1,7 +1,7 @@
 ﻿mse version: 2.5.8
-installer group: translations/japanese
+installer group: Magic Set Editor/translations/japanese
 full name: 日本語 (Japanese)
-version: 2025-06-18
+version: 2026-02-28
 icon: jp.png
 
 
@@ -651,6 +651,8 @@ label:
 		これを変更すると、シャープ化の見た目に影響する可能性があります。
 		既存のイメージには遡って適用されません。
 	check at startup:					起動ごとのバージョン・チェック
+	#TODO: Localize
+	check what targets:					Check for new versions of the following
 	checking requires internet:
 		アップデートを調べることはインターネット接続を必要とします。
 		インターネット接続が利用可能でない時、これはチェックされません。
@@ -735,6 +737,8 @@ label:
 	package name:						パッケージ
 	package status:						地位
 	package action:						アクション
+	#TODO: Localize
+	awaiting package list:				(Waiting for package list from internet)
 
 	package conflicts:					競合する変更
 	package modified:					ローカルの変更
@@ -745,6 +749,10 @@ label:
 	reinstall package:					再インストール
 	upgrade package:					アップグレード
 	remove package:						取り外す
+	#TODO: Localize
+	updates found:
+		Updates have been found.
+		Would you like to open the package manager?
 
 	installed version:					インストールされているバージョン
 	installable version:				最新バージョン
@@ -827,8 +835,18 @@ button:
 	spellcheck enabled:					カードのスペルミスを表示する
 	check now:							&今のチェック
 	always:								常に行う
+	#TODO: Localize
+	every 5 startups:					Every 5 startups
+	#TODO: Localize
+	every 10 startups:					Every 10 startups
 	if internet connection exists:		インターネットに接続していれば
 	never:								行わない
+	#TODO: Localize
+	check app:							Application only
+	#TODO: Localize
+	check games:						Application, games and styles
+	#TODO: Localize
+	check everything:					Everything
 	internal image extension:			ファイル拡張子を付けて画像を内部に保存する
 	#TODO: Localize
 	allow image download:
@@ -880,6 +898,8 @@ button:
 title:
 	# window titles
 	magic set editor:					Magic Set Editor
+	#TODO: Localize
+	magic set editor updater:			Updater
 	%s - magic set editor:				%s - Magic Set Editor
 	#TODO: Localize
 	untitled:							Untitled
@@ -951,8 +971,30 @@ title:
 	installing updates:					更新プログラムのインストール
 	cannot create file:					ファイルを作成することはできません。
 
+	# misc
+	#TODO: Localize Section
+	info:								Information
+	warning:							Warning
+	error:								Error
+
 ############################################################## Action (undo/redo) names
 action:
+	# cards
+	#TODO: Localize Section
+	reorder cards:						Reorder cards
+	change link:						Change link
+	change notes:						Change notes
+	change id:							Change ID
+	change style:						Change style
+	change all styles:					Change style (all cards)
+	use custom style:					Use custom style
+	show reminder text:					Show reminder text
+	hide reminder text:					Hide reminder text
+
+	# keywords
+	#TODO: Localize
+	keyword mode:						Keyword mode
+
 	# list boxes
 	add item:							追加する %s
 	remove item:						取り外す %s
@@ -1139,6 +1181,8 @@ error:
 	multiple back faces:				Card '%s' has multiple cards linked as back faces.
 	#TODO: Localize
 	cant link to self:					Cannot link a card to itself. (This assignment will be ignored.)
+	#TODO: Localize
+	no cards selected:					No cards selected. Select up to 4 cards to link.
 	could not find input:				Could not find input card.
 	could not find linked:				Could not find linked card.
 

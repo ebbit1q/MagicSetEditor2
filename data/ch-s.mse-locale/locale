@@ -1,7 +1,7 @@
 ﻿mse version: 2.5.8
-installer group: translations/chinese/simplified
+installer group: Magic Set Editor/translations/chinese simplified
 full name: 简体中文 (Simplified Chinese)
-version: 2025-06-18
+version: 2026-02-28
 icon: cn.png
 
 #By slimeking
@@ -651,6 +651,8 @@ label:
 		更改此项可能会影响锐化的外观。
 		不适用于现有图像。
 	check at startup:					程序运行时检查新版本
+	#TODO: Localize
+	check what targets:					Check for new versions of the following
 	checking requires internet:
 		检查新版本需要接入互联网。
 		没有接入互联网的时候不检查更新。
@@ -735,6 +737,8 @@ label:
 	package name:						文件包
 	package status:						状态
 	package action:						动作
+	#TODO: Localize
+	awaiting package list:				(Waiting for package list from internet)
 
 	package conflicts:					矛盾修改
 	package modified:					本地修改
@@ -745,6 +749,10 @@ label:
 	reinstall package:					重新安装
 	upgrade package:					升级
 	remove package:						移除
+	#TODO: Localize
+	updates found:
+		Updates have been found.
+		Would you like to open the package manager?
 
 	installed version:					安装版本
 	installable version:				最新版本
@@ -827,8 +835,18 @@ button:
 	spellcheck enabled:					在卡片上显示拼写错误
 	check now:							立刻检查
 	always:								总是
+	#TODO: Localize
+	every 5 startups:					Every 5 startups
+	#TODO: Localize
+	every 10 startups:					Every 10 startups
 	if internet connection exists:		如果接入互联网
 	never:								从不
+	#TODO: Localize
+	check app:							Application only
+	#TODO: Localize
+	check games:						Application, games and styles
+	#TODO: Localize
+	check everything:					Everything
 	internal image extension:			内部存储带有文件扩展名的图像
 	#TODO: Localize
 	allow image download:
@@ -880,6 +898,8 @@ button:
 title:
 	# window titles
 	magic set editor:					Magic Set Editor
+	#TODO: Localize
+	magic set editor updater:			Updater
 	%s - magic set editor:				%s - Magic Set Editor
 	untitled:							无标题
 	about:								关于 Magic Set Editor 由slimeking漢化制作
@@ -950,8 +970,30 @@ title:
 	installing updates:					安装更新
 	cannot create file:					无法创建文件
 
+	# misc
+	#TODO: Localize Section
+	info:								Information
+	warning:							Warning
+	error:								Error
+
 ############################################################## Action (undo/redo) names
 action:
+	# cards
+	#TODO: Localize Section
+	reorder cards:						Reorder cards
+	change link:						Change link
+	change notes:						Change notes
+	change id:							Change ID
+	change style:						Change style
+	change all styles:					Change style (all cards)
+	use custom style:					Use custom style
+	show reminder text:					Show reminder text
+	hide reminder text:					Hide reminder text
+
+	# keywords
+	#TODO: Localize
+	keyword mode:						Keyword mode
+
 	# list boxes
 	add item:							添加 %s
 	remove item:						移除 %s
@@ -1139,6 +1181,8 @@ error:
 	multiple back faces:				Card '%s' has multiple cards linked as back faces.
 	#TODO: Localize
 	cant link to self:					Cannot link a card to itself. (This assignment will be ignored.)
+	#TODO: Localize
+	no cards selected:					No cards selected. Select up to 4 cards to link.
 	could not find input:				Could not find input card.
 	could not find linked:				Could not find linked card.
 

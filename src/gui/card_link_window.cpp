@@ -112,8 +112,14 @@ void CardLinkWindow::onOk(wxCommandEvent&) {
   getSelection(linked_cards);
   // Check that we are not linking to self
   if (std::find(linked_cards.begin(), linked_cards.end(), selected_card) != linked_cards.end()) {
-    queue_message(MESSAGE_WARNING, _ERROR_("cant link to self"));
+    wxMessageDialog dial = wxMessageDialog(this, _ERROR_("cant link to self"), _TITLE_("warning"), wxICON_WARNING | wxOK);
+    dial.ShowModal();
     linked_cards.erase(std::remove(linked_cards.begin(), linked_cards.end(), selected_card), linked_cards.end());
+  }
+  if (linked_cards.empty()) {
+    wxMessageDialog dial = wxMessageDialog(this, _ERROR_("no cards selected"), _TITLE_("warning"), wxICON_WARNING | wxOK);
+    dial.ShowModal();
+    return;
   }
   vector<String> linked_uids;
   for (int i = 0; i < linked_cards.size(); ++i) {
@@ -151,7 +157,7 @@ void CardLinkWindow::onOk(wxCommandEvent&) {
   vector<ActionP> actions;
   for (int i = 0; i < free_link_indexes.size(); ++i) {
     if (free_link_indexes[i] >= 0) {
-      actions.push_back(make_intrusive<OneWayLinkCardsAction>(*set, selected_card, linked_uids[i], selected_relation_string, free_link_indexes[i]));
+      actions.push_back(make_intrusive<OneWayLinkCardsAction>(*set, selected_card, linked_uids[i], linked_relation_string, free_link_indexes[i]));
     }
   }
   // Find reciprocal free slots and make actions
@@ -159,11 +165,11 @@ void CardLinkWindow::onOk(wxCommandEvent&) {
   for (int i = 0; i < linked_cards.size(); ++i) {
     int free_link_index = linked_cards[i]->findFreeLink(selected_uid, all_existing_uids);
     if (free_link_index >= 0) {
-      actions.push_back(make_intrusive<OneWayLinkCardsAction>(*set, linked_cards[i], selected_uid, linked_relation_string, free_link_index));
+      actions.push_back(make_intrusive<OneWayLinkCardsAction>(*set, linked_cards[i], selected_uid, selected_relation_string, free_link_index));
     }
   }
   // Add action to set
-  set->actions.addAction(make_unique<BulkAction>(actions, set, card_list_window), false);
+  set->actions.addAction(make_unique<BulkAction>(actions, set, card_list_window, false), false);
   // Done
   EndModal(wxID_OK);
 }

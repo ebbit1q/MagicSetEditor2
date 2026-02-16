@@ -197,11 +197,11 @@ bool KeywordReminderTextValue::checkScript(const ScriptP& script) {
 // ----------------------------------------------------------------------------- : Changing keywords : mode
 
 ChangeKeywordModeAction::ChangeKeywordModeAction(Keyword& keyword, const String& new_mode)
-  : keyword(keyword), mode(new_mode)
+  : keyword(keyword), mode(new_mode)  
 {}
 
 String ChangeKeywordModeAction::getName(bool to_undo) const {
-  return _("Keyword mode");
+  return _ACTION_("keyword mode");
 }
 
 void ChangeKeywordModeAction::perform(bool to_undo) {

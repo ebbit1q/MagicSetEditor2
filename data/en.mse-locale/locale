@@ -1,7 +1,7 @@
 mse version: 2.5.8
-installer group: translations/english
+installer group: Magic Set Editor/translations/english
 full name: English
-version: 2025-06-18
+version: 2026-02-28
 icon: usgb.png
 
 
@@ -608,9 +608,9 @@ label:
 		Changing the scale does not retroactively apply
 		to existing images. You must re-import them.
 	check at startup:					Check for new versions at startup
+	check what targets:					Check for new versions of the following
 	checking requires internet:
-		Checking for updates requires an internet connection.
-		When no internet connection is found upates are not checked.
+		When no internet connection is found updates are not checked.
 		
 		No information is collected when checking for updates.
 
@@ -689,6 +689,7 @@ label:
 	package name:						Package
 	package status:						Status
 	package action:						Action
+	awaiting package list:				(Waiting for package list from internet)
 
 	package conflicts:					conflicting modifications
 	package modified:					local modifications
@@ -699,6 +700,9 @@ label:
 	reinstall package:					reinstall
 	upgrade package:					update
 	remove package:						remove
+	updates found:
+		Updates have been found.
+		Would you like to open the package manager?
 
 	installed version:					Installed version:
 	installable version:				Latest version:
@@ -773,8 +777,13 @@ button:
 	spellcheck enabled:					Show &spelling errors on cards
 	check now:							Check &Now
 	always:								Always
+	every 5 startups:					Every 5 startups
+	every 10 startups:					Every 10 startups
 	if internet connection exists:		If internet connection exists
 	never:								Never
+	check app:							Application only
+	check games:						Application, games and styles
+	check everything:					Everything
 	internal image extension:
 		Store images internally
 		with file extension
@@ -827,6 +836,7 @@ button:
 title:
 	# window titles
 	magic set editor:					Magic Set Editor
+	magic set editor updater:			Updater
 	%s - magic set editor:				%s - Magic Set Editor
 	untitled:							Untitled
 	about:								About Magic Set Editor
@@ -891,8 +901,27 @@ title:
 	installing updates:					Installing updates
 	cannot create file:					Cannot create file
 
+	# misc
+	info:								Information
+	warning:							Warning
+	error:								Error
+
 ############################################################## Action (undo/redo) names
 action:
+	# cards
+	reorder cards:						Reorder cards
+	change link:						Change link
+	change notes:						Change notes
+	change id:							Change ID
+	change style:						Change style
+	change all styles:					Change style (all cards)
+	use custom style:					Use custom style
+	show reminder text:					Show reminder text
+	hide reminder text:					Hide reminder text
+
+	# keywords
+	keyword mode:						Keyword mode
+
 	# list boxes
 	add item:							Add %s
 	remove item:						Remove %s
@@ -1062,6 +1091,7 @@ error:
 	multiple front faces:				Card '%s' has multiple cards linked as front faces.
 	multiple back faces:				Card '%s' has multiple cards linked as back faces.
 	cant link to self:					Cannot link a card to itself. (This assignment will be ignored.)
+	no cards selected:					No cards selected. Select up to 4 cards to link.
 	could not find input:				Could not find input card.
 	could not find linked:				Could not find linked card.
 

@@ -74,7 +74,7 @@ void CardListBase::onChangeSet() {
   rebuild();
 }
 
-struct Freezer{
+struct Freezer {
   Window* window;
   Freezer(Window* window) : window(window) { window->Freeze(); }
   ~Freezer()                               { window->Thaw(); }
@@ -440,7 +440,13 @@ bool CardListBase::parseData(bool ignore_cards_from_own_card_list) {
 bool CardListBase::canLink() const {
   vector<CardP> selected_cards;
   getSelection(selected_cards);
-  return selected_cards.size() == 1;
+  if (selected_cards.size() != 1) return false;
+  unordered_set<String> all_existing_uids;
+  FOR_EACH(card, set->cards) {
+    all_existing_uids.insert(card->uid);
+  }
+  CardP card = selected_cards[0];
+  return card->findFreeLink(card->uid, all_existing_uids) >= 0;
 }
 bool CardListBase::doLink() {
   CardLinkWindow wnd(this, set, getCard());
@@ -455,7 +461,7 @@ bool CardListBase::doUnlink(CardP linked_card) {
   vector<ActionP> actions;
   actions.emplace_back(make_intrusive<OneWayLinkCardsAction>(*set, selected_card, _(""), _(""), selected_card->findUIDLink(linked_card->uid)));
   actions.emplace_back(make_intrusive<OneWayLinkCardsAction>(*set, linked_card,   _(""), _(""), linked_card->findUIDLink(selected_card->uid)));
-  set->actions.addAction(make_unique<BulkAction>(actions, set, this), false);
+  set->actions.addAction(make_unique<BulkAction>(actions, set, this, false), false);
   return true;
 }
 

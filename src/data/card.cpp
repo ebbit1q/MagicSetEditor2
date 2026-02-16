@@ -76,7 +76,7 @@ vector<int> Card::findFreeLinks(vector<String>& linked_uids, const unordered_set
     for (int j = 0; j < linked_pairs.size(); ++j) {
       auto& linked_pair = linked_pairs[j];
       if (linked_pair.first.get() == linked_uid &&
-          std::find(freeIndexes.begin(), freeIndexes.end(), j) != freeIndexes.end()
+          std::find(freeIndexes.begin(), freeIndexes.end(), j) == freeIndexes.end()
       ) {
         freeIndexes.push_back(j);
         goto continue_outer;
@@ -86,7 +86,7 @@ vector<int> Card::findFreeLinks(vector<String>& linked_uids, const unordered_set
     for (int j = 0; j < linked_pairs.size(); ++j) {
       auto& linked_pair = linked_pairs[j];
       if (linked_pair.first.get().empty() &&
-          std::find(freeIndexes.begin(), freeIndexes.end(), j) != freeIndexes.end()
+          std::find(freeIndexes.begin(), freeIndexes.end(), j) == freeIndexes.end()
       ) {
         freeIndexes.push_back(j);
         goto continue_outer;
@@ -96,7 +96,7 @@ vector<int> Card::findFreeLinks(vector<String>& linked_uids, const unordered_set
     for (int j = 0; j < linked_pairs.size(); ++j) {
       auto& linked_pair = linked_pairs[j];
       if (all_existing_uids.find(linked_pair.first.get()) == all_existing_uids.end() &&
-          std::find(freeIndexes.begin(), freeIndexes.end(), j) != freeIndexes.end()
+          std::find(freeIndexes.begin(), freeIndexes.end(), j) == freeIndexes.end()
       ) {
         freeIndexes.push_back(j);
         goto continue_outer;
@@ -131,18 +131,20 @@ vector<int> Card::findRelationLinks(const String& linked_relation) {
 
 String& Card::getLinkedUID(int index) {
   switch (index) {
-  case 3:  return linked_card_4;
-  case 2:  return linked_card_3;
+  case 0:  return linked_card_1;
   case 1:  return linked_card_2;
-  default: return linked_card_1;
+  case 2:  return linked_card_3;
+  case 3:  return linked_card_4;
+  default: throw ScriptError(_("getLinkedUID called with invalid index"));
   }
 }
 String& Card::getLinkedRelation(int index) {
   switch (index) {
-  case 3:  return linked_relation_4;
-  case 2:  return linked_relation_3;
+  case 0:  return linked_relation_1;
   case 1:  return linked_relation_2;
-  default: return linked_relation_1;
+  case 2:  return linked_relation_3;
+  case 3:  return linked_relation_4;
+  default: throw ScriptError(_("getLinkedRelation called with invalid index"));
   }
 }
 
@@ -215,7 +217,7 @@ void Card::addLink(const Set& set, CardP& linked_card, const String& selected_re
     return;
   }
   getLinkedUID(index) = linked_card->uid;
-  getLinkedRelation(index) = selected_relation;
+  getLinkedRelation(index) = linked_relation;
 
   index = linked_card->findFreeLink(uid, all_existing_uids);
   if (index < 0) {
@@ -223,7 +225,7 @@ void Card::addLink(const Set& set, CardP& linked_card, const String& selected_re
   }
   else {
     linked_card->getLinkedUID(index) = uid;
-    linked_card->getLinkedRelation(index) = linked_relation;
+    linked_card->getLinkedRelation(index) = selected_relation;
   }
 }
 

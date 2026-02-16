@@ -1,7 +1,7 @@
 mse version: 2.5.8
-installer group: translations/korean
+installer group: Magic Set Editor/translations/korean
 full name: 한국어 (Korean)
-version: 2025-06-18
+version: 2026-02-28
 icon: ko.png
 
 #TODO: Get actual speaker to localize this better and not via google translate
@@ -657,6 +657,8 @@ label:
 		이를 변경하면 선명 효과가 나타나는 방식에 영향을 줄 수 있습니다.
 		기존 이미지에는 소급 적용되지 않습니다.
 	check at startup:					시작 시 새 버전 확인
+	#TODO: Localize
+	check what targets:					Check for new versions of the following
 	checking requires internet:
 		업데이트를 확인하려면 인터넷 연결이 필요합니다.
 		인터넷 연결이 없으면 업데이트가 확인되지 않습니다.
@@ -741,6 +743,8 @@ label:
 	package name:						패키지
 	package status:						상태
 	package action:						행동
+	#TODO: Localize
+	awaiting package list:				(Waiting for package list from internet)
 
 	package conflicts:					충돌하는 코드 변경
 	package modified:					개인 - 코드 변경
@@ -751,6 +755,10 @@ label:
 	reinstall package:					재설치
 	upgrade package:					업데이트
 	remove package:						제거하다
+	#TODO: Localize
+	updates found:
+		Updates have been found.
+		Would you like to open the package manager?
 
 	installed version:					설치된 버전:
 	installable version:				최신 버전:
@@ -833,8 +841,18 @@ button:
 	spellcheck enabled:					철자 오류 표시
 	check now:							지금 확인하세요
 	always:								언제나
+	#TODO: Localize
+	every 5 startups:					Every 5 startups
+	#TODO: Localize
+	every 10 startups:					Every 10 startups
 	if internet connection exists:		인터넷 연결이 존재하는 경우
 	never:								절대
+	#TODO: Localize
+	check app:							Application only
+	#TODO: Localize
+	check games:						Application, games and styles
+	#TODO: Localize
+	check everything:					Everything
 	internal image extension:			파일 확장자로 이미지 저장
 	#TODO: Localize
 	allow image download:
@@ -886,6 +904,8 @@ button:
 title:
 	# window titles
 	magic set editor:					Magic Set Editor
+	#TODO: Localize
+	magic set editor updater:			Updater
 	%s - magic set editor:				%s - Magic Set Editor
 	untitled:							제목 없음
 	#TODO: Localize
@@ -957,8 +977,30 @@ title:
 	installing updates:					업데이트 설치
 	cannot create file:					파일을 만들 수 없습니다
 
+	# misc
+	#TODO: Localize Section
+	info:								Information
+	warning:							Warning
+	error:								Error
+
 ############################################################## Action (undo/redo) names
 action:
+	# cards
+	#TODO: Localize Section
+	reorder cards:						Reorder cards
+	change link:						Change link
+	change notes:						Change notes
+	change id:							Change ID
+	change style:						Change style
+	change all styles:					Change style (all cards)
+	use custom style:					Use custom style
+	show reminder text:					Show reminder text
+	hide reminder text:					Hide reminder text
+
+	# keywords
+	#TODO: Localize
+	keyword mode:						Keyword mode
+
 	# list boxes
 	add item:							추가하다 %s
 	remove item:						제거하다 %s
@@ -1146,6 +1188,8 @@ error:
 	multiple back faces:				Card '%s' has multiple cards linked as back faces.
 	#TODO: Localize
 	cant link to self:					Cannot link a card to itself. (This assignment will be ignored.)
+	#TODO: Localize
+	no cards selected:					No cards selected. Select up to 4 cards to link.
 	could not find input:				Could not find input card.
 	could not find linked:				Could not find linked card.
 

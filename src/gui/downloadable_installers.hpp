@@ -12,6 +12,7 @@
 #include <gui/packages_window.hpp>
 #include <wx/wfstream.h>
 #include <wx/webrequest.h>
+#include <wx/dialup.h>
 
 class DownloadableInstallerList;
 
@@ -28,6 +29,10 @@ public:
   /// Check for updates if the settings say so
   inline void check_updates() {
     settings.check_updates_counter++;
+    wxDialUpManager* manager = wxDialUpManager::Create();
+    bool connected = manager->IsOk() && manager->IsOnline();
+    delete manager;
+    if (!connected) return;
     if (
          (settings.check_updates_when == CHECK_ALWAYS)
       || (settings.check_updates_when == CHECK_5  && settings.check_updates_counter > 4)

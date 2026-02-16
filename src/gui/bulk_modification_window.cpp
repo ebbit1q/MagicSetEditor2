@@ -378,7 +378,7 @@ void BulkModificationWindow::onOk(wxCommandEvent&) {
     return;
   }
   else {
-    set->actions.addAction(make_unique<BulkAction>(actions, set, card_list_window), false);
+    set->actions.addAction(make_unique<BulkAction>(actions, set, card_list_window, actions.size() > 1), false);
     wxMessageDialog dial = wxMessageDialog(this, _ERROR_1_("bulk modify success", String() << actions.size()));
     dial.ShowModal();
     EndModal(wxID_OK);

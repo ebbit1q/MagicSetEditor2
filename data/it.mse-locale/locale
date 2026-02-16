@@ -1,7 +1,7 @@
 ﻿mse version: 2.5.8
-installer group: translations/italiano
+installer group: Magic Set Editor/translations/italian
 full name: Italiano (Italian)
-version: 2025-06-18
+version: 2026-02-28
 icon: it.png
 
 
@@ -608,9 +608,9 @@ label:
 		Scala per archiviare internamente le immagini delle carte.
 		La modifica di questa impostazione potrebbe influire sull'aspetto della Nitidezza.
 		Non si applica retroattivamente alle immagini esistenti.
-	check at startup:					Controlla aggiornamenti all'avvio
+	check at startup:					Controlla gli aggiornamenti all'avvio
+	check what targets:					Controlla gli aggiornamenti per quanto segue
 	checking requires internet:
-		Controllare gli aggiornamenti richiede una connessione a Internet.
 		Se non viene trovata nessuna connessione a Internet gli aggiornamenti non vengono controllati.
 		
 		Non sono raccolte informazioni quando si controllano gli aggiornamenti.
@@ -690,6 +690,7 @@ label:
 	package name:						Pacchetto
 	package status:						Stato
 	package action:						Azione
+	awaiting package list:				(In attesa dell'elenco dei pacchetti da Internet)
 
 	package conflicts:					conflitto modifiche
 	package modified:					modifiche locali
@@ -700,6 +701,9 @@ label:
 	reinstall package:					reinstallare
 	upgrade package:					aggiornamento
 	remove package:						rimuovere
+	updates found:
+		Sono stati trovati aggiornamenti.
+		Vuoi aprire il gestore pacchetti?
 
 	installed version:					Versione installata:
 	installable version:				Ultima versione:
@@ -774,8 +778,13 @@ button:
 	spellcheck enabled:					Mostra gli errori di ortografia sulle carte
 	check now:							Controlla ora (&N)
 	always:								Sempre
+	every 5 startups:					Ogni 5 avvii
+	every 10 startups:					Ogni 10 avvii
 	if internet connection exists:		Se è presente una connessione a Internet
 	never:								Mai
+	check app:							Solo app
+	check games:						App, giochi e stili
+	check everything:					Tutto
 	internal image extension:			Memorizza le immagini internamente con l'estensione del file
 	allow image download:
 		Consenti il download delle immagini.
@@ -826,6 +835,7 @@ button:
 title:
 	# window titles
 	magic set editor:					Magic Set Editor
+	magic set editor updater:			Updater
 	%s - magic set editor:				%s - Magic Set Editor
 	untitled:							Senza titolo
 	about:								Informazioni su Magic Set Editor
@@ -890,8 +900,27 @@ title:
 	installing updates:					Installazione di aggiornamenti
 	cannot create file:					Impossibile creare il file
 
+	# misc
+	info:								Informazioni
+	warning:							Avviso
+	error:								Errore
+
 ############################################################## Action (undo/redo) names
 action:
+	# cards
+	reorder cards:						Riordina le carte
+	change link:						Modifica collegamento
+	change notes:						Modifica note
+	change id:							Modifica ID
+	change style:						Modifica stile
+	change all styles:					Modifica stile (tutte le carte)
+	use custom style:					Usa stile personalizzato
+	show reminder text:					Mostra testo promemoria
+	hide reminder text:					Nascondi testo promemoria
+
+	# keywords
+	keyword mode:						Modalità parola chiave
+
 	# list boxes
 	add item:							Aggiungi %s
 	remove item:						Rimuovi %s
@@ -1061,6 +1090,7 @@ error:
 	multiple front faces:				La carta '%s' ha più carte collegate come lati anteriori
 	multiple back faces:				La carta '%s' ha più carte collegate come lati posteriori
 	cant link to self:					Impossibile collegare una carta a se stessa. (Questa assegnazione verrà ignorata.)
+	no cards selected:					Nessuna carta selezionata. Seleziona fino a 4 carte da collegare.
 	could not find input:				Impossibile trovare la carta di input
 	could not find linked:				Impossibile trovare la carta collegata (linked_card)
 

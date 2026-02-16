@@ -57,7 +57,6 @@ AddCardAction::AddCardAction(AddingOrRemoving ar, Set& set, const vector<CardP>&
     LINK_PAIRS(linked_pairs, added_card);
     FOR_EACH(linked_pair, linked_pairs) {
       String& linked_uid = linked_pair.first.get();
-      String& linked_relation = linked_pair.second.get();
       if (linked_uid.empty()) continue;
       // If it's an added card, replace the link
       if (all_added_uids.find(linked_uid) != all_added_uids.end()) {
@@ -99,7 +98,7 @@ ReorderCardsAction::ReorderCardsAction(Set& set, size_t card_id1, size_t card_id
 {}
 
 String ReorderCardsAction::getName(bool to_undo) const {
-  return _("Reorder cards");
+  return _ACTION_("reorder cards");
 }
 
 void ReorderCardsAction::perform(bool to_undo) {
@@ -120,31 +119,34 @@ OneWayLinkCardsAction::OneWayLinkCardsAction(Set& set, CardP& card, const String
   : CardListAction(set), card(card), uid(uid), relation(relation)
 {
   switch (index) {
-    case 1: {
+    case 0: {
       linked_uid      = &card->linked_card_1;
       linked_relation = &card->linked_relation_1;
       return;
     }
-    case 2: {
+    case 1: {
       linked_uid      = &card->linked_card_2;
       linked_relation = &card->linked_relation_2;
       return;
     }
-    case 3: {
+    case 2: {
       linked_uid      = &card->linked_card_3;
       linked_relation = &card->linked_relation_3;
       return;
     }
-    default: {
+    case 3: {
       linked_uid      = &card->linked_card_4;
       linked_relation = &card->linked_relation_4;
       return;
+    }
+    default: {
+      throw ScriptError(_("OneWayLinkCardsAction created with invalid index"));
     }
   }
 }
 
 String OneWayLinkCardsAction::getName(bool to_undo) const {
-  return _("Change link");
+  return _ACTION_("change link");
 }
 
 void OneWayLinkCardsAction::perform(bool to_undo) {
@@ -167,7 +169,7 @@ ChangeCardStyleAction::ChangeCardStyleAction(const CardP& card, const StyleSheet
   : card(card), stylesheet(stylesheet), has_styling(false) // styling_data(empty)
 {}
 String ChangeCardStyleAction::getName(bool to_undo) const {
-  return _("Change style");
+  return _ACTION_("change style");
 }
 void ChangeCardStyleAction::perform(bool to_undo) {
   swap(card->stylesheet,   stylesheet);
@@ -180,7 +182,7 @@ ChangeSetStyleAction::ChangeSetStyleAction(Set& set, const CardP& card)
   : set(set), card(card)
 {}
 String ChangeSetStyleAction::getName(bool to_undo) const {
-  return _("Change style (all cards)");
+  return _ACTION_("change all styles");
 }
 void ChangeSetStyleAction::perform(bool to_undo) {
   if (!to_undo) {
@@ -216,7 +218,7 @@ ChangeCardHasStylingAction::ChangeCardHasStylingAction(Set& set, const CardP& ca
   }
 }
 String ChangeCardHasStylingAction::getName(bool to_undo) const {
-  return _("Use custom style");
+  return _ACTION_("use custom style");
 }
 void ChangeCardHasStylingAction::perform(bool to_undo) {
   card->has_styling = !card->has_styling;
@@ -229,7 +231,7 @@ ChangeCardNotesAction::ChangeCardNotesAction(const CardP& card, const String& no
   : card(card), notes(notes)
 {}
 String ChangeCardNotesAction::getName(bool to_undo) const {
-  return _("Change notes");
+  return _ACTION_("change notes");
 }
 void ChangeCardNotesAction::perform(bool to_undo) {
   swap(card->notes, notes);
@@ -241,7 +243,7 @@ ChangeCardUIDAction::ChangeCardUIDAction(Set& set, const CardP& card, const Stri
   : CardListAction(set), card(card), uid(uid)
 {}
 String ChangeCardUIDAction::getName(bool to_undo) const {
-  return _("Change ID");
+  return _ACTION_("change id");
 }
 void ChangeCardUIDAction::perform(bool to_undo) {
   FOR_EACH(c, set.cards) {

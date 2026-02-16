@@ -1,7 +1,7 @@
 ﻿mse version: 2.5.8
-installer group: translations/español
+installer group: Magic Set Editor/translations/spanish
 full name: Español (Spanish)
-version: 2025-06-18
+version: 2026-02-28
 icon: es.png
 
 
@@ -652,6 +652,8 @@ label:
 		Cambiar esto puede afectar como se ve el Sharpening o Perfilado.
 		No se aplica retroactivamente a las imágenes existentes.
 	check at startup:					Buscar nuevas versiones al inicio
+	#TODO: Localize
+	check what targets:					Check for new versions of the following
 	checking requires internet:
 		La búsqueda de actualizaciones requiere una conexión a internet.
 		Si no hay una conexión a internet disponible no se buscan actualizaciones.
@@ -736,6 +738,8 @@ label:
 	package name:						Paquete
 	package status:						Situación
 	package action:						Acción
+	#TODO: Localize
+	awaiting package list:				(Waiting for package list from internet)
 
 	package conflicts:					Modificaciones en conflicto
 	package modified:					Modificaciones locales
@@ -746,6 +750,10 @@ label:
 	reinstall package:					Reinstalar
 	upgrade package:					Actualizar
 	remove package:						Eliminar
+	#TODO: Localize
+	updates found:
+		Updates have been found.
+		Would you like to open the package manager?
 
 	installed version:					Versión instalada:
 	installable version:				Última versión:
@@ -828,8 +836,18 @@ button:
 	spellcheck enabled:					Mostrar errores de &ortografía en las cartas
 	check now:							Buscar &ahora
 	always:								Siempre
+	#TODO: Localize
+	every 5 startups:					Every 5 startups
+	#TODO: Localize
+	every 10 startups:					Every 10 startups
 	if internet connection exists:		Si hay conexión de internet
 	never:								Nunca
+	#TODO: Localize
+	check app:							Application only
+	#TODO: Localize
+	check games:						Application, games and styles
+	#TODO: Localize
+	check everything:					Everything
 	internal image extension:			Almacenar imágenes internamente con extensión de archivo
 	#TODO: Localize
 	allow image download:
@@ -881,6 +899,8 @@ button:
 title:
 	# window titles
 	magic set editor:					Magic Set Editor
+	#TODO: Localize
+	magic set editor updater:			Updater
 	%s - magic set editor:				%s - Magic Set Editor
 	untitled:							Sin título
 	about:								Sobre Magic Set Editor
@@ -951,8 +971,30 @@ title:
 	installing updates:					Instalando actualizaciones
 	cannot create file:					No se pudo crear el archivo
 
+	# misc
+	#TODO: Localize Section
+	info:								Information
+	warning:							Warning
+	error:								Error
+
 ############################################################## Action (undo/redo) names
 action:
+	# cards
+	#TODO: Localize Section
+	reorder cards:						Reorder cards
+	change link:						Change link
+	change notes:						Change notes
+	change id:							Change ID
+	change style:						Change style
+	change all styles:					Change style (all cards)
+	use custom style:					Use custom style
+	show reminder text:					Show reminder text
+	hide reminder text:					Hide reminder text
+
+	# keywords
+	#TODO: Localize
+	keyword mode:						Keyword mode
+
 	# list boxes
 	add item:							Añadir %s
 	remove item:						Eliminar %s
@@ -1140,6 +1182,8 @@ error:
 	multiple back faces:				Card '%s' has multiple cards linked as back faces.
 	#TODO: Localize
 	cant link to self:					Cannot link a card to itself. (This assignment will be ignored.)
+	#TODO: Localize
+	no cards selected:					No cards selected. Select up to 4 cards to link.
 	could not find input:				Could not find input card.
 	could not find linked:				Could not find linked card.
 

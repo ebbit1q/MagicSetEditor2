@@ -448,13 +448,23 @@ void CardsPanel::onCommand(int id) {
       card_list->doLink();
       setCard(card_list->getCard(), true);
       break;
-    case ID_CARD_LINK_UNLINK_1: case ID_CARD_LINK_UNLINK_2: case ID_CARD_LINK_UNLINK_3: case ID_CARD_LINK_UNLINK_4: {
-      card_list->doUnlink((
-          id == ID_CARD_LINK_UNLINK_1 ? link_viewer_1
-        : id == ID_CARD_LINK_UNLINK_2 ? link_viewer_2
-        : id == ID_CARD_LINK_UNLINK_3 ? link_viewer_3
-        :                               link_viewer_4
-      )->getCard());
+    case ID_CARD_LINK_UNLINK_1: {
+      card_list->doUnlink(link_viewer_1->getCard());
+      setCard(card_list->getCard(), true);
+      break;
+    }
+    case ID_CARD_LINK_UNLINK_2: {
+      card_list->doUnlink(link_viewer_2->getCard());
+      setCard(card_list->getCard(), true);
+      break;
+    }
+    case ID_CARD_LINK_UNLINK_3: {
+      card_list->doUnlink(link_viewer_3->getCard());
+      setCard(card_list->getCard(), true);
+      break;
+    }
+    case ID_CARD_LINK_UNLINK_4: {
+      card_list->doUnlink(link_viewer_4->getCard());
       setCard(card_list->getCard(), true);
       break;
     }
