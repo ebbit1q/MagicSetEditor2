@@ -157,8 +157,11 @@ bool AddCSVWindow::readCSV(std::ifstream& in, std::vector<String>& headers_out, 
     auto fields = readCSVRow(rows[y]);
     std::vector<ScriptValueP> values;
     for (int x = 0; x < fields.size(); ++x) {
-      String wxstring(fields[x].c_str(), wxConvUTF8);
-      values.push_back(to_script(wxstring));
+      String wxstring = String(fields[x].c_str(), wxConvUTF8);
+      if (wxstring.empty()) wxstring = String(fields[x].c_str(), wxConvWhateverWorks);
+      wxstring.Replace(_("\\n"), _("\n"));
+      if (wxstring == _("nil")) values.push_back(script_nil); 
+      else values.push_back(to_script(wxstring));
     }
     table_out.push_back(values);
   }
