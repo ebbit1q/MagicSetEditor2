@@ -21,9 +21,9 @@ struct TextViewer::Line {
   LineBreak      break_after;               ///< Is there a saparator after this line?
   optional<Alignment> alignment;            ///< Alignment of this line
   bool           justifying;                ///< Is the text justified? Only true when *really* justifying.
-  double         margin_left;               ///< Left margin including the margin tag and bullet point
-  double         margin_left_before_bullet; ///< Left margin but just before the bullet point
-  double         margin_right;              ///< Rightmargin
+  double         margin_left_after_bullet;  ///< Left margin including the margin tag and bullet point
+  double         margin_left_before_bullet; ///< Left margin including the margin tag but just before the bullet point
+  double         margin_right;              ///< Right margin
   bool           bullet;                    ///< Does this line start with a bullet point?
   
   Line()
@@ -357,7 +357,7 @@ void update_size(LineLayout& layout, TextViewer::Line const& l) {
 TextLayoutP TextViewer::extractLayoutInfo() const {
   // store information about the content/layout
   TextLayoutP layout = make_intrusive<TextLayout>();
-  LineLayoutP paragraph, block;
+  LineLayoutP clause, paragraph, block;
   for (auto const& l : lines) {
     LineLayoutP line = make_intrusive<LineLayout>(l.width(), l.top, l.line_height, LineLayout::Type::LINE);
     if (!block) {
@@ -371,18 +371,29 @@ TextLayoutP TextViewer::extractLayoutInfo() const {
       block->paragraphs.push_back(paragraph);
       layout->paragraphs.push_back(paragraph);
     }
+    if (!clause) {
+      clause = make_intrusive<LineLayout>(*line);
+      clause->type = LineLayout::Type::CLAUSE;
+      paragraph->clauses.push_back(clause);
+      block->clauses.push_back(clause);
+      layout->clauses.push_back(clause);
+    }
+    clause->lines.push_back(line);
     paragraph->lines.push_back(line);
     block->lines.push_back(line);
     layout->lines.push_back(line);
     if (l.line_height > 0) {
+      update_size(*clause, l);
       update_size(*paragraph, l);
       update_size(*block, l);
       update_size(*layout, l);
     }
     if (l.break_after == LineBreak::LINE) {
-      paragraph = block = nullptr;
+      clause = paragraph = block = nullptr;
     } else if (l.break_after == LineBreak::HARD) {
-      paragraph = nullptr;
+      clause = paragraph = nullptr;
+    } else if (l.break_after == LineBreak::SOFT) {
+      clause = nullptr;
     }
   }
   for (size_t i=0; i+1 < layout->blocks.size() ; ++i) {
@@ -547,7 +558,7 @@ void TextViewer::prepareLinesTryScales(RotatedDC& dc, const String& text, const 
 
 // Try to fit a blank line in the masked image, move down until it fits
 RealSize TextViewer::fitLineWidth(Line& line, RotatedDC& dc, const TextStyle& style) const {
-  double margin_left = line.bullet ? line.margin_left_before_bullet : line.margin_left;
+  double margin_left = line.bullet ? line.margin_left_before_bullet : line.margin_left_after_bullet;
   RealSize line_size(margin_left + lineLeft(dc, style, line.top), 0);
   while (line.top < dc.getHeight() && line_size.width + 1 >= dc.getWidth() - style.padding_right - line.margin_right) {
     // nothing fits on this line, move down one pixel
@@ -561,16 +572,20 @@ bool TextViewer::prepareLinesAtScale(RotatedDC& dc, const vector<CharInfo>& char
   // Try to layout the text at the current scale
   lines.clear();
 
+  // The current "clause" in the input string
+  size_t i_clause = 0;
+  assert(elements.clauses.size() > 0);
+
   // The current "paragraph" in the input string
   size_t i_para = 0;
   assert(elements.paragraphs.size() > 0);
 
   // first line
   Line line;
-  line.top = style.padding_top;
-  line.margin_left = elements.paragraphs[0].margin_left;
-  line.margin_left_before_bullet = elements.paragraphs[0].margin_left;
-  line.margin_right = elements.paragraphs[0].margin_right;
+  line.top = style.padding_top + elements.clauses[0].margin_top;
+  line.margin_left_after_bullet = elements.clauses[0].margin_left;
+  line.margin_left_before_bullet = elements.clauses[0].margin_left;
+  line.margin_right = elements.clauses[0].margin_right;
   line.alignment = elements.paragraphs[0].alignment;
   // size of the line so far
   RealSize line_size = fitLineWidth(line, dc, style);
@@ -584,14 +599,26 @@ bool TextViewer::prepareLinesAtScale(RotatedDC& dc, const vector<CharInfo>& char
   // For each character ...
   for (size_t i = 0 ; i < chars.size() ; ++i) {
     const CharInfo& c = chars[i];
+    assert(i_clause < elements.clauses.size());
     assert(i_para < elements.paragraphs.size());
     assert(c.size.width == 0 || elements.paragraphs[i_para].start <= i && i < elements.paragraphs[i_para].end);
+    // If we found the paragraph's bullet point, calculate the margins
+    if (i == elements.paragraphs[i_para].margin_after_bullet) {
+      for (size_t j = line.start; j < elements.paragraphs[i_para].margin_after_bullet; ++j) {
+        line.margin_left_after_bullet += chars[j].size.width;
+      }
+    }
+    if (i == elements.paragraphs[i_para].margin_before_bullet) {
+      for (size_t j = line.start; j < elements.paragraphs[i_para].margin_before_bullet; ++j) {
+        line.margin_left_before_bullet += chars[j].size.width;
+      }
+    }
     // Should we break?
     bool word_too_long = false;
     bool break_now     = false;
     bool accept_word   = false; // the current word should be added to the line
     bool hide_breaker  = true;  // hide the \n or _(' ') that caused a line break
-    if (c.break_after == LineBreak::SOFT || c.break_after == LineBreak::HARD || c.break_after == LineBreak::LINE) {
+    if (c.break_after >= LineBreak::WRAP) {
       break_now   = true;
       accept_word = true;
       line.break_after = c.break_after;
@@ -599,10 +626,10 @@ bool TextViewer::prepareLinesAtScale(RotatedDC& dc, const vector<CharInfo>& char
       // Soft break == end of word
       accept_word = true;
     } else if (c.break_after == LineBreak::MAYBE && style.direction == TOP_TO_BOTTOM) {
-      break_now   = true;
-      accept_word = true;
+      break_now    = true;
+      accept_word  = true;
       hide_breaker = false;
-      line.break_after = LineBreak::SOFT;
+      line.break_after = LineBreak::WRAP;
     }
     // Add size of the character
     if (c.break_after != LineBreak::LINE) {
@@ -612,12 +639,6 @@ bool TextViewer::prepareLinesAtScale(RotatedDC& dc, const vector<CharInfo>& char
     }
     positions_word.push_back(word_size.width);
     if (!c.soft) word_end_or_soft = i + 1;
-    if (i < elements.paragraphs[i_para].margin_after_bullet) {
-      line.margin_left += c.size.width; // character in left margin
-      if (i < elements.paragraphs[i_para].margin_before_bullet) {
-        line.margin_left_before_bullet += c.size.width;
-      }
-    }
     // Did the word become too long?
     if (!break_now) {
       double max_width = lineRight(dc, style, line.top) - line.margin_right;
@@ -635,12 +656,12 @@ bool TextViewer::prepareLinesAtScale(RotatedDC& dc, const vector<CharInfo>& char
             accept_word = true;
             hide_breaker = false;
             word_too_long = true;
-            line.break_after = LineBreak::SOFT;
+            line.break_after = LineBreak::WRAP;
           }
         } else {
           // line would become too long, break before the current word
           break_now = true;
-          line.break_after = LineBreak::SOFT;
+          line.break_after = LineBreak::WRAP;
         }
       }
     }
@@ -688,20 +709,28 @@ bool TextViewer::prepareLinesAtScale(RotatedDC& dc, const vector<CharInfo>& char
       line.top += line.line_height * line_height_multiplier;
       line.start = word_start;
       line.positions.clear();
-      if (line.break_after == LineBreak::LINE) line.line_height = 0;
+      if (line.break_after >= LineBreak::SOFT) {
+        // end of clause
+        assert(elements.clauses[i_clause].end == i + 1);
+        assert(i_clause + 1 < elements.clauses.size());
+        if (i_clause + 1 < elements.clauses.size()) ++i_clause;
+        assert(elements.clauses[i_clause].start == i + 1);
+        line.margin_right = elements.clauses[i_clause].margin_right;
+        //if (line.start == elements.clauses[i_clause].start) {
+          line.top += elements.clauses[i_clause].margin_top;
+        //}
+      }
       if (line.break_after >= LineBreak::HARD) {
         // end of paragraph
-        // look at next paragraph
         assert(elements.paragraphs[i_para].end == i + 1);
         assert(i_para + 1 < elements.paragraphs.size());
-        if (i_para+1 < elements.paragraphs.size()) ++i_para;
+        if (i_para + 1 < elements.paragraphs.size()) ++i_para;
         assert(elements.paragraphs[i_para].start == i + 1);
-        line.margin_left = elements.paragraphs[i_para].margin_left;
-        line.margin_left_before_bullet = elements.paragraphs[i_para].margin_left;
-        line.margin_right = elements.paragraphs[i_para].margin_right;
-        line.top += elements.paragraphs[i_para].margin_top;
+        line.margin_left_after_bullet = elements.clauses[i_clause].margin_left;
+        line.margin_left_before_bullet = elements.clauses[i_clause].margin_left;
         line.alignment = elements.paragraphs[i_para].alignment;
       }
+      if (line.break_after == LineBreak::LINE) line.line_height = 0;
       line.break_after = LineBreak::NO;
       // is the first visible character of the line a bullet point?
       line.bullet = false;
@@ -811,9 +840,9 @@ void TextViewer::alignParagraph(size_t start_line, size_t end_line, const vector
       double sum = 0;
       for (size_t li = start_line ; li < end_line ; ++li) {
         const Line& l = lines[li];
-        if ((soft && l.break_after == LineBreak::SOFT)
-         || (hard && l.break_after == LineBreak::HARD)
-         || (line && l.break_after == LineBreak::LINE)) sum += l.line_height;
+        if ((soft && (l.break_after == LineBreak::SOFT || l.break_after == LineBreak::WRAP))
+         || (hard &&  l.break_after == LineBreak::HARD)
+         || (line &&  l.break_after == LineBreak::LINE)) sum += l.line_height;
       }
       if (sum == 0) break;
       // how much do we need to add?
@@ -824,9 +853,9 @@ void TextViewer::alignParagraph(size_t start_line, size_t end_line, const vector
         Line& l = lines[li];
         l.top  += add;
         // adjust next line by..
-        if ((soft && l.break_after == LineBreak::SOFT)
-         || (hard && l.break_after == LineBreak::HARD)
-         || (line && l.break_after == LineBreak::LINE)) add += to_add * l.line_height;
+        if ((soft && (l.break_after == LineBreak::SOFT || l.break_after == LineBreak::WRAP))
+         || (hard &&  l.break_after == LineBreak::HARD)
+         || (line &&  l.break_after == LineBreak::LINE)) add += to_add * l.line_height;
       }
       height += add;
     }
@@ -847,12 +876,12 @@ void TextViewer::alignParagraph(size_t start_line, size_t end_line, const vector
 }
 
 void TextViewer::Line::alignHorizontal(const vector<CharInfo>& chars, const TextStyle& style, const RealRect& s) {
-  double margin_bullet = bullet ? margin_left_before_bullet : margin_left;
+  double margin_bullet = bullet ? margin_left_before_bullet : margin_left_after_bullet;
   double width = this->width() - margin_bullet;
   double target_width = s.width - margin_bullet - margin_right;
   Alignment alignment = this->alignment.value_or(style.alignment);
   bool should_fill = (alignment & ALIGN_IF_OVERFLOW  ? width > target_width : true)
-                  && (alignment & ALIGN_IF_SOFTBREAK ? break_after == LineBreak::SOFT || !style.field().multi_line : true);
+                  && (alignment & ALIGN_IF_SOFTBREAK ? break_after == LineBreak::WRAP || break_after == LineBreak::SOFT || !style.field().multi_line : true);
   if ((alignment & ALIGN_JUSTIFY_ALL) && should_fill) {
     // justify text, by characters
     justifying = true;

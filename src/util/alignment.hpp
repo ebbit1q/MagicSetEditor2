@@ -27,7 +27,7 @@ enum Alignment {
   ALIGN_FILL          = ALIGN_STRETCH | ALIGN_JUSTIFY_WORDS | ALIGN_JUSTIFY_ALL,
   // horizontal fill modifiers
   ALIGN_IF_OVERFLOW   = 0x1000, // only fill if text_width > box_width
-  ALIGN_IF_SOFTBREAK  = 0x2000, // only fill before soft line breaks
+  ALIGN_IF_SOFTBREAK  = 0x2000, // only fill before soft line breaks and wraps
   // vertical
   ALIGN_TOP           = 0x100,
   ALIGN_MIDDLE        = 0x200,

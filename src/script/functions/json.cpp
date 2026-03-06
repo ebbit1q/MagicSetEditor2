@@ -591,6 +591,7 @@ boost::json::object mse_to_json(const StyleP& style) {
     layoutv.emplace("content_width",       wxString::Format(wxT("%.2f"), s->layout->width));
     layoutv.emplace("content_height",      wxString::Format(wxT("%.2f"), s->layout->height));
     layoutv.emplace("content_lines",       wxString::Format(wxT("%i"),   s->layout->lines.size()));
+    layoutv.emplace("content_clauses",     wxString::Format(wxT("%i"),   s->layout->clauses.size()));
     layoutv.emplace("content_paragraphs",  wxString::Format(wxT("%i"),   s->layout->paragraphs.size()));
     layoutv.emplace("content_blocks",      wxString::Format(wxT("%i"),   s->layout->blocks.size()));
     boost::json::array separatorsv;

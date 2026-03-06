@@ -46,16 +46,20 @@ struct TextElementsFromString {
 
   const TextStyle& style;
   Context& ctx;
+  vector<TextClause>& clauses;
   vector<TextParagraph>& paragraphs;
   
   TextElementsFromString(TextElements& out, const String& text, const TextStyle& style, Context& ctx)
-    : style(style), ctx(ctx), paragraphs(out.paragraphs)
+    : style(style), ctx(ctx), clauses(out.clauses), paragraphs(out.paragraphs)
   {
     out.start = 0;
     out.end = text.size();
+    clauses.emplace_back();
+    clauses.back().start = 0;
     paragraphs.emplace_back();
     paragraphs.back().start = 0;
     fromString(out.children, text, 0, text.size());
+    clauses.back().end = text.size();
     paragraphs.back().end = text.size();
   }
 
@@ -70,7 +74,7 @@ private:
         if (text_start < pos) {
           // text element before this tag?
           addText(elements, text, text_start, pos);
-          addParagraphs(text, text_start, pos);
+          addClausesAndParagraphs(text, text_start, pos);
         }
         // a (formatting) tag
         size_t tag_start = pos;
@@ -175,7 +179,8 @@ private:
         } else if (is_tag(text, tag_start, _("<bullet"))) {
           // start of bullet point, set margin before bullet here, but only once
           // subsequent times will align to this one
-          if (paragraphs.back().margin_before_bullet == paragraphs.back().start) {
+          if (!paragraphs.back().before_bullet_found) {
+            paragraphs.back().before_bullet_found = true;
             paragraphs.back().margin_before_bullet = tag_start;
           }
           if (li <= 0) {
@@ -184,7 +189,8 @@ private:
         } else if (is_tag(text, tag_start, _("</bullet"))) {
           // end of bullet point, set margin after bullet here, but only once
           // subsequent times will align to this one
-          if (paragraphs.back().margin_after_bullet == paragraphs.back().start) {
+          if (!paragraphs.back().after_bullet_found) {
+            paragraphs.back().after_bullet_found = true;
             paragraphs.back().margin_after_bullet = pos;
           }
           if (li <= 0) {
@@ -196,18 +202,18 @@ private:
             size_t colon2 = text.find_first_of(_(">:"), colon + 1);
             size_t colon3 = colon2 < pos-1 ? text.find_first_of(_(">:"), colon2 + 1) : colon2;
             Margins m = {0.,0.,0.};
-            text.substr(colon + 1, colon2 - colon - 2).ToDouble(&m.left);
+            text.substr(colon  + 1, colon2 - colon  - 2).ToDouble(&m.left);
             text.substr(colon2 + 1, colon3 - colon2 - 2).ToDouble(&m.right);
-            text.substr(colon3 + 1, pos - colon3 - 2).ToDouble(&m.top);
+            text.substr(colon3 + 1, pos    - colon3 - 2).ToDouble(&m.top);
             if (!margins.empty()) {
               m.left  += margins.back().left;
               m.right += margins.back().right;
               m.top   += margins.back().top;
             }
             margins.emplace_back(m);
-            paragraphs.back().margin_left = m.left;
-            paragraphs.back().margin_right = m.right;
-            paragraphs.back().margin_top = m.top;
+            clauses.back().margin_left  = m.left;
+            clauses.back().margin_right = m.right;
+            clauses.back().margin_top   = m.top;
           }
         } else if (is_tag(text, tag_start, _("</margin"))) {
           if (!margins.empty()) margins.pop_back();
@@ -233,7 +239,7 @@ private:
     if (text_start < end) {
       // remaining text at the end
       addText(elements, text, text_start, end);
-      addParagraphs(text, text_start, end);
+      addClausesAndParagraphs(text, text_start, end);
     }
   }
   
@@ -248,8 +254,9 @@ private:
     } else {
       // text, possibly mixed with symbols
       DrawWhat what = soft > 0 ? DRAW_ACTIVE : DRAW_NORMAL;
-      LineBreak line_break = line > 0 ? LineBreak::LINE :
-                             soft_line > 0 ? LineBreak::SOFT : LineBreak::HARD;
+      LineBreak line_break = line      > 0 ? LineBreak::LINE :
+                             soft_line > 0 ? LineBreak::SOFT :
+                                             LineBreak::HARD;
       if (kwpph > 0 || param > 0) {
         // bracket the text
         content = String(LEFT_ANGLE_BRACKET) + content + RIGHT_ANGLE_BRACKET;
@@ -285,22 +292,25 @@ private:
       }
     }
   }
-  // Find paragraph breaks in text
-  void addParagraphs(const String& text, size_t start, size_t end) {
-    if (line == 0 && soft_line > 0) return;
+  // Find clause and paragraph breaks in text
+  void addClausesAndParagraphs(const String& text, size_t start, size_t end) {
     for (size_t i = start; i < end; ++i) {
       wxUniChar c = text.GetChar(i);
       if (c == '\n') {
+        clauses.back().end = i + 1;
+        clauses.emplace_back();
+        clauses.back().start = i + 1;
+        if (!margins.empty()) {
+          clauses.back().margin_left  = margins.back().left;
+          clauses.back().margin_right = margins.back().right;
+          clauses.back().margin_top   = margins.back().top;
+        }
+        if (line < 1 && soft_line > 0) continue;
         paragraphs.back().end = i + 1;
         paragraphs.emplace_back();
         paragraphs.back().start = i + 1;
         paragraphs.back().margin_before_bullet = i + 1;
         paragraphs.back().margin_after_bullet = i + 1;
-        if (!margins.empty()) {
-          paragraphs.back().margin_left  = margins.back().left;
-          paragraphs.back().margin_right = margins.back().right;
-          paragraphs.back().margin_top   = margins.back().top;
-        }
         if (!aligns.empty()) {
           paragraphs.back().alignment = aligns.back();
         }
@@ -333,6 +343,7 @@ private:
 
 void TextElements::clear() {
   children.clear();
+  clauses.clear();
   paragraphs.clear();
 }
 

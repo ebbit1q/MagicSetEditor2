@@ -25,19 +25,20 @@ class SymbolFontRef;
 /// Information on a linebreak
 enum class LineBreak {
   NO,    // no line break ever
-  MAYBE, // break here when in "direction:vertical" mode
-  SPACE, // optional line break (' ')
-  SOFT,  // always a line break, spacing as a soft break, doesn't end paragraphs
-  HARD,  // always a line break ('\n')
-  LINE,  // line break with a separator line (<line>)
+  MAYBE, // break here when in "direction:vertical" mode (break as WRAP)
+  SPACE, // optional line break, spacing as a soft break, ends a line,      ( )
+  WRAP,  // always a line break, spacing as a soft break, ends a line,      ( )
+  SOFT,  // always a line break, spacing as a soft break, ends a clause,    (<soft-line>\n</soft-line>)
+  HARD,  // always a line break, spacing as a hard break, ends a paragraph, (\n)
+  LINE,  // always a line break, spacing as a line break, ends a block,     (<line>\n</line>),          has separator
 };
 
 /// Information on a character in a TextElement
 struct CharInfo {
-  RealSize  size;             ///< Size of this character
-  LineBreak break_after : 16; ///< How/when to break after it?
-  bool      soft : 1;         ///< Is this a 'soft' character? soft characters are ignored for alignment
-  bool      bullet : 1;       ///< Is this a bullet point?
+  RealSize  size;        ///< Size of this character
+  LineBreak break_after; ///< How/when to break after it?
+  bool      soft : 1;    ///< Is this a 'soft' character? soft characters are ignored for alignment
+  bool      bullet : 1;  ///< Is this a bullet point?
   
   explicit CharInfo()
     : break_after(LineBreak::NO), soft(true), bullet(false)
@@ -146,14 +147,20 @@ public:
 
 // ----------------------------------------------------------------------------- : TextElements
 
+class TextClause {
+public:
+  double margin_left = 0., margin_right = 0., margin_top = 0.;
+  size_t start = String::npos, end = String::npos;
+};
+
 class TextParagraph {
 public:
   optional<Alignment> alignment;
-  double margin_left = 0., margin_right = 0.;
-  double margin_top = 0.; //, margin_bottom = 0.; // TODO: more margin options?
-  size_t start = String::npos, end = String::npos;
+  bool before_bullet_found = false;
+  bool after_bullet_found = false;
   size_t margin_before_bullet = 0; // position of the bullet tag
-  size_t margin_after_bullet = 0; // position of the first character after the bullet tag
+  size_t margin_after_bullet = 0;  // position of the first character after the bullet tag
+  size_t start = String::npos, end = String::npos;
 };
 
 /// A list of text elements extracted from a string
@@ -161,8 +168,12 @@ class TextElements : public CompoundTextElement {
 public:
   TextElements() : CompoundTextElement(String::npos,String::npos) {}
 
-  /// Information on the paragraphs/blocks in the string
-  /// Text segments separated by newlines are considered paragraphs
+  /// Information on the clauses/paragraphs/blocks in the string
+  /// Text segments separated by wrapping are considered lines
+  /// Text segments separated by soft newlines are considered clauses
+  /// Text segments separated by hard newlines are considered paragraphs
+  /// Text segments separated by line newlines are considered blocks
+  vector<TextClause> clauses;
   vector<TextParagraph> paragraphs;
 
   void clear();

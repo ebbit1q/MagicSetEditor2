@@ -50,8 +50,8 @@ public:
 class LineLayout : public IntrusivePtrVirtualBase {
 public:
   double width, top, height;
-  enum class Type { LINE, PARAGRAPH, BLOCK, ALL } type;
-  vector<LineLayoutP> lines, paragraphs, blocks;
+  enum class Type { LINE, CLAUSE, PARAGRAPH, BLOCK, ALL } type;
+  vector<LineLayoutP> lines, clauses, paragraphs, blocks;
 
   LineLayout() {}
   LineLayout(double width, double top, double height, Type type) : width(width), top(top), height(height), type(type) {}
