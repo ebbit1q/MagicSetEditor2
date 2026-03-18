@@ -120,13 +120,19 @@ unique_ptr<TextValueAction> toggle_format_action(const TextValueP& value, vector
                                     compute_new_simple_value  (new_value, tag,    start_i, end_i);
     // Erase redundant tags
     if (start != end) {
-      // don't simplify if start == end, this way we insert <b></b>, allowing the
-      // user to press Ctrl+B and start typing bold text
+      // Simplify
       new_value = simplify_tagged(new_value);
+      // Adjust selection
+      start_i = to_tagged_pos(new_value, untagged_start_i, true, true, true);
+      end_i   = to_tagged_pos(new_value, untagged_end_i,   false, false, false);
     }
-    // Adjust selection
-    start_i = to_tagged_pos(new_value, untagged_start_i, true, false);
-    end_i   = to_tagged_pos(new_value, untagged_end_i,   true, false);
+    else {
+      // Don't simplify if start == end, this way we insert <b></b>,
+      // allowing the user to press Ctrl+B and start typing bold text
+      // Adjust selection
+      start_i = to_tagged_pos(new_value, untagged_start_i, true, false, true);
+      end_i   = to_tagged_pos(new_value, untagged_end_i,   true, false, true);
+    }
   }
   // Build action
   if (value->value() == new_value) {

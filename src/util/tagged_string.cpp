@@ -129,10 +129,12 @@ String fix_old_tags(const String& str) {
   return it;
 }
 
-[[nodiscard]] String::const_iterator skip_all_tags(String::const_iterator it, String::const_iterator end, bool skip_open, bool skip_close) {
+[[nodiscard]] String::const_iterator skip_all_tags(String::const_iterator it, String::const_iterator end, bool skip_open, bool skip_close, bool skip_nonformat) {
   // move after first possible position corresponding
   while (it != end && *it == '<') {
-    if (it + 1 != end && *(it + 1) == '/') {
+    if (skip_nonformat && !is_formatting_tag(it, end)) {
+      it = skip_tag(it, end);
+    } else if (it + 1 != end && *(it + 1) == '/') {
       if (skip_close) {
         it = skip_tag(it, end);
       } else {
@@ -149,7 +151,7 @@ String fix_old_tags(const String& str) {
   return it;
 }
 
-[[nodiscard]] String::const_iterator advance_untagged(String::const_iterator it, String::const_iterator end, size_t n, bool after_open, bool after_close) {
+[[nodiscard]] String::const_iterator advance_untagged(String::const_iterator it, String::const_iterator end, size_t n, bool after_open, bool after_close, bool after_nonformat) {
   while (n > 0) {
     it = skip_all_tags(it, end);
     if (it != end) {
@@ -159,7 +161,7 @@ String fix_old_tags(const String& str) {
       return it;
     }
   }
-  return skip_all_tags(it, end, after_open, after_close);
+  return skip_all_tags(it, end, after_open, after_close, after_nonformat);
 }
 
 [[nodiscard]] bool is_tag(String::const_iterator it, String::const_iterator end, const char* tag, bool strict) {
@@ -285,6 +287,63 @@ bool is_formatting_tag(const String& str, size_t pos) {
          is_substr(str, pos, _("color"))  || is_substr(str, pos, _("/color"));
 }
 
+bool is_formatting_tag(String::const_iterator it, String::const_iterator end) {
+  // so ugly but so fast!
+  if (it == end) return false;
+  if (*it != '<') return false;
+  ++it; if (it == end) return false;
+  if (*it == '/') {++it; if (it == end) return false;}
+  if (*it == 'b' || *it == 'i' || *it == 'u') return true;
+  if (*it == 's') {
+    ++it; if (it == end) return false;
+    if (*it == 'y') {
+      ++it; if (it == end) return false;
+      if (*it != 'm') return false;
+      return true;
+    }
+    if (*it == 't') {
+      ++it; if (it == end) return false;
+      if (*it != 'r') return false;
+      ++it; if (it == end) return false;
+      if (*it != 'i') return false;
+      ++it; if (it == end) return false;
+      if (*it != 'k') return false;
+      ++it; if (it == end) return false;
+      if (*it != 'e') return false;
+      return true;
+    }
+    if (*it == 'i') {
+      ++it; if (it == end) return false;
+      if (*it != 'z') return false;
+      ++it; if (it == end) return false;
+      if (*it != 'e') return false;
+      return true;
+    }
+    return false;
+  }
+  if (*it == 'f') {
+    ++it; if (it == end) return false;
+    if (*it != 'o') return false;
+    ++it; if (it == end) return false;
+    if (*it != 'n') return false;
+    ++it; if (it == end) return false;
+    if (*it != 't') return false;
+    return true;
+  }
+  if (*it == 'c') {
+    ++it; if (it == end) return false;
+    if (*it != 'o') return false;
+    ++it; if (it == end) return false;
+    if (*it != 'l') return false;
+    ++it; if (it == end) return false;
+    if (*it != 'o') return false;
+    ++it; if (it == end) return false;
+    if (*it != 'r') return false;
+    return true;
+  }
+  return false;
+}
+
 [[nodiscard]] size_t in_tag(const String& str, const String& tag, size_t start, size_t end, bool strict) {
   size_t last_start = String::npos;
   size_t size = str.size();
@@ -343,10 +402,10 @@ size_t to_untagged_pos(const String& str, size_t pos) {
   return untag(str.substr(0, pos)).size();
 }
 
-size_t to_tagged_pos(const String& str, size_t pos, bool after_open, bool after_close) {
+size_t to_tagged_pos(const String& str, size_t pos, bool after_open, bool after_close, bool after_nonformat) {
   String::const_iterator it = str.begin();
   const String::const_iterator end = str.end();
-  it = advance_untagged(it, end, pos, after_open, after_close);
+  it = advance_untagged(it, end, pos, after_open, after_close, after_nonformat);
   return std::distance(str.begin(), it);
 }
 

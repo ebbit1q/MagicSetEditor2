@@ -79,6 +79,7 @@ String fix_old_tags(const String&);
 /// Does a string contain a tag at the given location?
 /** Matches <b <i <u <strike <font <size <color <sym or their anti tags */
 [[nodiscard]] bool is_formatting_tag(const String& str, size_t pos);
+[[nodiscard]] bool is_formatting_tag(String::const_iterator it, String::const_iterator end);
 
 /// Is the given range entirely contained in a given tagged block?
 /** If so: return the start position of that tag, otherwise returns String::npos
@@ -113,11 +114,11 @@ String anti_tag(const String& tag);
 [[nodiscard]] String::const_iterator skip_all_tags(String::const_iterator it, String::const_iterator end);
 
 // Skip past all open/close tags
-[[nodiscard]] String::const_iterator skip_all_tags(String::const_iterator it, String::const_iterator end, bool skip_open, bool skip_close);
+[[nodiscard]] String::const_iterator skip_all_tags(String::const_iterator it, String::const_iterator end, bool skip_open, bool skip_close, bool skip_nonformat=false);
 
 // Advance an iterator by n positions, not counting tags
 // For example: advance_untagged("<b>abc</b>",_,2) = "c</b>"
-[[nodiscard]] String::const_iterator advance_untagged(String::const_iterator it, String::const_iterator end, size_t n, bool after_open=false, bool after_close=false);
+[[nodiscard]] String::const_iterator advance_untagged(String::const_iterator it, String::const_iterator end, size_t n, bool after_open=false, bool after_close=false, bool after_nonformat=false);
 
 // Find the position of the closing tag matching the tag at it
 // If not found, returns end
@@ -142,7 +143,7 @@ size_t to_untagged_pos(const String& str, size_t pos);
 
 /// Take a tagged string and a position inside the untagged version,
 /// return the position in the tagged version.
-size_t to_tagged_pos(const String& str, size_t pos, bool after_open=false, bool after_close=false);
+size_t to_tagged_pos(const String& str, size_t pos, bool after_open=false, bool after_close=false, bool after_nonformat=false);
 
 /// Directions of cursor movement
 enum Movement
