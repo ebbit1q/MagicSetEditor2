@@ -1,0 +1,147 @@
+name: Automatic Build
+
+permissions:
+  actions: write
+
+on:
+  push:
+    branches:
+      - "main"
+    paths:
+      - "src/**"
+      - "CMakeLists.txt"
+      - ".github/workflows/build.yml"
+  pull_request:
+    paths:
+      - "src/**"
+      - "CMakeLists.txt"
+      - ".github/workflows/build.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - name: linux
+            runner: ubuntu-latest
+            dependencies: libboost-dev libboost-regex-dev libboost-json-dev libhunspell-dev build-essential cmake libgtk-3-dev libcurl4-openssl-dev
+            wx_version: v3.3.1
+            # the amount of cores on runners can be found here:
+            # https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories
+            cores: 4
+
+    name: ${{matrix.name}} build
+    runs-on: ${{matrix.runner}}
+    env:
+      CCACHE_DIR: ${{github.workspace}}/ccache/${{matrix.name}}
+      CCACHE_SIZE: 1G
+      WXWIDGETS_DIR: ${{github.workspace}}/wxwidgets/${{matrix.name}}
+      CORES: ${{matrix.cores}}
+
+    steps:
+      - name: install deps
+        shell: bash
+        env:
+          DEPS: ${{matrix.dependencies}}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ccache $DEPS
+
+      - name: get wxwidgets cache
+        id: wxwidgets-cache
+        uses: actions/cache/restore@v5
+        with:
+          path: ${{env.WXWIDGETS_DIR}}
+          key: wxwidgets-${{matrix.wx_version}}-${{matrix.name}}
+          restore-keys: wxwidgets-${{matrix.wx_version}}-${{matrix.name}}
+
+      - name: checkout wxwidgets ${{matrix.wx_version}}
+        if: steps.wxwidgets-cache.outputs.cache-hit != 'true'
+        uses: actions/checkout@v6
+        with:
+          repository: wxWidgets/wxWidgets
+          ref: ${{matrix.wx_version}}
+          path: wxWidgets
+
+      - name: compile wxwidgets
+        if: steps.wxwidgets-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          cd wxWidgets
+          echo "::group::submodules"
+          git submodule update --init src/expat src/stc/scintilla src/stc/lexilla 3rdparty/catch 3rdparty/nanosvg 3rdparty/libwebp
+          echo "::endgroup::"
+          mkdir buildgtk
+          cd buildgtk
+          mkdir -p $WXWIDGETS_DIR
+          echo "::group::cmake"
+          cmake .. -DCMAKE_INSTALL_PREFIX=$WXWIDGETS_DIR
+          echo "::endgroup::"
+          echo "::group::compile"
+          make -j $CORES
+          echo "::endgroup::"
+          echo "::group::install to $WXWIDGETS_DIR"
+          make install
+          echo "::endgroup::"
+
+      - name: upload wxwidgets cache
+        if: steps.wxwidgets-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v5
+        with:
+          path: ${{env.WXWIDGETS_DIR}}
+          key: ${{steps.wxwidgets-cache.outputs.cache-primary-key}}
+
+      - name: get ccache
+        id: ccache
+        uses: actions/cache/restore@v5
+        with:
+          path: ${{env.CCACHE_DIR}}
+          key: ccache-${{matrix.name}}-${{github.ref_name}}
+          restore-keys: ccache-${{matrix.name}}-
+
+      - name: checkout
+        uses: actions/checkout@v6
+        with:
+          path: project
+
+      - name: compile
+        shell: bash
+        run: |
+          cd project
+          mkdir build
+          cd build
+          wxcmake="$WXWIDGETS_DIR/lib/cmake/wxWidgets"
+          echo "::group::cmake"
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$wxcmake" -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          echo "::endgroup::"
+          echo "::group::ccache stats"
+          ccache --max-size "$CCACHE_SIZE"
+          echo "ccache dir is at $CCACHE_DIR"
+          ccache --show-stats --verbose
+          echo "::endgroup::"
+          echo "::group::compile"
+          make -j $CORES
+          echo "::endgroup::"
+          echo "::group::ccache stats after"
+          ccache --show-stats --verbose
+          echo "::endgroup::"
+
+      - name: delete old ccache to save space
+        if: github.ref == 'refs/heads/main' && steps.ccache.outputs.cache-hit == 'true'
+        env:
+          GH_TOKEN: ${{github.token}}
+          REPO: ${{github.repository}}
+          KEY: ${{steps.ccache.outputs.cache-primary-key}}
+        run: |
+          gh cache delete --repo "$REPO" "$KEY"
+
+      - name: upload new ccache
+        if: github.ref == 'refs/heads/main'
+        uses: actions/cache/save@v5
+        with:
+          path: ${{env.CCACHE_DIR}}
+          key: ${{steps.ccache.outputs.cache-primary-key}}
