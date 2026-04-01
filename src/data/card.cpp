@@ -156,7 +156,7 @@ void Card::updateLinkedUID(const String& old_uid, const String& new_uid) {
 vector<CardP> Card::getLinkedRelationCards(const vector<CardP>& cards, const String& linked_relation, bool erase_if_no_card) {
   vector<CardP> other_cards;
   vector<int> indexes = findRelationLinks(linked_relation);
-  for (int i = 0; i < indexes.size(); ++i) {
+  for (size_t i = 0; i < indexes.size(); ++i) {
     String& linked_uid = getLinkedUID(indexes[i]);
     CardP other_card = getUIDCard(cards, linked_uid);
     if (other_card) other_cards.push_back(other_card);

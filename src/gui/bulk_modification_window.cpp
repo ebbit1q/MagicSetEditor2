@@ -174,7 +174,7 @@ void BulkModificationWindow::onOk(wxCommandEvent&) {
   vector<CardP> cards;
   int selection_type = modification_selection->GetSelection();
   if (selection_type == 0) { // all
-    for (int i = 0; i < set->cards.size(); ++i) {
+    for (size_t i = 0; i < set->cards.size(); ++i) {
       cards.push_back(set->cards[i]);
     }
   } else if (selection_type == 1) { // currently filtered

@@ -86,7 +86,7 @@ void AddCardAction::perform(bool to_undo) {
   // Add or remove cards
   action.perform(set.cards, to_undo);
   // Update card links
-  for (int i = 0; i < card_link_actions.size(); ++i) {
+  for (size_t i = 0; i < card_link_actions.size(); ++i) {
     card_link_actions[i]->perform(to_undo);
   }
 }

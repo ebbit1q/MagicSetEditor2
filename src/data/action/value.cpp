@@ -113,7 +113,7 @@ unique_ptr<TextValueAction> toggle_format_action(const TextValueP& value, vector
   size_t untagged_end_i   = to_untagged_pos(new_value, end_i);
   int offset = 0;
   // Compute the changes
-  for (int i = 0; i < tags.size() ; ++i) {
+  for (size_t i = 0; i < tags.size() ; ++i) {
     const String& tag = tags[i];
     new_value = tag.Contains(":") ? compute_new_variable_value(new_value, tag,    start_i, end_i):
                 tag == _("li")    ? compute_new_bullet_value  (new_value, offset, start_i, end_i):
@@ -204,7 +204,7 @@ String compute_new_variable_value(const String& str, const String& tag, size_t s
     if (end_i != String::npos) end_i++;
   }
   String prefix(substr(str, 0, start_i));
-  String suffix = end_i == String::npos ? String() : substr(str, end_i);
+  String suffix = end_i == String::npos ? String() : String(substr(str, end_i));
   String selection(substr(str, start_i, end_i - start_i));
 
   // tally open tags that are variants of this tag
@@ -259,7 +259,7 @@ String compute_new_variable_value(const String& str, const String& tag, size_t s
   selection = wrap_tag(selection, _("<") + tag + _(">"));
 
   // add the tallied open and close tags
-  for (int i = 0; i < tag_list.size() ; ++i) {
+  for (size_t i = 0; i < tag_list.size() ; ++i) {
     String& new_tag = tag_list[i];
     int count = tag_map[new_tag];
     if (count > 0) {
@@ -287,9 +287,9 @@ String compute_new_bullet_value(const String& str, int& offset, size_t start_i, 
             min(str.find(_("<line"), end_i),
                 str.find(_("<soft-line"), end_i))))));
     String prefix(substr(str, 0, start_i));
-    String suffix = end_i == String::npos ? String() : substr(str, end_i);
+    String suffix = end_i == String::npos ? String() : String(substr(str, end_i));
     String selection(substr(str, start_i, end_i - start_i));
-    selection = _("<li><bullet>• </bullet>") + selection + _("</li>");
+    selection = wxString::FromUTF8("<li><bullet>• </bullet>") + selection + _("</li>");
     offset += 1;
     return prefix + selection + suffix;
   }
@@ -299,7 +299,7 @@ String compute_new_bullet_value(const String& str, int& offset, size_t start_i, 
   end_i = str.find(_("</li>"), start_tag);
   if (end_i != String::npos) end_i += 5;
   String prefix(substr(str, 0, start_i));
-  String suffix = end_i == String::npos ? String() : substr(str, end_i);
+  String suffix = end_i == String::npos ? String() : String(substr(str, end_i));
   String selection(substr(str, start_i, end_i - start_i));
   selection = remove_tag(remove_tag_contents(selection, _("<bullet>")), _("<bullet>"));
   selection = remove_tag(selection, _("<li>"));

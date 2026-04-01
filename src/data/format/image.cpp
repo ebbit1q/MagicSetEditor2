@@ -198,7 +198,7 @@ Image export_image(const SetP& set,
   }
   // Write metadata
   String metadata = _("<mse-card-data>[");
-  for (int i = 0; i < cards.size(); ++i) {
+  for (size_t i = 0; i < cards.size(); ++i) {
     if (i > 0) metadata += _(",");
     CardP card = cards[i];
     bool rotated = is_rad90(angles[i]) || is_rad270(angles[i]); // we stored width and height after rotation, but export_metadata expects them before rotation

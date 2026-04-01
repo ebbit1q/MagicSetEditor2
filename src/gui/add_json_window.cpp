@@ -148,7 +148,7 @@ void AddJSONWindow::onBrowseFiles(wxCommandEvent&) {
     return false;
   }
   // Get headers
-  for (int i = 0; i < count; ++i) {
+  for (size_t i = 0; i < count; ++i) {
     const auto& card = card_array[i].as_object();
     for (auto it = card.begin(); it != card.end(); ++it) {
       boost::json::string_view jview = it->key();
@@ -161,7 +161,7 @@ void AddJSONWindow::onBrowseFiles(wxCommandEvent&) {
     }
   }
   // Parse cards, add to table
-  for (int i = 0; i < count; ++i) {
+  for (size_t i = 0; i < count; ++i) {
     std::vector<ScriptValueP> row;
     auto& card = card_array[i].as_object();
     for (int h = 0; h < headers_out.size(); ++h) {

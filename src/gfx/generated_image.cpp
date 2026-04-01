@@ -518,7 +518,7 @@ Image CropImage::generate(const Options& opt) {
     // prune out of bounds cards
     boost::json::array cardsv = metadata_to_json(metadata);
     boost::json::array inbounds_cardsv;
-    for (int i = 0; i < cardsv.size(); i++) {
+    for (size_t i = 0; i < cardsv.size(); i++) {
       boost::json::object cardv = cardsv[i].as_object();
       if (cardv.contains("bounds")) {
         String bounds = String(cardv["bounds"].as_string().c_str());

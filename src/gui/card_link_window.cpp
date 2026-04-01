@@ -122,7 +122,7 @@ void CardLinkWindow::onOk(wxCommandEvent&) {
     return;
   }
   vector<String> linked_uids;
-  for (int i = 0; i < linked_cards.size(); ++i) {
+  for (size_t i = 0; i < linked_cards.size(); ++i) {
     linked_uids.push_back(linked_cards[i]->uid);
   }
   // Find free links
@@ -132,7 +132,7 @@ void CardLinkWindow::onOk(wxCommandEvent&) {
   }
   vector<int> free_link_indexes = selected_card->findFreeLinks(linked_uids, all_existing_uids);
   int free_link_count = 0;
-  for (int i = 0; i < free_link_indexes.size(); ++i) {
+  for (size_t i = 0; i < free_link_indexes.size(); ++i) {
     if (free_link_indexes[i] >= 0) free_link_count++;
   }
   if (free_link_count < linked_cards.size()) {
@@ -155,14 +155,14 @@ void CardLinkWindow::onOk(wxCommandEvent&) {
   }
   // Make the actions
   vector<ActionP> actions;
-  for (int i = 0; i < free_link_indexes.size(); ++i) {
+  for (size_t i = 0; i < free_link_indexes.size(); ++i) {
     if (free_link_indexes[i] >= 0) {
       actions.push_back(make_intrusive<OneWayLinkCardsAction>(*set, selected_card, linked_uids[i], linked_relation_string, free_link_indexes[i]));
     }
   }
   // Find reciprocal free slots and make actions
   String& selected_uid = selected_card->uid;
-  for (int i = 0; i < linked_cards.size(); ++i) {
+  for (size_t i = 0; i < linked_cards.size(); ++i) {
     int free_link_index = linked_cards[i]->findFreeLink(selected_uid, all_existing_uids);
     if (free_link_index >= 0) {
       actions.push_back(make_intrusive<OneWayLinkCardsAction>(*set, linked_cards[i], selected_uid, selected_relation_string, free_link_index));

@@ -6,6 +6,7 @@
 
 // ----------------------------------------------------------------------------- : Includes
 
+#include <wx/wx.h>
 #include <wx/wxprec.h>
 #include <wx/webrequest.h>
 #include <wx/process.h>

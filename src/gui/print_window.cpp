@@ -148,7 +148,7 @@ void PrintJob::align_cards() {
       double x = page_layout[j].pos.width;
       double y = page_layout[j].pos.height;
       // if another card is almost aligned
-      for (int i = 0; i < page_layout.size(); ++i) {
+      for (size_t i = 0; i < page_layout.size(); ++i) {
         if (i == j) continue;
         double difference = page_layout[i].pos.width - x;
         if (threshold_bottom < difference && difference <= threshold_top) {
@@ -190,7 +190,7 @@ void PrintJob::center_cards() {
   for (int p = 0; p < page_layouts.size(); ++p) {
     vector<CardLayout>& page_layout = page_layouts[p];
     RealSize page_margin(0.0, 0.0);
-    for (int i = 0; i < page_layout.size(); ++i) {
+    for (size_t i = 0; i < page_layout.size(); ++i) {
       double width  = page_layout[i].pos.width  + page_layout[i].size_mm.width;
       double height = page_layout[i].pos.height + page_layout[i].size_mm.height;
       if (page_margin.width  < width)  page_margin.width  = width;
@@ -199,7 +199,7 @@ void PrintJob::center_cards() {
     page_margin.width  = (page_size.width  - page_margin.width)  / 2;
     page_margin.height = (page_size.height - page_margin.height) / 2;
     page_margins.push_back(page_margin);
-    for (int i = 0; i < page_layout.size(); ++i) {
+    for (size_t i = 0; i < page_layout.size(); ++i) {
       page_layout[i].pos.width  += page_margin.width;
       page_layout[i].pos.height += page_margin.height;
     }
@@ -332,7 +332,7 @@ void CardsPrintout::drawCutterLines(DC& dc, PrintJobP& job, int page) {
   dc.SetPen(pen);
   // vertical
   int v_bleed = printer_px_per_mm.width * settings.print_bleed;
-  for (int i = 0; i < page_layouts.size(); ++i) {
+  for (size_t i = 0; i < page_layouts.size(); ++i) {
     double left_line  = page_layouts[i].pos.width;
     double right_line = left_line + page_layouts[i].size_mm.width;
     bool draw_left_line  = true;
@@ -370,7 +370,7 @@ void CardsPrintout::drawCutterLines(DC& dc, PrintJobP& job, int page) {
   }
   // horizontal
   int h_bleed = printer_px_per_mm.height * settings.print_bleed;
-  for (int i = 0; i < page_layouts.size(); ++i) {
+  for (size_t i = 0; i < page_layouts.size(); ++i) {
     double top_line  = page_layouts[i].pos.height;
     double bottom_line = top_line + page_layouts[i].size_mm.height;
     bool draw_top_line  = true;

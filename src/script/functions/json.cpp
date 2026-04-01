@@ -164,7 +164,7 @@ PackTypeP json_to_mse_pack_type(boost::json::object& jv) {
   read(pack_type->select,     jv, "select");
   if (jv.contains("items") && jv["items"].is_array()) {
     boost::json::array pack_itemsv = jv["items"].as_array();
-    for (int i = 0; i < pack_itemsv.size(); i++) {
+    for (size_t i = 0; i < pack_itemsv.size(); i++) {
       boost::json::object pack_itemv = pack_itemsv[i].as_object();
       pack_type->items.emplace_back(json_to_mse_pack_item(pack_itemv));
     }
@@ -280,7 +280,7 @@ SetP json_to_mse_set(boost::json::object& jv) {
   // cards
   if (jv.contains("cards") && jv["cards"].is_array()) {
     boost::json::array cardsv = jv["cards"].as_array();
-    for (int i = 0; i < cardsv.size(); i++) {
+    for (size_t i = 0; i < cardsv.size(); i++) {
       boost::json::object cardv = cardsv[i].as_object();
       set->cards.emplace_back(json_to_mse_card(cardv, set.get()));
     }
@@ -288,7 +288,7 @@ SetP json_to_mse_set(boost::json::object& jv) {
   // keywords
   if (jv.contains("keywords") && jv["keywords"].is_array()) {
     boost::json::array keywordsv = jv["keywords"].as_array();
-    for (int i = 0; i < keywordsv.size(); i++) {
+    for (size_t i = 0; i < keywordsv.size(); i++) {
       boost::json::object keywordv = keywordsv[i].as_object();
       set->keywords.emplace_back(json_to_mse_keyword(keywordv));
     }
@@ -296,7 +296,7 @@ SetP json_to_mse_set(boost::json::object& jv) {
   // pack types
   if (jv.contains("pack_types") && jv["pack_types"].is_array()) {
     boost::json::array pack_typesv = jv["pack_types"].as_array();
-    for (int i = 0; i < pack_typesv.size(); i++) {
+    for (size_t i = 0; i < pack_typesv.size(); i++) {
       boost::json::object pack_typev = pack_typesv[i].as_object();
       set->pack_types.emplace_back(json_to_mse_pack_type(pack_typev));
     }
@@ -333,7 +333,7 @@ ScriptValueP json_to_mse(const boost::json::value& jv, Set* set) {
   else if (jv.is_array()) {
     boost::json::array array = jv.get_array();
     ScriptCustomCollectionP result = make_intrusive<ScriptCustomCollection>();
-    for (int i = 0; i < array.size(); ++i) {
+    for (size_t i = 0; i < array.size(); ++i) {
       boost::json::value jvalue = array[i];
       ScriptValueP value = json_to_mse(jvalue, set);
       result->value.push_back(value);
@@ -868,7 +868,7 @@ boost::json::value mse_to_json(const ScriptValueP& sv, Set* set) {
     if (custom) {
       if (custom->value.size() > 0) {
         boost::json::array array;
-        for (int i = 0; i < custom->value.size(); i++) {
+        for (size_t i = 0; i < custom->value.size(); i++) {
           array.emplace_back(mse_to_json(custom->value[i], set));
         }
         return array;
@@ -888,7 +888,7 @@ boost::json::value mse_to_json(const ScriptValueP& sv, Set* set) {
         if (a.is_array() && b.is_array()) {
           boost::json::array array_a = a.get_array();
           boost::json::array array_b = b.get_array();
-          for (int i = 0; i < array_b.size(); i++) {
+          for (size_t i = 0; i < array_b.size(); i++) {
             array_a.emplace_back(array_b[i]);
           }
           return array_a;
