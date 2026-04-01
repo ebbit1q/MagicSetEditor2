@@ -1,3 +1,4 @@
+# test
 cmake_minimum_required(VERSION 3.13)
 
 project(magicseteditor VERSION 2.6.0)
